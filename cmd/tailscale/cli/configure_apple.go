@@ -27,30 +27,30 @@ func sysExtCmd() *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "sysext",
 		ShortUsage: "tailscale configure sysext [activate|deactivate|status]",
-		ShortHelp:  "Manage the system extension for macOS (Standalone variant)",
-		LongHelp: "The sysext set of commands provides a way to activate, deactivate, or manage the state of the Tailscale system extension on macOS. " +
-			"This is only relevant if you are running the Standalone variant of the Tailscale client for macOS. " +
-			"To access more detailed information about system extensions installed on this Mac, run 'systemextensionsctl list'.",
+		ShortHelp:  "管理系统扩展（仅限 macOS 的 Standalone 版本）",
+		LongHelp: "sysext 这组命令提供了一种方式来激活、停用或管理 macOS 上 Tailscale 系统扩展的状态。" +
+			"仅当您运行的是 macOS 版 Tailscale 客户端的 Standalone（独立）变体时才相关。" +
+			"若要查看本机上已安装系统扩展的详细信息，请运行 'systemextensionsctl list'。",
 		Subcommands: []*ffcli.Command{
 			{
 				Name:       "activate",
 				ShortUsage: "tailscale configure sysext activate",
-				ShortHelp:  "Register the Tailscale system extension with macOS.",
-				LongHelp:   "This command registers the Tailscale system extension with macOS. To run Tailscale, you'll also need to install the VPN configuration separately (run `tailscale configure vpn-config install`). After running this command, you need to approve the extension in System Settings > Login Items and Extensions > Network Extensions.",
+				ShortHelp:  "向 macOS 注册 Tailscale 系统扩展。",
+				LongHelp:   "此命令向 macOS 注册 Tailscale 系统扩展。要运行 Tailscale，您还需单独安装 VPN 配置（运行 `tailscale configure vpn-config install`）。运行此命令后，您需要在“系统设置 > 登录项与扩展 > 网络扩展”中批准该扩展。",
 				Exec:       requiresStandalone,
 			},
 			{
 				Name:       "deactivate",
 				ShortUsage: "tailscale configure sysext deactivate",
-				ShortHelp:  "Deactivate the Tailscale system extension on macOS",
-				LongHelp:   "This command deactivates the Tailscale system extension on macOS. To completely remove Tailscale, you'll also need to delete the VPN configuration separately (use `tailscale configure vpn-config uninstall`).",
+				ShortHelp:  "停用 macOS 上的 Tailscale 系统扩展",
+				LongHelp:   "此命令停用 macOS 上的 Tailscale 系统扩展。若要彻底移除 Tailscale，您还需单独删除 VPN 配置（使用 `tailscale configure vpn-config uninstall`）。",
 				Exec:       requiresStandalone,
 			},
 			{
 				Name:       "status",
 				ShortUsage: "tailscale configure sysext status",
-				ShortHelp:  "Print the enablement status of the Tailscale system extension",
-				LongHelp:   "This command prints the enablement status of the Tailscale system extension. If the extension is not enabled, run `tailscale sysext activate` to enable it.",
+				ShortHelp:  "打印 Tailscale 系统扩展的启用状态",
+				LongHelp:   "此命令打印 Tailscale 系统扩展的启用状态。如果扩展未启用，请运行 `tailscale sysext activate` 来启用它。",
 				Exec:       requiresStandalone,
 			},
 		},
@@ -64,34 +64,34 @@ func vpnConfigCmd() *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "mac-vpn",
 		ShortUsage: "tailscale configure mac-vpn [install|uninstall]",
-		ShortHelp:  "Manage the VPN configuration on macOS (App Store and Standalone variants)",
-		LongHelp:   "The vpn-config set of commands provides a way to add or remove the Tailscale VPN configuration from the macOS settings. This is the entry that appears in System Settings > VPN.",
+		ShortHelp:  "管理 macOS 上的 VPN 配置（App Store 与 Standalone 变体）",
+		LongHelp:   "vpn-config 这组命令提供了一种方式，用于从 macOS 设置中添加或移除 Tailscale 的 VPN 配置。这是在“系统设置 > VPN”中出现的条目。",
 		Subcommands: []*ffcli.Command{
 			{
 				Name:       "install",
 				ShortUsage: "tailscale configure mac-vpn install",
-				ShortHelp:  "Write the Tailscale VPN configuration to the macOS settings",
-				LongHelp:   "This command writes the Tailscale VPN configuration to the macOS settings. This is the entry that appears in System Settings > VPN. If you are running the Standalone variant of the client, you'll also need to install the system extension separately (run `tailscale configure sysext activate`).",
+				ShortHelp:  "将 Tailscale VPN 配置写入 macOS 设置",
+				LongHelp:   "此命令将 Tailscale VPN 配置写入 macOS 设置。这是在“系统设置 > VPN”中出现的条目。如果您运行的是客户端的 Standalone（独立）变体，您还需单独安装系统扩展（运行 `tailscale configure sysext activate`）。",
 				Exec:       requiresGUI,
 			},
 			{
 				Name:       "uninstall",
 				ShortUsage: "tailscale configure mac-vpn uninstall",
-				ShortHelp:  "Delete the Tailscale VPN configuration from the macOS settings",
-				LongHelp:   "This command removes the Tailscale VPN configuration from the macOS settings. This is the entry that appears in System Settings > VPN. If you are running the Standalone variant of the client, you'll also need to deactivate the system extension separately (run `tailscale configure sysext deactivate`).",
+				ShortHelp:  "从 macOS 设置中删除 Tailscale VPN 配置",
+				LongHelp:   "此命令从 macOS 设置中移除 Tailscale VPN 配置。这是在“系统设置 > VPN”中出现的条目。如果您运行的是客户端的 Standalone（独立）变体，您还需单独停用系统扩展（运行 `tailscale configure sysext deactivate`）。",
 				Exec:       requiresGUI,
 			},
 		},
 		Exec: func(ctx context.Context, args []string) error {
-			return errors.New("unsupported command: requires a GUI build of the macOS client")
+			return errors.New("不支持的命令：需要 macOS 客户端的 GUI 版本")
 		},
 	}
 }
 
 func requiresStandalone(ctx context.Context, args []string) error {
-	return errors.New("unsupported command: requires the Standalone (.pkg installer) GUI build of the client")
+	return errors.New("不支持的命令：需要客户端的 Standalone（.pkg 安装包）GUI 版本")
 }
 
 func requiresGUI(ctx context.Context, args []string) error {
-	return errors.New("unsupported command: requires a GUI build of the macOS client")
+	return errors.New("不支持的命令：需要 macOS 客户端的 GUI 版本")
 }

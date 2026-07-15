@@ -20,5 +20,5 @@ func execSSH(ssh string, argv []string) error {
 	if err := syscall.Exec(ssh, argv, os.Environ()); err != nil {
 		return err
 	}
-	return errors.New("unreachable")
+	return errors.New("不可达")
 }

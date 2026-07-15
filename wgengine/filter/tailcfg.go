@@ -150,7 +150,7 @@ func parseIPSet(arg string) (prefixes []netip.Prefix, peerCap tailcfg.NodeCapabi
 			return nil, "", err
 		}
 		if pfx != pfx.Masked() {
-			return nil, "", fmt.Errorf("%v contains non-network bits set", pfx)
+			return nil, "", fmt.Errorf("%v 含有非网络位（掩码未对齐）", pfx)
 		}
 		return []netip.Prefix{pfx}, "", nil
 	}
@@ -166,13 +166,13 @@ func parseIPSet(arg string) (prefixes []netip.Prefix, peerCap tailcfg.NodeCapabi
 		}
 		r := netipx.IPRangeFrom(ip1, ip2)
 		if !r.IsValid() {
-			return nil, "", fmt.Errorf("invalid IP range %q", arg)
+			return nil, "", fmt.Errorf("无效的 IP 地址段 %q", arg)
 		}
 		return r.Prefixes(), "", nil
 	}
 	ip, err := netip.ParseAddr(arg)
 	if err != nil {
-		return nil, "", fmt.Errorf("invalid IP address %q", arg)
+		return nil, "", fmt.Errorf("无效的 IP 地址 %q", arg)
 	}
 	return []netip.Prefix{netip.PrefixFrom(ip, ip.BitLen())}, "", nil
 }

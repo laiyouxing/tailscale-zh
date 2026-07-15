@@ -20,10 +20,10 @@ func configureCmd() *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "configure",
 		ShortUsage: "tailscale configure <subcommand>",
-		ShortHelp:  "Configure the host to enable more Tailscale features",
+		ShortHelp:  "配置主机以启用更多 Tailscale 功能",
 		LongHelp: strings.TrimSpace(`
-The 'configure' set of commands are intended to provide a way to enable different
-services on the host to use Tailscale in more ways.
+'configure' 这组命令旨在提供一种方式，用于在主机上启用不同的服务，
+从而以更多方式使用 Tailscale。
 `),
 		FlagSet: (func() *flag.FlagSet {
 			fs := newFlagSet("configure")

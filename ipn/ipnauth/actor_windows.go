@@ -65,7 +65,7 @@ func (a *WindowsActor) CheckProfileAccess(profile ipn.LoginProfileView, _ Profil
 	if profile.LocalUserID() != a.UserID() {
 		// TODO(nickkhyl): return errors of more specific types and have them
 		// translated to the appropriate HTTP status codes in the API handler.
-		return errors.New("the target profile does not belong to the user")
+		return errors.New("目标配置文件不属于该用户")
 	}
 	return nil
 }

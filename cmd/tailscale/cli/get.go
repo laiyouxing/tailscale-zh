@@ -21,13 +21,13 @@ import (
 var getCmd = &ffcli.Command{
 	Name:       "get",
 	ShortUsage: "tailscale get [flags] [setting-name | all]",
-	ShortHelp:  "Show current preference values",
-	LongHelp: `"tailscale get" shows the current value of one or all preferences.
+		ShortHelp:  "显示当前偏好设置值",
+	LongHelp: `"tailscale get" 显示一个或多个偏好的当前值。
 
-With no argument or "all", all preferences are shown.
-With a specific setting name, only that value is shown.
+不带参数或带 "all" 时，显示所有偏好。
+带特定设置名称时，只显示该值。
 
-The setting names are the same flag names accepted by "tailscale set".`,
+设置名称与 "tailscale set" 接受的标志名称相同。`,
 	FlagSet: getFlags,
 	Exec:    runGet,
 }
@@ -43,8 +43,8 @@ var getFlags = newGetFlagSet(&getArgs)
 
 func newGetFlagSet(args *getArgsT) *flag.FlagSet {
 	fs := newFlagSet("get")
-	fs.BoolVar(&args.json, "json", false, "output as JSON")
-	fs.BoolVar(&args.setFlags, "set-flags", false, "output as \"tailscale set\" flag arguments")
+	fs.BoolVar(&args.json, "json", false, "以 JSON 格式输出")
+	fs.BoolVar(&args.setFlags, "set-flags", false, "以 \"tailscale set\" 标志参数形式输出")
 	return fs
 }
 
@@ -87,7 +87,7 @@ func runGet(ctx context.Context, args []string) error {
 // wantAll reports whether the caller asked for all settings (no arg or "all").
 func selectSettings(prefs *ipn.Prefs, st *ipnstate.Status, goos string, args []string) (settings []getSetting, wantAll bool, err error) {
 	if len(args) > 1 {
-		return nil, false, fmt.Errorf("too many arguments: %q", args)
+		return nil, false, fmt.Errorf("参数过多: %q", args)
 	}
 	wantAll = len(args) == 0 || args[0] == "all"
 	if wantAll {
@@ -100,7 +100,7 @@ func selectSettings(prefs *ipn.Prefs, st *ipnstate.Status, goos string, args []s
 			return []getSetting{s}, false, nil
 		}
 	}
-	return nil, false, fmt.Errorf("unknown setting %q; see \"tailscale set --help\" for valid settings", wantName)
+	return nil, false, fmt.Errorf("未知设置 %q；可用设置请参阅 \"tailscale set --help\"", wantName)
 }
 
 // getSettingsFromPrefs returns get-able settings derived from prefs,
@@ -210,7 +210,7 @@ func prefValue(flagName string, prefs *ipn.Prefs, st *ipnstate.Status) any {
 
 func getOutputTable(settings []getSetting) error {
 	w := tabwriter.NewWriter(Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintf(w, "NAME\tVALUE\n")
+	fmt.Fprintf(w, "名称\t值\n")
 	for _, s := range settings {
 		fmt.Fprintf(w, "%s\t%v\n", s.name, s.value)
 	}

@@ -33,65 +33,63 @@ export function UpdatingView({
         {updateState === UpdateState.InProgress ? (
           <>
             <Spinner size="sm" className="text-gray-400" />
-            <h1 className="text-2xl m-3">Update in progress</h1>
+            <h1 className="text-2xl m-3">更新进行中</h1>
             <p className="text-gray-400">
-              The update shouldn’t take more than a couple of minutes. Once it’s
-              completed, you will be asked to log in again.
+              更新过程通常只需几分钟。完成后，系统会要求你重新登录。
             </p>
           </>
         ) : updateState === UpdateState.Complete ? (
           <>
             <CheckCircleIcon />
-            <h1 className="text-2xl m-3">Update complete!</h1>
+            <h1 className="text-2xl m-3">更新完成！</h1>
             <p className="text-gray-400">
-              You updated Tailscale
+              你已将 Tailscale 更新
               {versionInfo && versionInfo.LatestVersion
-                ? ` to ${versionInfo.LatestVersion}`
+                ? ` 到 ${versionInfo.LatestVersion}`
                 : null}
-              . <ChangelogText version={versionInfo?.LatestVersion} />
+              。<ChangelogText version={versionInfo?.LatestVersion} />
             </p>
             <Button
               className="m-3"
               sizeVariant="small"
               onClick={() => setLocation("/")}
             >
-              Log in to access
+              登录以访问
             </Button>
           </>
         ) : updateState === UpdateState.UpToDate ? (
           <>
             <CheckCircleIcon />
-            <h1 className="text-2xl m-3">Up to date!</h1>
+            <h1 className="text-2xl m-3">已是最新！</h1>
             <p className="text-gray-400">
-              You are already running Tailscale {currentVersion}, which is the
-              newest version available.
+              你已经在运行 Tailscale {currentVersion}，这是当前可用的最新版本。
             </p>
             <Button
               className="m-3"
               sizeVariant="small"
               onClick={() => setLocation("/")}
             >
-              Return
+              返回
             </Button>
           </>
         ) : (
           /* TODO(naman,sonia): Figure out the body copy and design for this view. */
           <>
             <XCircleIcon />
-            <h1 className="text-2xl m-3">Update failed</h1>
+            <h1 className="text-2xl m-3">更新失败</h1>
             <p className="text-gray-400">
-              Update
+              更新
               {versionInfo && versionInfo.LatestVersion
-                ? ` to ${versionInfo.LatestVersion}`
+                ? ` 到 ${versionInfo.LatestVersion}`
                 : null}{" "}
-              failed.
+              失败。
             </p>
             <Button
               className="m-3"
               sizeVariant="small"
               onClick={() => setLocation("/")}
             >
-              Return
+              返回
             </Button>
           </>
         )}

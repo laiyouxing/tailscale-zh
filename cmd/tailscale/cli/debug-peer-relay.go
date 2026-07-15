@@ -26,7 +26,7 @@ func mkDebugPeerRelaySessionsCmd() *ffcli.Command {
 		Name:       "peer-relay-sessions",
 		ShortUsage: "tailscale debug peer-relay-sessions",
 		Exec:       runPeerRelaySessions,
-		ShortHelp:  "Print the current set of active peer relay sessions relayed through this node",
+		ShortHelp:  "打印当前经本节点中转的活动节点中继会话集合",
 	}
 }
 
@@ -39,14 +39,14 @@ func runPeerRelaySessions(ctx context.Context, args []string) error {
 	var buf bytes.Buffer
 	f := func(format string, a ...any) { fmt.Fprintf(&buf, format, a...) }
 
-	f("Server port: ")
+	f("服务端端口：")
 	if srv.UDPPort == nil {
-		f("not configured (you can configure the port with 'tailscale set --relay-server-port=<PORT>')")
+		f("未配置（可用 'tailscale set --relay-server-port=<PORT>' 配置端口）")
 	} else {
 		f("%d", *srv.UDPPort)
 	}
 	f("\n")
-	f("Sessions count: %d\n", len(srv.Sessions))
+	f("会话数量：%d\n", len(srv.Sessions))
 	if len(srv.Sessions) == 0 {
 		Stdout.Write(buf.Bytes())
 		return nil
@@ -57,9 +57,9 @@ func runPeerRelaySessions(ctx context.Context, args []string) error {
 			if ap.IsValid() {
 				return ap.String()
 			}
-			return "<no handshake>"
+			return "<无握手>"
 		}
-		return fmt.Sprintf("%s(%s) --> %s(%s), Packets: %d Bytes: %d",
+		return fmt.Sprintf("%s(%s) --> %s(%s)，数据包：%d 字节：%d",
 			fmtEndpoint(a.Endpoint), a.ShortDisco,
 			fmtEndpoint(z.Endpoint), z.ShortDisco,
 			a.PacketsTx, a.BytesTx)
@@ -68,7 +68,7 @@ func runPeerRelaySessions(ctx context.Context, args []string) error {
 	f("\n")
 	slices.SortFunc(srv.Sessions, func(s1, s2 status.ServerSession) int { return cmp.Compare(s1.VNI, s2.VNI) })
 	for _, s := range srv.Sessions {
-		f("VNI: %d\n", s.VNI)
+		f("VNI：%d\n", s.VNI)
 		f("  %s\n", fmtSessionDirection(s.Client1, s.Client2))
 		f("  %s\n", fmtSessionDirection(s.Client2, s.Client1))
 	}

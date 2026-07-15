@@ -116,7 +116,7 @@ func RunWithContext(ctx context.Context, args []string) (err error) {
 	var warnOnce sync.Once
 	local.SetVersionMismatchHandler(func(clientVer, serverVer string) {
 		warnOnce.Do(func() {
-			fmt.Fprintf(Stderr, "Warning: client version %q != tailscaled server version %q\n", clientVer, serverVer)
+			fmt.Fprintf(Stderr, "警告：客户端版本 %q 与 tailscaled 服务器版本 %q 不一致\n", clientVer, serverVer)
 		})
 	})
 
@@ -133,13 +133,13 @@ func RunWithContext(ctx context.Context, args []string) (err error) {
 			args := cmd.FlagSet.Args()
 			if len(cmd.Subcommands) > 0 {
 				if len(args) > 0 {
-					return fmt.Errorf("%s: unknown subcommand: %s", fullCmd(rootCmd, cmd), args[0])
+					return fmt.Errorf("%s: 未知子命令：%s", fullCmd(rootCmd, cmd), args[0])
 				}
 				subs := make([]string, 0, len(cmd.Subcommands))
 				for _, sub := range cmd.Subcommands {
 					subs = append(subs, sub.Name)
 				}
-				return fmt.Errorf("%s: missing subcommand: %s", fullCmd(rootCmd, cmd), strings.Join(subs, ", "))
+				return fmt.Errorf("%s: 缺少子命令：%s", fullCmd(rootCmd, cmd), strings.Join(subs, ", "))
 			}
 		}
 		return err
@@ -166,7 +166,7 @@ func RunWithContext(ctx context.Context, args []string) (err error) {
 
 	err = rootCmd.Run(ctx)
 	if local.IsAccessDeniedError(err) && os.Getuid() != 0 && runtime.GOOS != "windows" {
-		return fmt.Errorf("%v\n\nUse 'sudo tailscale %s'.\nTo not require root, use 'sudo tailscale set --operator=$USER' once.", err, strings.Join(args, " "))
+		return fmt.Errorf("%v\n\n请使用 'sudo tailscale %s'。\n若不想每次需要 root 权限，可先运行一次 'sudo tailscale set --operator=$USER'。", err, strings.Join(args, " "))
 	}
 	if errors.Is(err, flag.ErrHelp) {
 		return nil
@@ -186,7 +186,7 @@ type onceFlagValue struct {
 
 func (v *onceFlagValue) Set(s string) error {
 	if v.set {
-		return fmt.Errorf("flag provided multiple times")
+		return fmt.Errorf("flag 被重复设置")
 	}
 	v.set = true
 	return v.Value.Set(s)
@@ -252,24 +252,23 @@ var (
 
 func newRootCmd(tb ...testenv.TB) *ffcli.Command {
 	rootfs := newFlagSet("tailscale")
-	rootfs.Func("socket", "path to tailscaled socket", func(s string) error {
+	rootfs.Func("socket", "tailscaled 套接字路径", func(s string) error {
 		localClient.Socket = s
 		localClient.UseSocketOnly = true
 		return nil
 	})
 	rootfs.Lookup("socket").DefValue = localClient.Socket
-	jsonDocs := rootfs.Bool("json-docs", false, hidden+"print JSON-encoded docs for all subcommands and flags")
+	jsonDocs := rootfs.Bool("json-docs", false, hidden+"打印所有子命令和 flag 的 JSON 编码文档")
 
 	var rootCmd *ffcli.Command
 	rootCmd = &ffcli.Command{
 		Name:       "tailscale",
 		ShortUsage: "tailscale [flags] <subcommand> [command flags]",
-		ShortHelp:  "The easiest, most secure way to use WireGuard.",
+		ShortHelp:  "使用 WireGuard 最简单、最安全的方式。",
 		LongHelp: strings.TrimSpace(`
-For help on subcommands, add --help after: "tailscale status --help".
+查看子命令帮助，可在其后加 --help：如 "tailscale status --help"。
 
-This CLI is still under active development. Commands and flags will
-change in the future.
+本命令行工具仍在积极开发中。命令和 flag 未来可能会发生变化。
 `),
 		Subcommands: nonNilCmds(
 			upCmd,
@@ -318,7 +317,7 @@ change in the future.
 				return printJSONDocs(rootCmd)
 			}
 			if len(args) > 0 {
-				return fmt.Errorf("tailscale: unknown subcommand: %s", args[0])
+				return fmt.Errorf("tailscale: 未知子命令：%s", args[0])
 			}
 			return flag.ErrHelp
 		},
@@ -440,7 +439,7 @@ func usageFuncOpt(c *ffcli.Command, withDefaults bool) string {
 		fmt.Fprintf(&b, "%s\n\n", c.ShortHelp)
 	}
 
-	fmt.Fprintf(&b, "USAGE\n")
+	fmt.Fprintf(&b, "用法\n")
 	if c.ShortUsage != "" {
 		fmt.Fprintf(&b, "  %s\n", strings.ReplaceAll(c.ShortUsage, "\n", "\n  "))
 	} else {
@@ -453,7 +452,7 @@ func usageFuncOpt(c *ffcli.Command, withDefaults bool) string {
 	}
 
 	if len(c.Subcommands) > 0 {
-		fmt.Fprintf(&b, "SUBCOMMANDS\n")
+		fmt.Fprintf(&b, "子命令\n")
 		tw := tabwriter.NewWriter(&b, 0, 2, 2, ' ', 0)
 		for _, subcommand := range c.Subcommands {
 			if strings.HasPrefix(subcommand.LongHelp, hidden) {
@@ -466,7 +465,7 @@ func usageFuncOpt(c *ffcli.Command, withDefaults bool) string {
 	}
 
 	if countFlags(c.FlagSet) > 0 {
-		fmt.Fprintf(&b, "FLAGS\n")
+		fmt.Fprintf(&b, "参数选项\n")
 		tw := tabwriter.NewWriter(&b, 0, 2, 2, ' ', 0)
 		c.FlagSet.VisitAll(func(f *flag.Flag) {
 			var s string
@@ -495,7 +494,7 @@ func usageFuncOpt(c *ffcli.Command, withDefaults bool) string {
 				showDefault = false
 			}
 			if showDefault {
-				s += fmt.Sprintf(" (default %s)", f.DefValue)
+				s += fmt.Sprintf("（默认值 %s）", f.DefValue)
 			}
 
 			fmt.Fprintln(&b, s)
@@ -578,11 +577,11 @@ func lastSeenFmt(t time.Time) string {
 
 	switch {
 	case d < time.Hour:
-		return fmt.Sprintf(", last seen %dm ago", int(d.Minutes()))
+		return fmt.Sprintf("，%d 分钟前在线", int(d.Minutes()))
 	case d < 24*time.Hour:
-		return fmt.Sprintf(", last seen %dh ago", int(d.Hours()))
+		return fmt.Sprintf("，%d 小时前在线", int(d.Hours()))
 	default:
-		return fmt.Sprintf(", last seen %dd ago", int(d.Hours()/24))
+		return fmt.Sprintf("，%d 天前在线", int(d.Hours()/24))
 	}
 }
 

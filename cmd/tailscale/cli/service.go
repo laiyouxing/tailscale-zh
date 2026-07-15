@@ -60,14 +60,14 @@ func serviceCmd() *ffcli.Command {
 	}
 	return &ffcli.Command{
 		Name:       "service",
-		ShortHelp:  "Interact with Tailscale Services",
+		ShortHelp:  "与 Tailscale 服务（Services）交互",
 		ShortUsage: "tailscale service",
 		LongHelp: strings.TrimSpace(`
-The 'tailscale service' command groups subcommands for Tailscale Services.
+'tailscale service' 命令汇集了用于管理 Tailscale 服务（Services）的子命令。
 
-A Tailscale Service is a virtual service with its own IP addresses. Which
-Services this node can reach is determined by the tailnet's ACLs. Use the 'list'
-subcommand to see the Services currently available to this node.
+一个 Tailscale 服务是一个拥有自身 IP 地址的虚拟服务。本节点能够访问哪些
+服务由 tailnet 的 ACL 决定。使用 'list'
+子命令可以查看当前本节点可用的服务。
 `),
 		UsageFunc: usageFuncNoDefaultValues,
 		Exec:      func(context.Context, []string) error { return flag.ErrHelp },
@@ -75,11 +75,11 @@ subcommand to see the Services currently available to this node.
 			{
 				Name:       "list",
 				ShortUsage: serviceListUsage,
-				ShortHelp:  "List the Tailscale Services your node can access",
+				ShortHelp:  "列出你的节点可访问的 Tailscale 服务",
 				Exec:       runServiceList,
 				FlagSet: func() *flag.FlagSet {
 					fs := newFlagSet("list")
-					fs.BoolVar(&serviceListArgs.json, "json", false, "output in JSON format")
+					fs.BoolVar(&serviceListArgs.json, "json", false, "以 JSON 格式输出")
 					return fs
 				}(),
 			},
@@ -102,7 +102,7 @@ type serviceListEntry struct {
 // runServiceList is the entry point for the "tailscale service list" command.
 func runServiceList(ctx context.Context, args []string) error {
 	if len(args) != 0 {
-		return fmt.Errorf("usage: %s", serviceListUsage)
+		return fmt.Errorf("用法: %s", serviceListUsage)
 	}
 
 	lc := serviceListerFromContext(ctx)
@@ -145,13 +145,13 @@ func runServiceList(ctx context.Context, args []string) error {
 	}
 
 	if len(entries) == 0 {
-		fmt.Fprintln(Stdout, "No Tailscale Services are available to this node.")
+		fmt.Fprintln(Stdout, "本节点当前没有任何可用的 Tailscale 服务。")
 		return nil
 	}
 
 	w := tabwriter.NewWriter(Stdout, 10, 5, 5, ' ', 0)
 	defer w.Flush()
-	fmt.Fprintf(w, "\n %s\t%s\t%s\t%s\t%s\t", "IP", "HOSTNAME", "DISPLAY NAME", "ENDPOINTS", "TYPE")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t%s\t%s\t", "IP", "主机名", "显示名称", "端点", "类型")
 	for _, e := range entries {
 		// Show a single IP, always the first in Addrs. If a tailnet has IPv4
 		// disabled, the netmap only includes the v6 address, so the 0th index
@@ -244,9 +244,9 @@ func serviceActionTypes(svc tailcfg.ServiceDetails) string {
 		return strings.Join(types, ", ")
 	}
 	extra := len(types) - maxNamedTypes
-	noun := "others"
+	noun := "其他"
 	if extra == 1 {
-		noun = "other"
+		noun = "其他项"
 	}
 	return fmt.Sprintf("%s, %d %s", strings.Join(types[:maxNamedTypes], ", "), extra, noun)
 }

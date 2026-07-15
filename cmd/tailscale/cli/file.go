@@ -50,7 +50,7 @@ func getFileCmd() *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "file",
 		ShortUsage: "tailscale file <cp|get> ...",
-		ShortHelp:  "Send or receive files",
+		ShortHelp:  "发送或接收文件",
 		Subcommands: []*ffcli.Command{
 			fileCpCmd,
 			fileGetCmd,
@@ -72,14 +72,14 @@ func (c *countingReader) Read(buf []byte) (int, error) {
 var fileCpCmd = &ffcli.Command{
 	Name:       "cp",
 	ShortUsage: "tailscale file cp <files...> <target>:",
-	ShortHelp:  "Copy file(s) to a host",
+	ShortHelp:  "复制文件到主机",
 	Exec:       runCp,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("cp")
-		fs.StringVar(&cpArgs.name, "name", "", "alternate filename to use, especially useful when <file> is \"-\" (stdin)")
-		fs.BoolVar(&cpArgs.verbose, "verbose", false, "verbose output")
-		fs.BoolVar(&cpArgs.targets, "targets", false, "list possible file cp targets")
-		fs.DurationVar(&cpArgs.updateInterval, "update-interval", 250*time.Millisecond, "how often to repaint the progress line; zero or negative disables progress display entirely")
+		fs.StringVar(&cpArgs.name, "name", "", "使用的替代文件名，当 <file> 为 \"-\"（标准输入）时尤其有用")
+		fs.BoolVar(&cpArgs.verbose, "verbose", false, "详细输出")
+		fs.BoolVar(&cpArgs.targets, "targets", false, "列出可作为文件 cp 目标的主机")
+		fs.DurationVar(&cpArgs.updateInterval, "update-interval", 250*time.Millisecond, "重绘进度行的频率；为 0 或负数则完全不显示进度")
 		return fs
 	})(),
 }
@@ -96,12 +96,12 @@ func runCp(ctx context.Context, args []string) error {
 		return runCpTargets(ctx, args)
 	}
 	if len(args) < 2 {
-		return errors.New("usage: tailscale file cp <files...> <target>:")
+		return errors.New("用法：tailscale file cp <文件...> <目标>:")
 	}
 	files, target := args[:len(args)-1], args[len(args)-1]
 	target, ok := strings.CutSuffix(target, ":")
 	if !ok {
-		return fmt.Errorf("final argument to 'tailscale file cp' must end in colon")
+		return fmt.Errorf("'tailscale file cp' 的最后一个参数必须以冒号结尾")
 	}
 	hadBrackets := false
 	if strings.HasPrefix(target, "[") && strings.HasSuffix(target, "]") {
@@ -109,9 +109,9 @@ func runCp(ctx context.Context, args []string) error {
 		target = strings.TrimSuffix(strings.TrimPrefix(target, "["), "]")
 	}
 	if ip, err := netip.ParseAddr(target); err == nil && ip.Is6() && !hadBrackets {
-		return fmt.Errorf("an IPv6 literal must be written as [%s]", ip)
+		return fmt.Errorf("IPv6 字面量必须写成 [%s]", ip)
 	} else if hadBrackets && (err != nil || !ip.Is6()) {
-		return errors.New("unexpected brackets around target")
+		return errors.New("目标两侧出现了意外的方括号")
 	}
 	ip, _, err := tailscaleIPFromArg(ctx, target)
 	if err != nil {
@@ -120,15 +120,15 @@ func runCp(ctx context.Context, args []string) error {
 
 	stableID, isOffline, err := getTargetStableID(ctx, ip)
 	if err != nil {
-		return fmt.Errorf("can't send to %s: %v", target, err)
+		return fmt.Errorf("无法发送到 %s：%v", target, err)
 	}
 
 	if len(files) > 1 {
 		if cpArgs.name != "" {
-			return errors.New("can't use --name= with multiple files")
+			return errors.New("不能与多个文件同时使用 --name=")
 		}
 		if slices.Contains(files, "-") {
-			return errors.New("can't use '-' as STDIN file when providing filename arguments")
+			return errors.New("在提供文件名参数时不能将 '-' 用作标准输入文件")
 		}
 	}
 
@@ -192,7 +192,7 @@ func runCp(ctx context.Context, args []string) error {
 			f, err := os.Open(fileArg)
 			if err != nil {
 				if version.IsSandboxedMacOS() {
-					return errors.New("the GUI version of Tailscale on macOS runs in a macOS sandbox that can't read files")
+					return errors.New("macOS 上的 Tailscale GUI 版本运行在 macOS 沙盒中，无法读取文件")
 				}
 				return err
 			}
@@ -202,7 +202,7 @@ func runCp(ctx context.Context, args []string) error {
 				return err
 			}
 			if fi.IsDir() {
-				return errors.New("directories not supported")
+				return errors.New("不支持目录")
 			}
 			contentLength = fi.Size()
 			fileContents = &countingReader{Reader: io.LimitReader(f, contentLength)}
@@ -216,7 +216,7 @@ func runCp(ctx context.Context, args []string) error {
 		}
 
 		if cpArgs.verbose {
-			log.Printf("sending %q to %v/%v/%v ...", name, target, ip, stableID)
+			log.Printf("正在发送 %q 到 %v/%v/%v ...", name, target, ip, stableID)
 		}
 
 		// Register this file with the watcher and, for the first file only,
@@ -233,9 +233,9 @@ func runCp(ctx context.Context, args []string) error {
 				// next progress redraw lands on a fresh line below.
 				const vtRestartLine = "\r\x1b[K"
 				if isOffline {
-					fmt.Fprintf(Stderr, "%s# warning: %s is reportedly offline; trying anyway\n", vtRestartLine, target)
+					fmt.Fprintf(Stderr, "%s# 警告：%s 据报处于离线状态；仍尝试发送\n", vtRestartLine, target)
 				} else {
-					fmt.Fprintf(Stderr, "%s# warning: %s is not replying; trying anyway\n", vtRestartLine, target)
+					fmt.Fprintf(Stderr, "%s# 警告：%s 没有响应；仍尝试发送\n", vtRestartLine, target)
 				}
 			})
 		}
@@ -274,7 +274,7 @@ func runCp(ctx context.Context, args []string) error {
 			return err
 		}
 		if cpArgs.verbose {
-			log.Printf("sent %q", name)
+			log.Printf("已发送 %q", name)
 		}
 	}
 	return nil
@@ -446,15 +446,15 @@ func getTargetStableID(ctx context.Context, ipStr string) (id tailcfg.StableNode
 	st, err := localClient.Status(ctx)
 	if err != nil {
 		// This likely means tailscaled is unreachable or returned an error on /localapi/v0/status.
-		return "", false, fmt.Errorf("failed to get local status: %w", err)
+		return "", false, fmt.Errorf("获取本地状态失败：%w", err)
 	}
 	if st == nil {
 		// Handle the case if the daemon returns nil with no error.
-		return "", false, errors.New("no status available")
+		return "", false, errors.New("没有可用的状态")
 	}
 	if st.Self == nil {
 		// We have a status structure, but it doesn’t include Self info. Probably not connected.
-		return "", false, errors.New("local node is not configured or missing Self information")
+		return "", false, errors.New("本地节点未配置或缺少自身信息")
 	}
 
 	// Find the PeerStatus that corresponds to ip.
@@ -472,9 +472,9 @@ peerLoop:
 	// If we didn’t find a matching peer at all:
 	if foundPeer == nil {
 		if !tsaddr.IsTailscaleIP(ip) {
-			return "", false, fmt.Errorf("unknown target; %v is not a Tailscale IP address", ip)
+			return "", false, fmt.Errorf("未知目标；%v 不是 Tailscale IP 地址", ip)
 		}
-		return "", false, errors.New("unknown target; not in your Tailnet")
+		return "", false, errors.New("未知目标；不在你的 Tailnet 中")
 	}
 
 	// We found a peer. Decide whether we can send files to it:
@@ -485,13 +485,13 @@ peerLoop:
 		return foundPeer.ID, isOffline, nil
 
 	case ipnstate.TaildropTargetNoNetmapAvailable:
-		return "", isOffline, errors.New("cannot send files: no netmap available on this node")
+		return "", isOffline, errors.New("无法发送文件：此节点上没有可用的 netmap")
 
 	case ipnstate.TaildropTargetIpnStateNotRunning:
-		return "", isOffline, errors.New("cannot send files: local Tailscale is not connected to the tailnet")
+		return "", isOffline, errors.New("无法发送文件：本地 Tailscale 未连接到 tailnet")
 
 	case ipnstate.TaildropTargetMissingCap:
-		return "", isOffline, errors.New("cannot send files: missing required Taildrop capability")
+		return "", isOffline, errors.New("无法发送文件：缺少所需的 Taildrop 能力")
 
 	case ipnstate.TaildropTargetOffline:
 		// Don't gate on the server-reported Online bit (which lags reality
@@ -500,21 +500,21 @@ peerLoop:
 		return foundPeer.ID, isOffline, nil
 
 	case ipnstate.TaildropTargetNoPeerInfo:
-		return "", isOffline, errors.New("cannot send files: invalid or unrecognized peer")
+		return "", isOffline, errors.New("无法发送文件：无效或无法识别的对等节点")
 
 	case ipnstate.TaildropTargetUnsupportedOS:
-		return "", isOffline, errors.New("cannot send files: target's OS does not support Taildrop")
+		return "", isOffline, errors.New("无法发送文件：目标的操作系统不支持 Taildrop")
 
 	case ipnstate.TaildropTargetNoPeerAPI:
-		return "", isOffline, errors.New("cannot send files: target is not advertising a file sharing API")
+		return "", isOffline, errors.New("无法发送文件：目标未通告文件共享 API")
 
 	case ipnstate.TaildropTargetOwnedByOtherUser:
-		return "", isOffline, errors.New("cannot send files: peer is owned by a different user")
+		return "", isOffline, errors.New("无法发送文件：该对等节点属于其他用户")
 
 	case ipnstate.TaildropTargetUnknown:
 		fallthrough
 	default:
-		return "", isOffline, fmt.Errorf("cannot send files: unknown or indeterminate reason")
+		return "", isOffline, fmt.Errorf("无法发送文件：原因未知或无法确定")
 	}
 }
 
@@ -559,7 +559,7 @@ func (r *slowReader) Read(p []byte) (n int, err error) {
 
 func runCpTargets(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return errors.New("invalid arguments with --targets")
+		return errors.New("使用 --targets 时参数无效")
 	}
 	fts, err := localClient.FileTargets(ctx)
 	if err != nil {
@@ -570,14 +570,14 @@ func runCpTargets(ctx context.Context, args []string) error {
 		var detail string
 		if n.Online != nil {
 			if !*n.Online {
-				detail = "offline"
+				detail = "离线"
 			}
 		} else {
-			detail = "unknown-status"
+			detail = "状态未知"
 		}
 		if detail != "" && n.LastSeen != nil {
 			d := time.Since(*n.LastSeen)
-			detail += fmt.Sprintf("; last seen %v ago", d.Round(time.Minute))
+			detail += fmt.Sprintf("；%v 前在线", d.Round(time.Minute))
 		}
 		if detail != "" {
 			detail = "\t" + detail
@@ -605,7 +605,7 @@ func (v *onConflict) Set(s string) error {
 	}
 	*v = onConflict(strings.ToLower(s))
 	if *v != skipOnExist && *v != overwriteExisting && *v != createNumberedFiles {
-		return fmt.Errorf("%q is not one of (skip|overwrite|rename)", s)
+		return fmt.Errorf("%q 不是 (skip|overwrite|rename) 之一", s)
 	}
 	return nil
 }
@@ -613,17 +613,17 @@ func (v *onConflict) Set(s string) error {
 var fileGetCmd = &ffcli.Command{
 	Name:       "get",
 	ShortUsage: "tailscale file get [--wait] [--verbose] [--conflict=(skip|overwrite|rename)] <target-directory>",
-	ShortHelp:  "Move files out of the Tailscale file inbox",
+	ShortHelp:  "将文件移出 Tailscale 文件收件箱",
 	Exec:       runFileGet,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("get")
-		fs.BoolVar(&fileGetArgs.wait, "wait", false, "wait for a file to arrive if inbox is empty")
-		fs.BoolVar(&fileGetArgs.loop, "loop", false, "run get in a loop, receiving files as they come in")
-		fs.BoolVar(&fileGetArgs.verbose, "verbose", false, "verbose output")
-		fs.Var(&fileGetArgs.conflict, "conflict", "`behavior`"+` when a conflicting (same-named) file already exists in the target directory.
-	skip:       skip conflicting files: leave them in the taildrop inbox and print an error. get any non-conflicting files
-	overwrite:  overwrite existing file
-	rename:     write to a new number-suffixed filename`)
+		fs.BoolVar(&fileGetArgs.wait, "wait", false, "若收件箱为空，则等待文件到达")
+		fs.BoolVar(&fileGetArgs.loop, "loop", false, "以循环方式运行，文件到达时持续接收")
+		fs.BoolVar(&fileGetArgs.verbose, "verbose", false, "详细输出")
+		fs.Var(&fileGetArgs.conflict, "conflict", "`行为`"+` 当目标目录中已存在同名（冲突）文件时采取的动作。
+	skip:       跳过冲突文件：将其留在 taildrop 收件箱并打印错误。接收所有不冲突的文件
+	overwrite:  覆盖已存在的文件
+	rename:     写入一个新的带编号后缀的文件名`)
 		ffcomplete.Flag(fs, "conflict", ffcomplete.Fixed("skip", "overwrite", "rename"))
 		return fs
 	})(),
@@ -653,21 +653,21 @@ func openFileOrSubstitute(dir, base string, action onConflict) (*os.File, error)
 	switch action {
 	default:
 		// This should not happen.
-		return nil, fmt.Errorf("file issue. how to resolve this conflict? no one knows.")
+		return nil, fmt.Errorf("文件问题：如何解决此冲突？无人知晓。")
 	case skipOnExist:
 		if _, statErr := os.Stat(targetFile); statErr == nil {
 			// we can stat a file at that path: so it already exists.
-			return nil, fmt.Errorf("refusing to overwrite file: %w", err)
+			return nil, fmt.Errorf("拒绝覆盖文件：%w", err)
 		}
-		return nil, fmt.Errorf("failed to write; %w", err)
+		return nil, fmt.Errorf("写入失败；%w", err)
 	case overwriteExisting:
 		// remove the target file and create it anew so we don't fall for an
 		// attacker who symlinks a known target name to a file he wants changed.
 		if err = os.Remove(targetFile); err != nil {
-			return nil, fmt.Errorf("unable to remove target file: %w", err)
+			return nil, fmt.Errorf("无法移除目标文件：%w", err)
 		}
 		if f, err = os.OpenFile(targetFile, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0644); err != nil {
-			return nil, fmt.Errorf("unable to overwrite: %w", err)
+			return nil, fmt.Errorf("无法覆盖：%w", err)
 		}
 		return f, nil
 	case createNumberedFiles:
@@ -681,14 +681,14 @@ func openFileOrSubstitute(dir, base string, action onConflict) (*os.File, error)
 				return f, nil
 			}
 		}
-		return nil, fmt.Errorf("unable to find a name for writing %v, final attempt: %w", targetFile, err)
+		return nil, fmt.Errorf("找不到可用于写入 %v 的名称，最后一次尝试：%w", targetFile, err)
 	}
 }
 
 func receiveFile(ctx context.Context, wf apitype.WaitingFile, dir string) (targetFile string, size int64, err error) {
 	rc, size, err := localClient.GetWaitingFile(ctx, wf.Name)
 	if err != nil {
-		return "", 0, fmt.Errorf("opening inbox file %q: %w", wf.Name, err)
+		return "", 0, fmt.Errorf("打开收件箱文件 %q 失败：%w", wf.Name, err)
 	}
 	defer rc.Close()
 	f, err := openFileOrSubstitute(dir, wf.Name, fileGetArgs.conflict)
@@ -697,12 +697,12 @@ func receiveFile(ctx context.Context, wf apitype.WaitingFile, dir string) (targe
 	}
 	// Apply quarantine attribute before copying
 	if err := quarantine.SetOnFile(f); err != nil {
-		return "", 0, fmt.Errorf("failed to apply quarantine attribute to file %v: %v", f.Name(), err)
+		return "", 0, fmt.Errorf("对文件 %v 应用隔离属性失败：%v", f.Name(), err)
 	}
 	_, err = io.Copy(f, rc)
 	if err != nil {
 		f.Close()
-		return "", 0, fmt.Errorf("failed to write %v: %v", f.Name(), err)
+		return "", 0, fmt.Errorf("写入 %v 失败：%v", f.Name(), err)
 	}
 	return f.Name(), size, f.Close()
 }
@@ -714,14 +714,14 @@ func runFileGetOneBatch(ctx context.Context, dir string) []error {
 	for len(errs) == 0 {
 		wfs, err = localClient.WaitingFiles(ctx)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("getting WaitingFiles: %w", err))
+			errs = append(errs, fmt.Errorf("获取等待中的文件出错：%w", err))
 			break
 		}
 		if len(wfs) != 0 || !(fileGetArgs.wait || fileGetArgs.loop) {
 			break
 		}
 		if fileGetArgs.verbose {
-			printf("waiting for file...")
+			printf("正在等待文件...")
 		}
 		if err := waitForFile(ctx); err != nil {
 			errs = append(errs, err)
@@ -733,7 +733,7 @@ func runFileGetOneBatch(ctx context.Context, dir string) []error {
 		if len(errs) > 100 {
 			// Likely, everything is broken.
 			// Don't try to receive any more files in this batch.
-			errs = append(errs, fmt.Errorf("too many errors in runFileGetOneBatch(). %d files unexamined", len(wfs)-i))
+			errs = append(errs, fmt.Errorf("runFileGetOneBatch() 中错误过多。有 %d 个文件未处理", len(wfs)-i))
 			break
 		}
 		writtenFile, size, err := receiveFile(ctx, wf, dir)
@@ -742,26 +742,26 @@ func runFileGetOneBatch(ctx context.Context, dir string) []error {
 			continue
 		}
 		if fileGetArgs.verbose {
-			printf("wrote %v as %v (%d bytes)\n", wf.Name, writtenFile, size)
+			printf("已将 %v 写入为 %v（%d 字节）\n", wf.Name, writtenFile, size)
 		}
 		if err = localClient.DeleteWaitingFile(ctx, wf.Name); err != nil {
-			errs = append(errs, fmt.Errorf("deleting %q from inbox: %v", wf.Name, err))
+			errs = append(errs, fmt.Errorf("从收件箱删除 %q 出错：%v", wf.Name, err))
 			continue
 		}
 		deleted++
 	}
 	if deleted == 0 && len(wfs) > 0 {
 		// persistently stuck files are basically an error
-		errs = append(errs, fmt.Errorf("moved %d/%d files", deleted, len(wfs)))
+		errs = append(errs, fmt.Errorf("已移动 %d/%d 个文件", deleted, len(wfs)))
 	} else if fileGetArgs.verbose {
-		printf("moved %d/%d files\n", deleted, len(wfs))
+		printf("已移动 %d/%d 个文件\n", deleted, len(wfs))
 	}
 	return errs
 }
 
 func runFileGet(ctx context.Context, args []string) error {
 	if len(args) != 1 {
-		return errors.New("usage: tailscale file get <target-directory>")
+		return errors.New("用法：tailscale file get <目标目录>")
 	}
 	log.SetFlags(0)
 
@@ -771,7 +771,7 @@ func runFileGet(ctx context.Context, args []string) error {
 	}
 
 	if fi, err := os.Stat(dir); err != nil || !fi.IsDir() {
-		return fmt.Errorf("%q is not a directory", dir)
+		return fmt.Errorf("%q 不是目录", dir)
 	}
 	if fileGetArgs.loop {
 		for {
@@ -806,24 +806,24 @@ func runFileGet(ctx context.Context, args []string) error {
 
 func wipeInbox(ctx context.Context) error {
 	if fileGetArgs.wait {
-		return errors.New("can't use --wait with /dev/null target")
+		return errors.New("不能对 /dev/null 目标使用 --wait")
 	}
 	wfs, err := localClient.WaitingFiles(ctx)
 	if err != nil {
-		return fmt.Errorf("getting WaitingFiles: %w", err)
+		return fmt.Errorf("获取等待中的文件出错：%w", err)
 	}
 	deleted := 0
 	for _, wf := range wfs {
 		if fileGetArgs.verbose {
-			log.Printf("deleting %v ...", wf.Name)
+			log.Printf("正在删除 %v ...", wf.Name)
 		}
 		if err := localClient.DeleteWaitingFile(ctx, wf.Name); err != nil {
-			return fmt.Errorf("deleting %q: %v", wf.Name, err)
+			return fmt.Errorf("删除 %q 出错：%v", wf.Name, err)
 		}
 		deleted++
 	}
 	if fileGetArgs.verbose {
-		log.Printf("deleted %d files", deleted)
+		log.Printf("已删除 %d 个文件", deleted)
 	}
 	return nil
 }

@@ -51,13 +51,12 @@ func synologyConfigureCmd() *ffcli.Command {
 		Name:       "synology",
 		Exec:       runConfigureSynology,
 		ShortUsage: "tailscale configure synology",
-		ShortHelp:  "Configure Synology to enable outbound connections",
+		ShortHelp:  "配置 Synology 以启用出站连接",
 		LongHelp: strings.TrimSpace(`
-This command is intended to run at boot as root on a Synology device to
-create the /dev/net/tun device and give the tailscaled binary permission
-to use it.
+此命令用于在 Synology 设备上以 root 身份在启动时运行，以创建设备
+/dev/net/tun 并赋予 tailscaled 二进制文件使用它的权限。
 
-See: https://tailscale.com/s/synology-outbound
+参见：https://tailscale.com/s/synology-outbound
 `),
 		FlagSet: (func() *flag.FlagSet {
 			fs := newFlagSet("synology")
@@ -68,26 +67,26 @@ See: https://tailscale.com/s/synology-outbound
 
 func runConfigureSynology(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return errors.New("unknown arguments")
+		return errors.New("未知参数")
 	}
 	if runtime.GOOS != "linux" || distro.Get() != distro.Synology {
-		return errors.New("only implemented on Synology")
+		return errors.New("仅在 Synology 上实现")
 	}
 	if uid := os.Getuid(); uid != 0 {
-		return fmt.Errorf("must be run as root, not %q (%v)", os.Getenv("USER"), uid)
+		return fmt.Errorf("必须以 root 身份运行，而非 %q（%v）", os.Getenv("USER"), uid)
 	}
 	hi := hostinfo.New()
 	isDSM6 := strings.HasPrefix(hi.DistroVersion, "6.")
 	isDSM7 := strings.HasPrefix(hi.DistroVersion, "7.")
 	if !isDSM6 && !isDSM7 {
-		return fmt.Errorf("unsupported DSM version %q", hi.DistroVersion)
+		return fmt.Errorf("不支持的 DSM 版本 %q", hi.DistroVersion)
 	}
 	if _, err := os.Stat("/dev/net/tun"); os.IsNotExist(err) {
 		if err := os.MkdirAll("/dev/net", 0755); err != nil {
-			return fmt.Errorf("creating /dev/net: %v", err)
+			return fmt.Errorf("创建 /dev/net：%v", err)
 		}
 		if out, err := exec.Command("/bin/mknod", "/dev/net/tun", "c", "10", "200").CombinedOutput(); err != nil {
-			return fmt.Errorf("creating /dev/net/tun: %v, %s", err, out)
+			return fmt.Errorf("创建 /dev/net/tun：%v, %s", err, out)
 		}
 	}
 	if err := os.Chmod("/dev/net", 0755); err != nil {
@@ -97,20 +96,20 @@ func runConfigureSynology(ctx context.Context, args []string) error {
 		return err
 	}
 	if isDSM6 {
-		printf("/dev/net/tun exists and has permissions 0666. Skipping setcap on DSM6.\n")
+		printf("/dev/net/tun 已存在且权限为 0666。在 DSM6 上跳过 setcap。\n")
 		return nil
 	}
 
 	const daemonBin = "/var/packages/Tailscale/target/bin/tailscaled"
 	if _, err := os.Stat(daemonBin); err != nil {
 		if os.IsNotExist(err) {
-			return fmt.Errorf("tailscaled binary not found at %s. Is the Tailscale *.spk package installed?", daemonBin)
+			return fmt.Errorf("在 %s 未找到 tailscaled 二进制文件。是否已安装 Tailscale *.spk 软件包？", daemonBin)
 		}
 		return err
 	}
 	if out, err := exec.Command("/bin/setcap", "cap_net_admin,cap_net_raw+eip", daemonBin).CombinedOutput(); err != nil {
-		return fmt.Errorf("setcap: %v, %s", err, out)
+		return fmt.Errorf("setcap：%v, %s", err, out)
 	}
-	printf("Done. To restart Tailscale to use the new permissions, run:\n\n  sudo synosystemctl restart pkgctl-Tailscale.service\n\n")
+	printf("完成。要重启 Tailscale 以使用新权限，请运行：\n\n  sudo synosystemctl restart pkgctl-Tailscale.service\n\n")
 	return nil
 }

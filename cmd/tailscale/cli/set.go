@@ -32,12 +32,12 @@ import (
 var setCmd = &ffcli.Command{
 	Name:       "set",
 	ShortUsage: "tailscale set [flags]",
-	ShortHelp:  "Change specified preferences",
-	LongHelp: `"tailscale set" allows changing specific preferences.
+	ShortHelp:  "更改指定的偏好设置",
+	LongHelp: `"tailscale set" 允许更改特定的偏好设置。
 
-Unlike "tailscale up", this command does not require the complete set of desired settings.
+与 "tailscale up" 不同，此命令不要求提供完整的期望设置集。
 
-Only settings explicitly mentioned will be set. There are no default values.`,
+只有显式指定的设置会被修改。没有默认值。`,
 	FlagSet:   setFlagSet,
 	Exec:      runSet,
 	UsageFunc: usageFuncNoDefaultValues,
@@ -74,25 +74,25 @@ type setArgsT struct {
 func newSetFlagSet(goos string, setArgs *setArgsT) *flag.FlagSet {
 	setf := newFlagSet("set")
 
-	setf.StringVar(&setArgs.profileName, "nickname", "", "nickname for the current account")
-	setf.BoolVar(&setArgs.acceptRoutes, "accept-routes", acceptRouteDefault(goos), "accept routes advertised by other Tailscale nodes")
-	setf.BoolVar(&setArgs.acceptDNS, "accept-dns", true, "accept DNS configuration from the admin panel")
-	setf.StringVar(&setArgs.exitNodeIP, "exit-node", "", "Tailscale exit node (IP, base name, or auto:any) for internet traffic, or empty string to not use an exit node")
-	setf.BoolVar(&setArgs.exitNodeAllowLANAccess, "exit-node-allow-lan-access", false, "allow direct access to the local network when routing traffic via an exit node")
-	setf.BoolVar(&setArgs.shieldsUp, "shields-up", false, "don't allow incoming connections")
-	setf.BoolVar(&setArgs.runSSH, "ssh", false, "run an SSH server, permitting access per tailnet admin's declared policy")
-	setf.StringVar(&setArgs.hostname, "hostname", "", "hostname to use instead of the one provided by the OS")
-	setf.StringVar(&setArgs.advertiseRoutes, "advertise-routes", "", "routes to advertise to other nodes (comma-separated, e.g. \"10.0.0.0/8,192.168.0.0/24\") or empty string to not advertise routes")
-	setf.BoolVar(&setArgs.advertiseDefaultRoute, "advertise-exit-node", false, "offer to be an exit node for internet traffic for the tailnet")
-	setf.BoolVar(&setArgs.advertiseConnector, "advertise-connector", false, "offer to be an app connector for domain specific internet traffic for the tailnet")
-	setf.BoolVar(&setArgs.updateCheck, "update-check", true, "notify about available Tailscale updates")
-	setf.BoolVar(&setArgs.updateApply, "auto-update", false, "automatically update to the latest available version")
-	setf.BoolVar(&setArgs.reportPosture, "report-posture", false, "allow management plane to gather device posture information")
-	setf.BoolVar(&setArgs.runWebClient, "webclient", false, "expose the web interface for managing this node over Tailscale at port 5252")
-	setf.BoolVar(&setArgs.remoteConfig, "remote-config", false, hidden+"delegate FULL remote control of this node's prefs and LocalAPI to the tailnet admin, bypassing Tailscale's per-feature double opt-in; only use when the tailnet admin owns or is fully trusted with this machine")
-	setf.BoolVar(&setArgs.sync, "sync", false, hidden+"actively sync configuration from the control plane (set to false only for network failure testing)")
-	setf.StringVar(&setArgs.relayServerPort, "relay-server-port", "", "UDP port number (0 will pick a random unused port) for the relay server to bind to, on all interfaces, or empty string to disable relay server functionality")
-	setf.StringVar(&setArgs.relayServerStaticEndpoints, "relay-server-static-endpoints", "", "static IP:port endpoints to advertise as candidates for relay connections (comma-separated, e.g. \"[2001:db8::1]:40000,192.0.2.1:40000\") or empty string to not advertise any static endpoints")
+	setf.StringVar(&setArgs.profileName, "nickname", "", "当前账户的昵称")
+	setf.BoolVar(&setArgs.acceptRoutes, "accept-routes", acceptRouteDefault(goos), "接受其他 Tailscale 节点广播的路由")
+	setf.BoolVar(&setArgs.acceptDNS, "accept-dns", true, "接受来自管理后台的 DNS 配置")
+	setf.StringVar(&setArgs.exitNodeIP, "exit-node", "", "用于互联网流量的 Tailscale 出口节点（IP、基础名称或 auto:any），或留空表示不使用出口节点")
+	setf.BoolVar(&setArgs.exitNodeAllowLANAccess, "exit-node-allow-lan-access", false, "经由出口节点路由流量时，允许直接访问本地网络")
+	setf.BoolVar(&setArgs.shieldsUp, "shields-up", false, "不允许入站连接")
+	setf.BoolVar(&setArgs.runSSH, "ssh", false, "运行一个 SSH 服务器，按 tailnet 管理员声明的策略允许访问")
+	setf.StringVar(&setArgs.hostname, "hostname", "", "用于替代操作系统提供的主机名")
+	setf.StringVar(&setArgs.advertiseRoutes, "advertise-routes", "", "广播给其他节点的路由（逗号分隔，例如 \"10.0.0.0/8,192.168.0.0/24\"），或留空表示不广播路由")
+	setf.BoolVar(&setArgs.advertiseDefaultRoute, "advertise-exit-node", false, "提供作为 tailnet 互联网流量的出口节点")
+	setf.BoolVar(&setArgs.advertiseConnector, "advertise-connector", false, "提供作为针对特定域名互联网流量的应用连接器")
+	setf.BoolVar(&setArgs.updateCheck, "update-check", true, "在有可用的 Tailscale 更新时通知")
+	setf.BoolVar(&setArgs.updateApply, "auto-update", false, "自动更新到最新的可用版本")
+	setf.BoolVar(&setArgs.reportPosture, "report-posture", false, "允许管理平面收集设备态势信息")
+	setf.BoolVar(&setArgs.runWebClient, "webclient", false, "在 5252 端口暴露用于通过 Tailscale 管理此节点的 Web 界面")
+	setf.BoolVar(&setArgs.remoteConfig, "remote-config", false, hidden+"将此节点的偏好设置与 LocalAPI 的完全远程控制权委托给 tailnet 管理员，绕过 Tailscale 逐项双重确认；仅当 tailnet 管理员拥有此机器或完全可信时使用")
+	setf.BoolVar(&setArgs.sync, "sync", false, hidden+"主动从控制平面同步配置（仅在网络故障测试时设为 false）")
+	setf.StringVar(&setArgs.relayServerPort, "relay-server-port", "", "中继服务器绑定的 UDP 端口号（在所有接口上，0 将随机选取一个未使用的端口），或留空以禁用中继服务器功能")
+	setf.StringVar(&setArgs.relayServerStaticEndpoints, "relay-server-static-endpoints", "", "广播为中介连接候选的静态 IP:端口 端点（逗号分隔，例如 \"[2001:db8::1]:40000,192.0.2.1:40000\"），或留空表示不广播任何静态端点")
 
 	ffcomplete.Flag(setf, "exit-node", func(args []string) ([]string, ffcomplete.ShellCompDirective, error) {
 		st, err := localClient.Status(context.Background())
@@ -110,15 +110,15 @@ func newSetFlagSet(goos string, setArgs *setArgsT) *flag.FlagSet {
 	})
 
 	if safesocket.GOOSUsesPeerCreds(goos) {
-		setf.StringVar(&setArgs.opUser, "operator", "", "Unix username to allow to operate on tailscaled without sudo")
+		setf.StringVar(&setArgs.opUser, "operator", "", "允许在无 sudo 情况下操作 tailscaled 的 Unix 用户名")
 	}
 	switch goos {
 	case "linux":
-		setf.BoolVar(&setArgs.snat, "snat-subnet-routes", true, "source NAT traffic to local routes advertised with --advertise-routes")
-		setf.BoolVar(&setArgs.statefulFiltering, "stateful-filtering", false, "apply stateful filtering to forwarded packets (subnet routers, exit nodes, and so on)")
-		setf.StringVar(&setArgs.netfilterMode, "netfilter-mode", defaultNetfilterMode(), "netfilter mode (one of on, nodivert, off)")
+		setf.BoolVar(&setArgs.snat, "snat-subnet-routes", true, "对使用 --advertise-routes 广播的本地路由进行源地址 NAT")
+		setf.BoolVar(&setArgs.statefulFiltering, "stateful-filtering", false, "对转发的包应用有状态过滤（子网路由器、出口节点等）")
+		setf.StringVar(&setArgs.netfilterMode, "netfilter-mode", defaultNetfilterMode(), "netfilter 模式（on、nodivert、off 之一）")
 	case "windows":
-		setf.BoolVar(&setArgs.forceDaemon, "unattended", false, "run in \"Unattended Mode\" where Tailscale keeps running even after the current GUI user logs out (Windows-only)")
+		setf.BoolVar(&setArgs.forceDaemon, "unattended", false, "以“无人值守模式”运行，即使当前 GUI 用户注销，Tailscale 仍保持运行（仅限 Windows）")
 	}
 
 	registerAcceptRiskFlag(setf, &setArgs.acceptedRisks)
@@ -132,7 +132,7 @@ var (
 
 func runSet(ctx context.Context, args []string) (retErr error) {
 	if len(args) > 0 {
-		fatalf("too many non-flag arguments: %q", args)
+		fatalf("过多的非标志参数：%q", args)
 	}
 
 	st, err := localClient.Status(ctx)
@@ -187,7 +187,7 @@ func runSet(ctx context.Context, args []string) (retErr error) {
 			maskedPrefs.AutoExitNodeSet = true
 		} else if err := maskedPrefs.Prefs.SetExitNodeIP(setArgs.exitNodeIP, st); err != nil {
 			if _, ok := errors.AsType[ipn.ExitNodeLocalIPError](err); ok {
-				return fmt.Errorf("%w; did you mean --advertise-exit-node?", err)
+				return fmt.Errorf("%w；您是否想使用 --advertise-exit-node？", err)
 			}
 			return err
 		}
@@ -239,14 +239,14 @@ func runSet(ctx context.Context, args []string) (retErr error) {
 		}
 		out, err := exec.Command("defaults", "write", "io.tailscale.ipn.macsys", "SUAutomaticallyUpdate", apply).CombinedOutput()
 		if err != nil {
-			return fmt.Errorf("failed to enable automatic updates: %v, %q", err, out)
+			return fmt.Errorf("启用自动更新失败：%v，%q", err, out)
 		}
 	}
 
 	if setArgs.relayServerPort != "" {
 		uport, err := strconv.ParseUint(setArgs.relayServerPort, 10, 16)
 		if err != nil {
-			return fmt.Errorf("failed to set relay server port: %v", err)
+			return fmt.Errorf("设置中继服务器端口失败：%v", err)
 		}
 		maskedPrefs.Prefs.RelayServerPort = new(uint16(uport))
 	}
@@ -257,7 +257,7 @@ func runSet(ctx context.Context, args []string) (retErr error) {
 		for s := range endpointsSplit {
 			ap, err := netip.ParseAddrPort(s)
 			if err != nil {
-				return fmt.Errorf("failed to set relay server static endpoints: %q is not a valid IP:port", s)
+				return fmt.Errorf("设置中继服务器静态端点失败：%q 不是有效的 IP:端口", s)
 			}
 			endpointsSet.Add(ap)
 		}
@@ -271,7 +271,7 @@ func runSet(ctx context.Context, args []string) (retErr error) {
 	// We want to make sure user is aware setting --snat-subnet-routes=false with --advertise-exit-node would break exitnode,
 	// but we won't prevent them from doing it since there are current dependencies on that combination. (as of 2026-03-25)
 	if checkPrefs.NoSNAT && checkPrefs.AdvertisesExitNode() {
-		warnf("--snat-subnet-routes=false is set with --advertise-exit-node; internet traffic through this exit node may not work as expected")
+		warnf("--snat-subnet-routes=false 与 --advertise-exit-node 同时设置；经此出口节点的互联网流量可能无法按预期工作")
 	}
 	if err := localClient.CheckPrefs(ctx, checkPrefs); err != nil {
 		return err
@@ -283,7 +283,7 @@ func runSet(ctx context.Context, args []string) (retErr error) {
 	}
 
 	if setArgs.runWebClient && len(st.TailscaleIPs) > 0 {
-		printf("\nWeb interface now running at %s:%d\n", st.TailscaleIPs[0], tsconst.WebListenPort)
+		printf("\nWeb 界面现已运行于 %s:%d\n", st.TailscaleIPs[0], tsconst.WebListenPort)
 	}
 
 	return nil

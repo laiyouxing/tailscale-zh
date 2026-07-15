@@ -127,7 +127,7 @@ export default function ExitNodeSelector({
                 { "opacity-70 text-white": advertising || using }
               )}
             >
-              Exit node{offline && " offline"}
+              出口节点{offline && " 离线"}
             </p>
             <div className="flex items-center">
               <p
@@ -141,7 +141,7 @@ export default function ExitNodeSelector({
                   </>
                 )}
                 {selected === runAsExitNode
-                  ? "Running as exit node"
+                  ? "作为出口节点运行中"
                   : selected.Name}
               </p>
               {!disabled && (
@@ -168,20 +168,18 @@ export default function ExitNodeSelector({
               handleSelect(noExitNode)
             }}
           >
-            Disable
+            禁用
           </button>
         )}
       </div>
       {offline && (
-        <p className="text-white p-3">
-          The selected exit node is currently offline. Your internet traffic is
-          blocked until you disable the exit node or select a different one.
+          <p className="text-white p-3">
+          所选出口节点当前处于离线状态。在禁用该出口节点或选择另一个之前，你的互联网流量将被阻断。
         </p>
       )}
       {pending && (
         <p className="text-white p-3">
-          Pending approval to run as exit node. This device won’t be usable as
-          an exit node until then.
+          正在等待批准以作为出口节点运行。在此之前，此设备将无法用作出口节点。
         </p>
       )}
     </div>
@@ -235,7 +233,7 @@ function ExitNodeSelectorInner({
         autoCorrect="off"
         autoComplete="off"
         autoCapitalize="off"
-        placeholder="Search exit nodes…"
+        placeholder="搜索出口节点…"
         value={filter}
         onChange={(e) => {
           // Jump list to top when search value changes.
@@ -275,8 +273,8 @@ function ExitNodeSelectorInner({
         ) : (
           <div className="text-center truncate text-gray-500 p-5">
             {filter
-              ? `No exit nodes matching “${filter}”`
-              : "No exit nodes available"}
+              ? `没有匹配“${filter}”的出口节点`
+              : "没有可用的出口节点"}
           </div>
         )}
       </div>
@@ -313,7 +311,7 @@ function ExitNodeSelectorItem({
         )}
         <span className="leading-snug">{node.Name}</span>
       </div>
-      {node.Online || <span className="leading-snug">Offline</span>}
+      {node.Online || <span className="leading-snug">离线</span>}
       {isSelected && <Check className="ml-1" />}
     </button>
   )

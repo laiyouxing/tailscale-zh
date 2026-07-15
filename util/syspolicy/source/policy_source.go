@@ -19,7 +19,7 @@ import (
 
 // ErrStoreClosed is an error returned when attempting to use a [Store] after it
 // has been closed.
-var ErrStoreClosed = errors.New("the policy store has been closed")
+var ErrStoreClosed = errors.New("策略存储已关闭")
 
 // Store provides methods to read system policy settings from OS-specific storage.
 // Implementations must be concurrency-safe, and may also implement

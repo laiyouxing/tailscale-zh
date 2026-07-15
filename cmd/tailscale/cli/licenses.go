@@ -13,17 +13,16 @@ import (
 var licensesCmd = &ffcli.Command{
 	Name:       "licenses",
 	ShortUsage: "tailscale licenses",
-	ShortHelp:  "Get open source license information",
-	LongHelp:   "Get open source license information",
+	ShortHelp:  "获取开源许可信息",
+	LongHelp:   "获取开源许可信息",
 	Exec:       runLicenses,
 }
 
 func runLicenses(ctx context.Context, args []string) error {
 	url := licenses.LicensesURL()
 	outln(`
-Tailscale wouldn't be possible without the contributions of thousands of open
-source developers. To see the open source packages included in Tailscale and
-their respective license information, visit:
+Tailscale 离不开成千上万开源开发者的贡献。要查看 Tailscale 所包含的开源软件包
+及其各自的许可信息，请访问：
 
     ` + url)
 	return nil

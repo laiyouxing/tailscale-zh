@@ -16,11 +16,11 @@ import (
 var systrayCmd = &ffcli.Command{
 	Name:       "systray",
 	ShortUsage: "tailscale systray",
-	ShortHelp:  "Run a systray application to manage Tailscale",
-	LongHelp:   "Run a systray application to manage Tailscale.",
+	ShortHelp:  "运行一个系统托盘应用来管理 Tailscale",
+	LongHelp:   "运行一个系统托盘应用来管理 Tailscale。",
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("systray")
-		fs.StringVar(&systrayArgs.theme, "theme", "dark", "color theme for Tailscale icon: dark, dark:nobg, light, light:nobg")
+		fs.StringVar(&systrayArgs.theme, "theme", "dark", "Tailscale 图标的配色主题：dark、dark:nobg、light、light:nobg")
 		return fs
 	})(),
 	Exec: runSystray,

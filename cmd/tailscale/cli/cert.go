@@ -35,14 +35,14 @@ func init() {
 		return &ffcli.Command{
 			Name:       "cert",
 			Exec:       runCert,
-			ShortHelp:  "Get TLS certs",
+			ShortHelp:  "获取 TLS 证书",
 			ShortUsage: "tailscale cert [flags] <domain>",
 			FlagSet: (func() *flag.FlagSet {
 				fs := newFlagSet("cert")
-				fs.StringVar(&certArgs.certFile, "cert-file", "", "output cert file or \"-\" for stdout; defaults to DOMAIN.crt if --cert-file and --key-file are both unset")
-				fs.StringVar(&certArgs.keyFile, "key-file", "", "output key file or \"-\" for stdout; defaults to DOMAIN.key if --cert-file and --key-file are both unset")
-				fs.BoolVar(&certArgs.serve, "serve-demo", false, "if true, serve on port :443 using the cert as a demo, instead of writing out the files to disk")
-				fs.DurationVar(&certArgs.minValidity, "min-validity", 0, "ensure the certificate is valid for at least this duration; the output certificate is never expired if this flag is unset or 0, but the lifetime may vary; the maximum allowed min-validity depends on the CA")
+				fs.StringVar(&certArgs.certFile, "cert-file", "", "证书输出文件，或用 \"-\" 表示输出到标准输出；若 --cert-file 与 --key-file 均未设置，则默认为 DOMAIN.crt")
+				fs.StringVar(&certArgs.keyFile, "key-file", "", "私钥输出文件，或用 \"-\" 表示输出到标准输出；若 --cert-file 与 --key-file 均未设置，则默认为 DOMAIN.key")
+				fs.BoolVar(&certArgs.serve, "serve-demo", false, "若为 true，则使用证书在 :443 端口提供演示服务，而不是将文件写入磁盘")
+				fs.DurationVar(&certArgs.minValidity, "min-validity", 0, "确保证书至少在此时间段内有效；若未设置该标志或设为 0，则输出的证书不会过期，但有效期可能会变化；允许的最大 min-validity 取决于 CA")
 				return fs
 			})(),
 		}
@@ -79,27 +79,27 @@ func runCert(ctx context.Context, args []string) error {
 		case 1:
 			s.Addr = args[0]
 		default:
-			return errors.New("too many arguments; max 1 allowed with --serve-demo (the listen address)")
+			return errors.New("参数过多；使用 --serve-demo（监听地址）时最多允许 1 个参数")
 		}
 
-		log.Printf("running TLS server on %s ...", s.Addr)
+		log.Printf("正在 %s 上运行 TLS 服务器 ...", s.Addr)
 		return s.ListenAndServeTLS("", "")
 	}
 
 	if len(args) != 1 {
 		var hint bytes.Buffer
 		if st, err := localClient.Status(ctx); err == nil {
-			if st.BackendState != ipn.Running.String() {
-				fmt.Fprintf(&hint, "\nTailscale is not running.\n")
+				if st.BackendState != ipn.Running.String() {
+				fmt.Fprintf(&hint, "\nTailscale 未运行。\n")
 			} else if len(st.CertDomains) == 0 {
-				fmt.Fprintf(&hint, "\nHTTPS cert support is not enabled/configured for your tailnet.\n")
+				fmt.Fprintf(&hint, "\n您的 tailnet 未启用/未配置 HTTPS 证书支持。\n")
 			} else if len(st.CertDomains) == 1 {
-				fmt.Fprintf(&hint, "\nFor domain, use %q.\n", st.CertDomains[0])
+				fmt.Fprintf(&hint, "\n域名请使用 %q。\n", st.CertDomains[0])
 			} else {
-				fmt.Fprintf(&hint, "\nValid domain options: %q.\n", st.CertDomains)
+				fmt.Fprintf(&hint, "\n有效的域名选项：%q。\n", st.CertDomains)
 			}
 		}
-		return fmt.Errorf("Usage: tailscale cert [flags] <domain>%s", hint.Bytes())
+		return fmt.Errorf("用法: tailscale cert [flags] <domain>%s", hint.Bytes())
 	}
 	domain := args[0]
 
@@ -134,7 +134,7 @@ func runCert(ctx context.Context, args []string) error {
 		if version.IsMacSysExt() {
 			dir = "io.tailscale.ipn.macsys"
 		}
-		printf("Warning: the macOS CLI runs in a sandbox; this binary's filesystem writes go to $HOME/Library/Containers/%s/Data\n", dir)
+		printf("警告：macOS CLI 运行在沙盒中；此二进制文件的文件系统写入会进入 $HOME/Library/Containers/%s/Data\n", dir)
 	}
 	if certArgs.certFile != "" {
 		certChanged, err := writeIfChanged(certArgs.certFile, certPEM, 0644)
@@ -144,9 +144,9 @@ func runCert(ctx context.Context, args []string) error {
 		if certArgs.certFile != "-" {
 			macWarn()
 			if certChanged {
-				printf("Wrote public cert to %v\n", certArgs.certFile)
+				printf("已将公钥证书写入 %v\n", certArgs.certFile)
 			} else {
-				printf("Public cert unchanged at %v\n", certArgs.certFile)
+				printf("公钥证书未改变，仍为 %v\n", certArgs.certFile)
 			}
 		}
 	}
@@ -166,9 +166,9 @@ func runCert(ctx context.Context, args []string) error {
 		if certArgs.keyFile != "-" {
 			macWarn()
 			if keyChanged {
-				printf("Wrote private key to %v\n", dst)
+				printf("已将私钥写入 %v\n", dst)
 			} else {
-				printf("Private key unchanged at %v\n", dst)
+				printf("私钥未改变，仍为 %v\n", dst)
 			}
 		}
 	}
@@ -245,7 +245,7 @@ func convertToPKCS12(certPEM, keyPEM []byte) ([]byte, error) {
 		certs = append(certs, cert)
 	}
 	if len(certs) == 0 {
-		return nil, errors.New("no certs")
+		return nil, errors.New("无证书")
 	}
 	// TODO(bradfitz): I'm not sure this is right yet. The goal was to make this
 	// work for https://github.com/tailscale/tailscale/issues/2928 but I'm still

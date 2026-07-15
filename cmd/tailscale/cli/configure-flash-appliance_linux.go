@@ -23,24 +23,24 @@ import (
 // removable media; Pi-on-Pi flashing has no notion of "external"; LVM
 // setups have arbitrary names).
 func discoverExternalDisks(_ context.Context) ([]diskCandidate, error) {
-	return nil, errors.New("on Linux, pass --disk=/dev/sdX (auto-discovery is macOS-only)")
+	return nil, errors.New("在 Linux 上，请传入 --disk=/dev/sdX（自动发现仅支持 macOS）")
 }
 
 // validateDiskPath rejects partition paths, the running root disk, and
 // disks with any partition currently mounted.
 func validateDiskPath(path string) error {
 	if !strings.HasPrefix(path, "/dev/") {
-		return fmt.Errorf("disk path %q must start with /dev/", path)
+		return fmt.Errorf("磁盘路径 %q 必须以 /dev/ 开头", path)
 	}
 	if isPartitionPath(path) {
-		return fmt.Errorf("disk path %q looks like a partition; pass the whole disk", path)
+		return fmt.Errorf("磁盘路径 %q 看起来像分区；请传入整盘", path)
 	}
 	fi, err := os.Stat(path)
 	if err != nil {
 		return fmt.Errorf("stat %s: %w", path, err)
 	}
 	if fi.Mode()&os.ModeDevice == 0 {
-		return fmt.Errorf("%s is not a device file", path)
+		return fmt.Errorf("%s 不是设备文件", path)
 	}
 	mounts, err := mountedSources()
 	if err != nil {
@@ -48,7 +48,7 @@ func validateDiskPath(path string) error {
 	}
 	for _, m := range mounts {
 		if m == path || strings.HasPrefix(m, path) {
-			return fmt.Errorf("%s (or one of its partitions) is currently mounted; unmount it first", path)
+			return fmt.Errorf("%s（或其某个分区）当前已挂载；请先卸载", path)
 		}
 	}
 	return nil

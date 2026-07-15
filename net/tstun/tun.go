@@ -38,10 +38,10 @@ func New(logf logger.Logf, tunName string) (tun.Device, string, error) {
 	var err error
 	if strings.HasPrefix(tunName, "tap:") {
 		if runtime.GOOS != "linux" {
-			return nil, "", errors.New("tap only works on Linux")
+			return nil, "", errors.New("tap 仅在 Linux 上可用")
 		}
 		if !CreateTAP.IsSet() { // if the ts_omit_tap tag is used
-			return nil, "", errors.New("tap is not supported in this build")
+			return nil, "", errors.New("当前构建不支持 tap")
 		}
 		f := strings.Split(tunName, ":")
 		var tapName, bridgeName string
@@ -51,7 +51,7 @@ func New(logf logger.Logf, tunName string) (tun.Device, string, error) {
 		case 3:
 			tapName, bridgeName = f[1], f[2]
 		default:
-			return nil, "", errors.New("bogus tap argument")
+			return nil, "", errors.New("无效的 tap 参数")
 		}
 		dev, err = CreateTAP.Get()(logf, tapName, bridgeName)
 	} else {

@@ -18,13 +18,13 @@ import (
 var versionCmd = &ffcli.Command{
 	Name:       "version",
 	ShortUsage: "tailscale version [flags]",
-	ShortHelp:  "Print Tailscale version",
+	ShortHelp:  "打印 Tailscale 版本",
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("version")
-		fs.BoolVar(&versionArgs.daemon, "daemon", false, "also print local node's daemon version")
-		fs.BoolVar(&versionArgs.json, "json", false, "output in JSON format")
-		fs.BoolVar(&versionArgs.upstream, "upstream", false, "fetch and print the latest upstream release version from pkgs.tailscale.com")
-		fs.StringVar(&versionArgs.track, "track", "", `which track to check for updates: "stable", "release-candidate", or "unstable" (dev); empty means same as current`)
+		fs.BoolVar(&versionArgs.daemon, "daemon", false, "同时打印本地节点的守护进程版本")
+		fs.BoolVar(&versionArgs.json, "json", false, "以 JSON 格式输出")
+		fs.BoolVar(&versionArgs.upstream, "upstream", false, "从 pkgs.tailscale.com 获取并打印最新的上游发布版本")
+		fs.StringVar(&versionArgs.track, "track", "", `要检查更新的轨道："stable"、"release-candidate" 或 "unstable"（开发版）；留空表示与当前相同`)
 		return fs
 	})(),
 	Exec: runVersion,
@@ -41,7 +41,7 @@ var clientupdateLatestTailscaleVersion feature.Hook[func(string) (string, error)
 
 func runVersion(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return fmt.Errorf("too many non-flag arguments: %q", args)
+		return fmt.Errorf("过多的非标志参数：%q", args)
 	}
 	var err error
 	var st *ipnstate.Status
@@ -57,7 +57,7 @@ func runVersion(ctx context.Context, args []string) error {
 	if versionArgs.upstream {
 		f, ok := clientupdateLatestTailscaleVersion.GetOk()
 		if !ok {
-			return fmt.Errorf("fetching latest version not supported in this build")
+			return fmt.Errorf("当前构建不支持获取最新版本")
 		}
 		upstreamVer, err = f(versionArgs.track)
 		if err != nil {
@@ -85,14 +85,14 @@ func runVersion(ctx context.Context, args []string) error {
 	if st == nil {
 		outln(version.String())
 		if versionArgs.upstream {
-			printf("  upstream: %s\n", upstreamVer)
+			printf("  上游版本：%s\n", upstreamVer)
 		}
 		return nil
 	}
-	printf("Client: %s\n", version.String())
-	printf("Daemon: %s\n", st.Version)
+	printf("客户端：%s\n", version.String())
+	printf("守护进程：%s\n", st.Version)
 	if versionArgs.upstream {
-		printf("Upstream: %s\n", upstreamVer)
+		printf("上游版本：%s\n", upstreamVer)
 	}
 	return nil
 }

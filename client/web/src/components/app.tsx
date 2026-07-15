@@ -82,7 +82,7 @@ function WebClient({
           </Route>
           <Route>
             <Card className="mt-8">
-              <EmptyState description="Page not found" />
+              <EmptyState description="页面未找到" />
             </Card>
           </Route>
         </Switch>
@@ -115,7 +115,7 @@ function FeatureRoute({
           <EmptyState
             description={`${featureDescription(
               feature
-            )} not available on this device.`}
+            )}在此设备上不可用。`}
           />
         </Card>
       ) : (
@@ -154,7 +154,7 @@ function Header({
       </div>
       {loc !== "/" && loc !== "/update" && (
         <Link to="/" className="link font-medium block mb-2">
-          &larr; Back to {node.DeviceName}
+          &larr; 返回 {node.DeviceName}
         </Link>
       )}
     </>

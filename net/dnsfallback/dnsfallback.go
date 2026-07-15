@@ -102,7 +102,7 @@ func lookup(ctx context.Context, host string, logf logger.Logf, ht *health.Track
 		}
 	}
 	if len(cands) == 0 {
-		return nil, fmt.Errorf("no DNS fallback options for %q", host)
+		return nil, fmt.Errorf("没有可用的 DNS 回退选项用于 %q", host)
 	}
 	for _, cand := range cands {
 		if err := ctx.Err(); err != nil {
@@ -125,7 +125,7 @@ func lookup(ctx context.Context, host string, logf logger.Logf, ht *health.Track
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	return nil, fmt.Errorf("no DNS fallback candidates remain for %q", host)
+	return nil, fmt.Errorf("已没有剩余的 DNS 回退候选项用于 %q", host)
 }
 
 // serverName and serverIP of are, say, "derpN.tailscale.com".

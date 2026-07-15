@@ -72,8 +72,8 @@ export default function QuickCopy(props: Props) {
 
   const handlePrimaryAction = () => {
     copyText(primaryActionValue)
-    toaster.show({
-      message: `Copied ${primaryActionSubject} to the clipboard`,
+      toaster.show({
+      message: `已复制 ${primaryActionSubject} 到剪贴板`,
     })
   }
 
@@ -83,9 +83,9 @@ export default function QuickCopy(props: Props) {
     }
     copyText(secondaryActionValue)
     toaster.show({
-      message: `Copied ${
+      message: `已复制 ${
         secondaryActionSubject || secondaryActionName
-      } to the clipboard`,
+      } 到剪贴板`,
     })
     onSecondaryAction?.()
   }
@@ -110,7 +110,7 @@ export default function QuickCopy(props: Props) {
           onClick={handlePrimaryAction}
           className={cx("cursor-pointer text-blue-500", { "ml-2": children })}
         >
-          Copy
+          复制
         </button>
       )}
 
@@ -140,7 +140,7 @@ export default function QuickCopy(props: Props) {
                   "ml-2": children,
                 })}
               >
-                Copy
+                复制
               </button>
             </div>
 

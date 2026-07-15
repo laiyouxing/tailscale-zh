@@ -25,37 +25,35 @@ import (
 var pingCmd = &ffcli.Command{
 	Name:       "ping",
 	ShortUsage: "tailscale ping <hostname-or-IP>",
-	ShortHelp:  "Ping a host at the Tailscale layer, see how it routed",
+	ShortHelp:  "在 Tailscale 层对主机执行 ping，查看其路由路径",
 	LongHelp: strings.TrimSpace(`
 
-The 'tailscale ping' command pings a peer node from the Tailscale layer
-and reports which route it took for each response. The first ping or
-so will likely go over DERP (Tailscale's TCP relay protocol) while NAT
-traversal finds a direct path through.
+'tailscale ping' 命令从 Tailscale 层对对等节点执行 ping，
+并报告每次响应所经过的路由。前几次 ping 很可能会经过 DERP
+（Tailscale 的 TCP 中继协议），直到 NAT 穿透找到一条直连路径。
 
-If 'tailscale ping' works but a normal ping does not, that means one
-side's operating system firewall is blocking packets; 'tailscale ping'
-does not inject packets into either side's TUN devices.
+如果 'tailscale ping' 能通，但普通 ping 不通，说明某一方的
+操作系统防火墙在拦截数据包；'tailscale ping' 不会将数据包
+注入到任何一方的 TUN 设备中。
 
-By default, 'tailscale ping' stops after 10 pings or once a direct
-(non-DERP) path has been established, whichever comes first.
+默认情况下，'tailscale ping' 在发送 10 次 ping 或建立起一条
+直连（非 DERP）路径后停止，以先到者为准。
 
-The provided hostname must resolve to or be a Tailscale IP
-(e.g. 100.x.y.z) or a subnet IP advertised by a Tailscale
-relay node.
+提供的 hostname 必须能解析为或本身就是一个 Tailscale IP
+（如 100.x.y.z），或者是某个 Tailscale 中继节点通告的子网 IP。
 
 `),
 	Exec: runPing,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("ping")
-		fs.BoolVar(&pingArgs.verbose, "verbose", false, "verbose output")
-		fs.BoolVar(&pingArgs.untilDirect, "until-direct", true, "stop once a direct path is established")
-		fs.BoolVar(&pingArgs.tsmp, "tsmp", false, "do a TSMP-level ping (through WireGuard, but not either host OS stack)")
-		fs.BoolVar(&pingArgs.icmp, "icmp", false, "do a ICMP-level ping (through WireGuard, but not the local host OS stack)")
-		fs.BoolVar(&pingArgs.peerAPI, "peerapi", false, "try hitting the peer's peerapi HTTP server")
-		fs.IntVar(&pingArgs.num, "c", 10, "max number of pings to send. 0 for infinity.")
-		fs.DurationVar(&pingArgs.timeout, "timeout", 5*time.Second, "timeout before giving up on a ping")
-		fs.IntVar(&pingArgs.size, "size", 0, "size of the ping message (disco pings only). 0 for minimum size.")
+		fs.BoolVar(&pingArgs.verbose, "verbose", false, "详细输出")
+		fs.BoolVar(&pingArgs.untilDirect, "until-direct", true, "一旦建立直连路径即停止")
+		fs.BoolVar(&pingArgs.tsmp, "tsmp", false, "执行 TSMP 层 ping（通过 WireGuard，但不经过任一主机的操作系统协议栈）")
+		fs.BoolVar(&pingArgs.icmp, "icmp", false, "执行 ICMP 层 ping（通过 WireGuard，但不经过本地主机操作系统协议栈）")
+		fs.BoolVar(&pingArgs.peerAPI, "peerapi", false, "尝试访问对等节点的 peerapi HTTP 服务器")
+		fs.IntVar(&pingArgs.num, "c", 10, "要发送的最大 ping 次数。0 表示无限。")
+		fs.DurationVar(&pingArgs.timeout, "timeout", 5*time.Second, "放弃一次 ping 前的超时时间")
+		fs.IntVar(&pingArgs.size, "size", 0, "ping 报文的大小（仅 disco ping）。0 表示最小大小。")
 		return fs
 	})(),
 }
@@ -105,7 +103,7 @@ func runPing(ctx context.Context, args []string) error {
 	}
 
 	if len(args) != 1 || args[0] == "" {
-		return errors.New("usage: tailscale ping <hostname-or-IP>")
+		return errors.New("用法：tailscale ping <主机名或 IP>")
 	}
 	var ip string
 
@@ -115,12 +113,12 @@ func runPing(ctx context.Context, args []string) error {
 		return err
 	}
 	if self {
-		printf("%v is local Tailscale IP\n", ip)
+		printf("%v 是本地 Tailscale IP\n", ip)
 		return nil
 	}
 
 	if pingArgs.verbose && ip != hostOrIP {
-		log.Printf("lookup %q => %q", hostOrIP, ip)
+		log.Printf("查找 %q => %q", hostOrIP, ip)
 	}
 
 	n := 0
@@ -132,13 +130,13 @@ func runPing(ctx context.Context, args []string) error {
 		cancel()
 		if err != nil {
 			if errors.Is(err, context.DeadlineExceeded) {
-				printf("ping %q timed out\n", ip)
-				if n == pingArgs.num {
-					if !anyPong {
-						return errors.New("no reply")
-					}
-					return nil
+			printf("对 %q 的 ping 超时\n", ip)
+			if n == pingArgs.num {
+				if !anyPong {
+					return errors.New("无响应")
 				}
+				return nil
+			}
 				continue
 			}
 			return err
@@ -163,7 +161,7 @@ func runPing(ctx context.Context, args []string) error {
 			via = string(pingType())
 		}
 		if pingArgs.peerAPI {
-			printf("hit peerapi of %s (%s) at %s in %s\n", pr.NodeIP, pr.NodeName, pr.PeerAPIURL, latency)
+			printf("命中 %s (%s) 的 peerapi，地址 %s，耗时 %s\n", pr.NodeIP, pr.NodeName, pr.PeerAPIURL, latency)
 			return nil
 		}
 		anyPong = true
@@ -171,7 +169,7 @@ func runPing(ctx context.Context, args []string) error {
 		if pr.PeerAPIPort != 0 {
 			extra = fmt.Sprintf(", %d", pr.PeerAPIPort)
 		}
-		printf("pong from %s (%s%s) via %v in %v\n", pr.NodeName, pr.NodeIP, extra, via, latency)
+		printf("来自 %s (%s%s) 的 pong，经由 %v，耗时 %v\n", pr.NodeName, pr.NodeIP, extra, via, latency)
 		if pingArgs.tsmp || pingArgs.icmp {
 			return nil
 		}
@@ -182,10 +180,10 @@ func runPing(ctx context.Context, args []string) error {
 
 		if n == pingArgs.num {
 			if !anyPong {
-				return errors.New("no reply")
+				return errors.New("无响应")
 			}
 			if pingArgs.untilDirect {
-				return errors.New("direct connection not established")
+				return errors.New("未建立直连连接")
 			}
 			return nil
 		}
@@ -209,7 +207,7 @@ func tailscaleIPFromArg(ctx context.Context, hostOrIP string) (ip string, self b
 	for _, ps := range st.Peer {
 		if match(ps) {
 			if len(ps.TailscaleIPs) == 0 {
-				return "", false, errors.New("node found but lacks an IP")
+				return "", false, errors.New("找到了节点但没有 IP")
 			}
 			return ps.TailscaleIPs[0].String(), false, nil
 		}
@@ -221,9 +219,9 @@ func tailscaleIPFromArg(ctx context.Context, hostOrIP string) (ip string, self b
 	// Finally, use DNS.
 	var res net.Resolver
 	if addrs, err := res.LookupHost(ctx, hostOrIP); err != nil {
-		return "", false, fmt.Errorf("error looking up IP of %q: %v", hostOrIP, err)
+		return "", false, fmt.Errorf("查找 %q 的 IP 出错：%v", hostOrIP, err)
 	} else if len(addrs) == 0 {
-		return "", false, fmt.Errorf("no IPs found for %q", hostOrIP)
+		return "", false, fmt.Errorf("未找到 %q 的 IP", hostOrIP)
 	} else {
 		return addrs[0], false, nil
 	}

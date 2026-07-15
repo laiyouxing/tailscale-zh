@@ -327,7 +327,7 @@ const cancelButtonDefaultProps: Pick<
   type: "button",
   intent: "base",
   sizeVariant: "medium",
-  children: "Cancel",
+  children: "取消",
 }
 
 const submitButtonDefaultProps: Pick<
@@ -336,7 +336,7 @@ const submitButtonDefaultProps: Pick<
 > = {
   type: "submit",
   sizeVariant: "medium",
-  children: "Submit",
+  children: "提交",
 }
 
 type DialogErrorBoundaryProps = {
@@ -362,7 +362,7 @@ class DialogErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
-      return <div className="font-semibold text-lg">Something went wrong.</div>
+      return <div className="font-semibold text-lg">出错了。</div>
     }
 
     return this.props.children

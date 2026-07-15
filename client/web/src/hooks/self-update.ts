@@ -65,7 +65,7 @@ export function useInstallUpdate(currentVersion: string, cv?: VersionInfo) {
             const up = res[updateMessagesRead]
             if (up.status === "UpdateFailed") {
               setUpdateState(UpdateState.Failed)
-              if (up.message) appendUpdateLog("ERROR: " + up.message)
+              if (up.message) appendUpdateLog("错误: " + up.message)
               return
             }
 
@@ -77,18 +77,18 @@ export function useInstallUpdate(currentVersion: string, cv?: VersionInfo) {
               if (up.version === currentVersion && tsAwayForPolls > 0) {
                 setUpdateState(UpdateState.Failed)
                 appendUpdateLog(
-                  "ERROR: Update failed, still running Tailscale " + up.version
+                  "错误: 更新失败，仍在运行 Tailscale " + up.version
                 )
-                if (up.message) appendUpdateLog("ERROR: " + up.message)
+                if (up.message) appendUpdateLog("错误: " + up.message)
               } else {
                 setUpdateState(UpdateState.Complete)
-                if (up.message) appendUpdateLog("INFO: " + up.message)
+                if (up.message) appendUpdateLog("信息: " + up.message)
               }
               return
             }
 
             setUpdateState(UpdateState.InProgress)
-            if (up.message) appendUpdateLog("INFO: " + up.message)
+            if (up.message) appendUpdateLog("信息: " + up.message)
           }
 
           // If we have gone through the entire loop without returning out of the function,
@@ -101,9 +101,9 @@ export function useInstallUpdate(currentVersion: string, cv?: VersionInfo) {
           if (tsAwayForPolls >= 5 * 60) {
             setUpdateState(UpdateState.Failed)
             appendUpdateLog(
-              "ERROR: tailscaled went away but did not come back!"
+              "错误: tailscaled 已停止但未能恢复！"
             )
-            appendUpdateLog("ERROR: last error received:")
+            appendUpdateLog("错误: 收到的最后错误:")
             appendUpdateLog(err.toString())
           } else {
             timer = setTimeout(poll, 1000)

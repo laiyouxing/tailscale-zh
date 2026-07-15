@@ -17,7 +17,7 @@ func init() {
 		return &ffcli.Command{
 			Name:       "clear-netmap-cache",
 			ShortUsage: "tailscale debug clear-netmap-cache",
-			ShortHelp:  "Remove and discard cached network maps (if any)",
+			ShortHelp:  "移除并丢弃已缓存的网络映射（如有）",
 			Exec:       runDebugClearNetmapCache,
 		}
 	}
@@ -25,7 +25,7 @@ func init() {
 
 func runDebugClearNetmapCache(ctx context.Context, args []string) error {
 	if len(args) != 0 {
-		return errors.New("unexpected arguments")
+		return errors.New("意外的参数")
 	}
 	return localClient.DebugAction(ctx, "clear-netmap-cache")
 }

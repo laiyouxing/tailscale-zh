@@ -31,7 +31,7 @@ export default function HomeView({
 
   return (
     <div className="mb-12 w-full">
-      <h2 className="mb-3">This device</h2>
+      <h2 className="mb-3">此设备</h2>
       <Card noPadding className="-mx-5 p-5 mb-9">
         <div className="flex justify-between items-center text-lg mb-5">
           <Link className="flex items-center" to="/details">
@@ -49,7 +49,7 @@ export default function HomeView({
                     "bg-gray-300": node.Status !== "Running",
                   })}
                 />
-                {node.Status === "Running" ? "Connected" : "Offline"}
+                {node.Status === "Running" ? "已连接" : "离线"}
               </p>
             </div>
           </Link>
@@ -75,22 +75,22 @@ export default function HomeView({
           to="/details"
           onClick={() => apiFetch("/device-details-click", "POST")}
         >
-          View device details &rarr;
+          查看设备详情 &rarr;
         </Link>
       </Card>
-      <h2 className="mb-3">Settings</h2>
+      <h2 className="mb-3">设置</h2>
       <div className="grid gap-3">
         {node.Features["advertise-routes"] && (
           <SettingsCard
             link="/subnets"
-            title="Subnet router"
-            body="Add devices to your tailnet without installing Tailscale on them."
+            title="子网路由器"
+            body="在不安装 Tailscale 的情况下，将设备添加到你的 tailnet 中。"
             badge={
               allSubnetRoutes
                 ? {
                     text: `${allSubnetRoutes} ${pluralize(
-                      "route",
-                      "routes",
+                      "路由",
+                      "路由",
                       allSubnetRoutes
                     )}`,
                   }
@@ -99,10 +99,10 @@ export default function HomeView({
             footer={
               pendingSubnetRoutes
                 ? `${pendingSubnetRoutes} ${pluralize(
-                    "route",
-                    "routes",
+                    "路由",
+                    "路由",
                     pendingSubnetRoutes
-                  )} pending approval`
+                  )} 待审批`
                 : undefined
             }
           />
@@ -110,12 +110,12 @@ export default function HomeView({
         {node.Features["ssh"] && (
           <SettingsCard
             link="/ssh"
-            title="Tailscale SSH server"
-            body="Run a Tailscale SSH server on this device and allow other devices in your tailnet to SSH into it."
+            title="Tailscale SSH 服务"
+            body="在此设备上运行 Tailscale SSH 服务，并允许你 tailnet 中的其他设备通过 SSH 连接进来。"
             badge={
               node.RunningSSHServer
                 ? {
-                    text: "Running",
+                    text: "运行中",
                     icon: <div className="w-2 h-2 bg-green-300 rounded-full" />,
                   }
                 : undefined

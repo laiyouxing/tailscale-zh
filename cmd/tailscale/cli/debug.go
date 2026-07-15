@@ -63,14 +63,14 @@ func debugCmd() *ffcli.Command {
 		Name:       "debug",
 		Exec:       runDebug,
 		ShortUsage: "tailscale debug <debug-flags | subcommand>",
-		ShortHelp:  "Debug commands",
-		LongHelp:   hidden + `"tailscale debug" contains misc debug facilities; it is not a stable interface.`,
+		ShortHelp:  "调试命令",
+		LongHelp:   hidden + `"tailscale debug" 包含一些调试工具；它不是一个稳定的接口。`,
 		FlagSet: (func() *flag.FlagSet {
 			fs := newFlagSet("debug")
-			fs.StringVar(&debugArgs.file, "file", "", "get, delete:NAME, or NAME")
-			fs.StringVar(&debugArgs.cpuFile, "cpu-profile", "", "if non-empty, grab a CPU profile for --profile-seconds seconds and write it to this file; - for stdout")
-			fs.StringVar(&debugArgs.memFile, "mem-profile", "", "if non-empty, grab a memory profile and write it to this file; - for stdout")
-			fs.IntVar(&debugArgs.cpuSec, "profile-seconds", 15, "number of seconds to run a CPU profile for, when --cpu-profile is non-empty")
+			fs.StringVar(&debugArgs.file, "file", "", "get、delete:NAME 或 NAME")
+			fs.StringVar(&debugArgs.cpuFile, "cpu-profile", "", "若非空，则抓取 CPU 性能分析文件 --profile-seconds 秒并写入此文件；- 表示写入 stdout")
+			fs.StringVar(&debugArgs.memFile, "mem-profile", "", "若非空，则抓取内存性能分析文件并写入此文件；- 表示写入 stdout")
+			fs.IntVar(&debugArgs.cpuSec, "profile-seconds", 15, "当 --cpu-profile 非空时，运行 CPU 性能分析的秒数")
 			return fs
 		})(),
 		Subcommands: nonNilCmds([]*ffcli.Command{
@@ -78,16 +78,16 @@ func debugCmd() *ffcli.Command {
 				Name:       "derp-map",
 				ShortUsage: "tailscale debug derp-map",
 				Exec:       runDERPMap,
-				ShortHelp:  "Print DERP map",
+				ShortHelp:  "打印 DERP 映射",
 			},
 			{
 				Name:       "component-logs",
 				ShortUsage: "tailscale debug component-logs [" + strings.Join(ipn.DebuggableComponents, "|") + "]",
 				Exec:       runDebugComponentLogs,
-				ShortHelp:  "Enable/disable debug logs for a component",
+				ShortHelp:  "启用/禁用某个组件的调试日志",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("component-logs")
-					fs.DurationVar(&debugComponentLogsArgs.forDur, "for", time.Hour, "how long to enable debug logs for; zero or negative means to disable")
+					fs.DurationVar(&debugComponentLogsArgs.forDur, "for", time.Hour, "启用调试日志的时长；零或负数表示禁用")
 					return fs
 				})(),
 			},
@@ -95,17 +95,17 @@ func debugCmd() *ffcli.Command {
 				Name:       "daemon-goroutines",
 				ShortUsage: "tailscale debug daemon-goroutines",
 				Exec:       runDaemonGoroutines,
-				ShortHelp:  "Print tailscaled's goroutines",
+				ShortHelp:  "打印 tailscaled 的 goroutine",
 			},
 			{
 				Name:       "daemon-logs",
 				ShortUsage: "tailscale debug daemon-logs",
 				Exec:       runDaemonLogs,
-				ShortHelp:  "Watch tailscaled's server logs",
+				ShortHelp:  "查看 tailscaled 的服务端日志",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("daemon-logs")
-					fs.IntVar(&daemonLogsArgs.verbose, "verbose", 0, "verbosity level")
-					fs.BoolVar(&daemonLogsArgs.time, "time", false, "include client time")
+					fs.IntVar(&daemonLogsArgs.verbose, "verbose", 0, "详细级别")
+					fs.BoolVar(&daemonLogsArgs.time, "time", false, "包含客户端时间")
 					return fs
 				})(),
 			},
@@ -113,16 +113,16 @@ func debugCmd() *ffcli.Command {
 				Name:       "daemon-bus-events",
 				ShortUsage: "tailscale debug daemon-bus-events",
 				Exec:       runDaemonBusEvents,
-				ShortHelp:  "Watch events on the tailscaled bus",
+				ShortHelp:  "查看 tailscaled 总线上的事件",
 			},
 			{
 				Name:       "daemon-bus-graph",
 				ShortUsage: "tailscale debug daemon-bus-graph",
 				Exec:       runDaemonBusGraph,
-				ShortHelp:  "Print graph for the tailscaled bus",
+				ShortHelp:  "打印 tailscaled 总线的图",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("debug-bus-graph")
-					fs.StringVar(&daemonBusGraphArgs.format, "format", "json", "output format [json/dot]")
+					fs.StringVar(&daemonBusGraphArgs.format, "format", "json", "输出格式 [json/dot]")
 					return fs
 				})(),
 			},
@@ -130,16 +130,16 @@ func debugCmd() *ffcli.Command {
 				Name:       "daemon-bus-queues",
 				ShortUsage: "tailscale debug daemon-bus-queues",
 				Exec:       runDaemonBusQueues,
-				ShortHelp:  "Print event bus queue depths per client",
+				ShortHelp:  "打印每个客户端的事件总线队列深度",
 			},
 			{
 				Name:       "metrics",
 				ShortUsage: "tailscale debug metrics",
 				Exec:       runDaemonMetrics,
-				ShortHelp:  "Print tailscaled's metrics",
+				ShortHelp:  "打印 tailscaled 的指标",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("metrics")
-					fs.BoolVar(&metricsArgs.watch, "watch", false, "print JSON dump of delta values")
+					fs.BoolVar(&metricsArgs.watch, "watch", false, "打印增量值的 JSON 转储")
 					return fs
 				})(),
 			},
@@ -147,34 +147,34 @@ func debugCmd() *ffcli.Command {
 				Name:       "env",
 				ShortUsage: "tailscale debug env",
 				Exec:       runEnv,
-				ShortHelp:  "Print cmd/tailscale environment",
+				ShortHelp:  "打印 cmd/tailscale 的环境",
 			},
 			{
 				Name:       "stat",
 				ShortUsage: "tailscale debug stat <files...>",
 				Exec:       runStat,
-				ShortHelp:  "Stat a file",
+				ShortHelp:  "查看文件状态",
 			},
 			{
 				Name:       "hostinfo",
 				ShortUsage: "tailscale debug hostinfo",
 				Exec:       runHostinfo,
-				ShortHelp:  "Print hostinfo",
+				ShortHelp:  "打印 hostinfo",
 			},
 			{
 				Name:       "local-creds",
 				ShortUsage: "tailscale debug local-creds",
 				Exec:       runLocalCreds,
-				ShortHelp:  "Print how to access Tailscale LocalAPI",
+				ShortHelp:  "打印如何访问 Tailscale LocalAPI",
 			},
 			{
 				Name:       "localapi",
 				ShortUsage: "tailscale debug localapi [<method>] <path> [<body| \"-\">]",
 				Exec:       runLocalAPI,
-				ShortHelp:  "Call a LocalAPI method directly",
+				ShortHelp:  "直接调用一个 LocalAPI 方法",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("localapi")
-					fs.BoolVar(&localAPIFlags.verbose, "v", false, "verbose; dump HTTP headers")
+					fs.BoolVar(&localAPIFlags.verbose, "v", false, "详细模式；转储 HTTP 头")
 					return fs
 				})(),
 			},
@@ -182,83 +182,83 @@ func debugCmd() *ffcli.Command {
 				Name:       "restun",
 				ShortUsage: "tailscale debug restun",
 				Exec:       localAPIAction("restun"),
-				ShortHelp:  "Force a magicsock restun",
+				ShortHelp:  "强制进行一次 magicsock restun",
 			},
 			{
 				Name:       "rebind",
 				ShortUsage: "tailscale debug rebind",
 				Exec:       localAPIAction("rebind"),
-				ShortHelp:  "Force a magicsock rebind",
+				ShortHelp:  "强制进行一次 magicsock rebind",
 			},
 			{
 				Name:       "rotate-disco-key",
 				ShortUsage: "tailscale debug rotate-disco-key",
 				Exec:       localAPIAction("rotate-disco-key"),
-				ShortHelp:  "Rotate the discovery key",
+				ShortHelp:  "轮换发现密钥",
 			},
 			{
 				Name:       "derp-set-on-demand",
 				ShortUsage: "tailscale debug derp-set-on-demand",
 				Exec:       localAPIAction("derp-set-homeless"),
-				ShortHelp:  "Enable DERP on-demand mode (breaks reachability)",
+				ShortHelp:  "启用 DERP 按需模式（会破坏可达性）",
 			},
 			{
 				Name:       "derp-unset-on-demand",
 				ShortUsage: "tailscale debug derp-unset-on-demand",
 				Exec:       localAPIAction("derp-unset-homeless"),
-				ShortHelp:  "Disable DERP on-demand mode",
+				ShortHelp:  "禁用 DERP 按需模式",
 			},
 			{
 				Name:       "break-tcp-conns",
 				ShortUsage: "tailscale debug break-tcp-conns",
 				Exec:       localAPIAction("break-tcp-conns"),
-				ShortHelp:  "Break any open TCP connections from the daemon",
+				ShortHelp:  "断开 daemon 的任何已打开 TCP 连接",
 			},
 			{
 				Name:       "break-derp-conns",
 				ShortUsage: "tailscale debug break-derp-conns",
 				Exec:       localAPIAction("break-derp-conns"),
-				ShortHelp:  "Break any open DERP connections from the daemon",
+				ShortHelp:  "断开 daemon 的任何已打开 DERP 连接",
 			},
 			{
 				Name:       "pick-new-derp",
 				ShortUsage: "tailscale debug pick-new-derp",
 				Exec:       localAPIAction("pick-new-derp"),
-				ShortHelp:  "Switch to some other random DERP home region for a short time",
+				ShortHelp:  "在短期内切换到另一个随机的 DERP 归属区域",
 			},
 			{
 				Name:       "force-prefer-derp",
 				ShortUsage: "tailscale debug force-prefer-derp",
 				Exec:       forcePreferDERP,
-				ShortHelp:  "Prefer the given region ID if reachable (until restart, or 0 to clear)",
+				ShortHelp:  "若可达则优先使用给定区域 ID（直到重启，或 0 表示清除）",
 			},
 			{
 				Name:       "force-netmap-update",
 				ShortUsage: "tailscale debug force-netmap-update",
 				Exec:       localAPIAction("force-netmap-update"),
-				ShortHelp:  "Force a full no-op netmap update (for load testing)",
+				ShortHelp:  "强制进行一次完整的空操作 netmap 更新（用于负载测试）",
 			},
 			{
 				// TODO(bradfitz,maisem): eventually promote this out of debug
 				Name:       "reload-config",
 				ShortUsage: "tailscale debug reload-config",
 				Exec:       reloadConfig,
-				ShortHelp:  "Reload config",
+				ShortHelp:  "重新加载配置",
 			},
 			{
 				Name:       "control-knobs",
 				ShortUsage: "tailscale debug control-knobs",
 				Exec:       debugControlKnobs,
-				ShortHelp:  "See current control knobs",
+				ShortHelp:  "查看当前控制旋钮",
 			},
 			{
 				Name:       "prefs",
 				ShortUsage: "tailscale debug prefs",
 				Exec:       runPrefs,
-				ShortHelp:  "Print prefs",
+				ShortHelp:  "打印首选项",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("prefs")
-					fs.BoolVar(&prefsArgs.pretty, "pretty", false, "if true, pretty-print output")
+					fs.BoolVar(&prefsArgs.pretty, "pretty", false, "若为 true，则美化输出")
 					return fs
 				})(),
 			},
@@ -266,22 +266,22 @@ func debugCmd() *ffcli.Command {
 				Name:       "watch-ipn",
 				ShortUsage: "tailscale debug watch-ipn",
 				Exec:       runWatchIPN,
-				ShortHelp:  "Subscribe to IPN message bus",
+				ShortHelp:  "订阅 IPN 消息总线",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("watch-ipn")
-					fs.BoolVar(&watchIPNArgs.initial, "initial", false, "include the initial backend State and Prefs in the first message")
-					fs.IntVar(&watchIPNArgs.count, "count", 0, "exit after printing this many statuses, or 0 to keep going forever")
-					fs.BoolVar(&watchIPNArgs.engineUpdates, "engine-updates", false, "set NotifyWatchEngineUpdates: send Engine updates")
-					fs.BoolVar(&watchIPNArgs.initialDriveShares, "initial-drive-shares", false, "set NotifyInitialDriveShares: send current Taildrive Shares in first message")
-					fs.BoolVar(&watchIPNArgs.initialOutgoingFiles, "initial-outgoing-files", false, "set NotifyInitialOutgoingFiles: send current Taildrop OutgoingFiles in first message")
-					fs.BoolVar(&watchIPNArgs.initialHealthState, "initial-health", false, "set NotifyInitialHealthState: send current health.State in first message")
-					fs.BoolVar(&watchIPNArgs.healthActions, "health-actions", false, "set NotifyHealthActions: include PrimaryActions in health.State")
-					fs.BoolVar(&watchIPNArgs.initialSuggestedExitNode, "initial-suggested-exit-node", false, "set NotifyInitialSuggestedExitNode: send current SuggestedExitNode in first message")
-					fs.BoolVar(&watchIPNArgs.initialClientVersion, "initial-client-version", false, "set NotifyInitialClientVersion: send current ClientVersion in first message")
-					fs.BoolVar(&watchIPNArgs.peerChanges, "peer-changes", true, "set NotifyPeerChanges: send PeersChanged and PeersRemoved updates")
-					fs.BoolVar(&watchIPNArgs.initialStatus, "initial-status", false, "set NotifyInitialStatus: send current ipnstate.Status in first message")
-					fs.BoolVar(&watchIPNArgs.peerPatches, "peer-patches", true, "set NotifyPeerPatches: send narrow per-field peer patches")
-					fs.BoolVar(&watchIPNArgs.peerWireGuardState, "peer-wireguard-state", false, "set NotifyPeerWireGuardState: send WireGuard session state notifications")
+					fs.BoolVar(&watchIPNArgs.initial, "initial", false, "在首条消息中包含初始后端状态和首选项")
+					fs.IntVar(&watchIPNArgs.count, "count", 0, "打印这么多条状态后退出，或 0 表示一直运行")
+					fs.BoolVar(&watchIPNArgs.engineUpdates, "engine-updates", false, "设置 NotifyWatchEngineUpdates：发送 Engine 更新")
+					fs.BoolVar(&watchIPNArgs.initialDriveShares, "initial-drive-shares", false, "设置 NotifyInitialDriveShares：在首条消息中发送当前 Taildrive 共享")
+					fs.BoolVar(&watchIPNArgs.initialOutgoingFiles, "initial-outgoing-files", false, "设置 NotifyInitialOutgoingFiles：在首条消息中发送当前 Taildrop 传出文件")
+					fs.BoolVar(&watchIPNArgs.initialHealthState, "initial-health", false, "设置 NotifyInitialHealthState：在首条消息中发送当前 health.State")
+					fs.BoolVar(&watchIPNArgs.healthActions, "health-actions", false, "设置 NotifyHealthActions：在 health.State 中包含所有 PrimaryActions")
+					fs.BoolVar(&watchIPNArgs.initialSuggestedExitNode, "initial-suggested-exit-node", false, "设置 NotifyInitialSuggestedExitNode：在首条消息中发送当前 SuggestedExitNode")
+					fs.BoolVar(&watchIPNArgs.initialClientVersion, "initial-client-version", false, "设置 NotifyInitialClientVersion：在首条消息中发送当前 ClientVersion")
+					fs.BoolVar(&watchIPNArgs.peerChanges, "peer-changes", true, "设置 NotifyPeerChanges：发送 PeersChanged 和 PeersRemoved 更新")
+					fs.BoolVar(&watchIPNArgs.initialStatus, "initial-status", false, "设置 NotifyInitialStatus：在首条消息中发送当前 ipnstate.Status")
+					fs.BoolVar(&watchIPNArgs.peerPatches, "peer-patches", true, "设置 NotifyPeerPatches：发送按字段细分的 peer 补丁")
+					fs.BoolVar(&watchIPNArgs.peerWireGuardState, "peer-wireguard-state", false, "设置 NotifyPeerWireGuardState：发送 WireGuard 会话状态通知")
 					return fs
 				})(),
 			},
@@ -289,7 +289,7 @@ func debugCmd() *ffcli.Command {
 				Name:       "netmap",
 				ShortUsage: "tailscale debug netmap",
 				Exec:       runNetmap,
-				ShortHelp:  "Print the current network map",
+				ShortHelp:  "打印当前网络映射",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("netmap")
 					return fs
@@ -300,20 +300,20 @@ func debugCmd() *ffcli.Command {
 				ShortUsage: "tailscale debug via <site-id> <v4-cidr>\n" +
 					"tailscale debug via <v6-route>",
 				Exec:      runVia,
-				ShortHelp: "Convert between site-specific IPv4 CIDRs and IPv6 'via' routes",
+				ShortHelp: "在站点专属 IPv4 CIDR 与 IPv6 'via' 路由之间转换",
 			},
 			{
 				Name:       "ts2021",
 				ShortUsage: "tailscale debug ts2021",
 				Exec:       runTS2021,
-				ShortHelp:  "Debug ts2021 protocol connectivity",
+				ShortHelp:  "调试 ts2021 协议连通性",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("ts2021")
-					fs.StringVar(&ts2021Args.host, "host", "controlplane.tailscale.com", "hostname of control plane")
-					fs.IntVar(&ts2021Args.version, "version", int(tailcfg.CurrentCapabilityVersion), "protocol version")
-					fs.BoolVar(&ts2021Args.verbose, "verbose", false, "be extra verbose")
-					fs.StringVar(&ts2021Args.aceHost, "ace", "", "if non-empty, use this ACE server IP/hostname as a candidate path")
-					fs.StringVar(&ts2021Args.dialPlanJSONFile, "dial-plan", "", "if non-empty, use this JSON file to configure the dial plan")
+					fs.StringVar(&ts2021Args.host, "host", "controlplane.tailscale.com", "控制平面的主机名")
+					fs.IntVar(&ts2021Args.version, "version", int(tailcfg.CurrentCapabilityVersion), "协议版本")
+					fs.BoolVar(&ts2021Args.verbose, "verbose", false, "输出更详细的信息")
+					fs.StringVar(&ts2021Args.aceHost, "ace", "", "若非空，则使用此 ACE 服务器 IP/主机名作为候选路径")
+					fs.StringVar(&ts2021Args.dialPlanJSONFile, "dial-plan", "", "若非空，则使用此 JSON 文件配置拨号计划")
 					return fs
 				})(),
 			},
@@ -321,10 +321,10 @@ func debugCmd() *ffcli.Command {
 				Name:       "set-expire",
 				ShortUsage: "tailscale debug set-expire --in=1m",
 				Exec:       runSetExpire,
-				ShortHelp:  "Manipulate node key expiry for testing",
+				ShortHelp:  "为测试操作节点密钥过期时间",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("set-expire")
-					fs.DurationVar(&setExpireArgs.in, "in", 0, "if non-zero, set node key to expire this duration from now")
+					fs.DurationVar(&setExpireArgs.in, "in", 0, "若非零，则将节点密钥设为从现在起此段时间后过期")
 					return fs
 				})(),
 			},
@@ -332,10 +332,10 @@ func debugCmd() *ffcli.Command {
 				Name:       "dev-store-set",
 				ShortUsage: "tailscale debug dev-store-set",
 				Exec:       runDevStoreSet,
-				ShortHelp:  "Set a key/value pair during development",
+				ShortHelp:  "在开发过程中设置键值对",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("store-set")
-					fs.BoolVar(&devStoreSetArgs.danger, "danger", false, "accept danger")
+					fs.BoolVar(&devStoreSetArgs.danger, "danger", false, "确认危险操作")
 					return fs
 				})(),
 			},
@@ -343,7 +343,7 @@ func debugCmd() *ffcli.Command {
 				Name:       "derp",
 				ShortUsage: "tailscale debug derp",
 				Exec:       runDebugDERP,
-				ShortHelp:  "Test a DERP configuration",
+				ShortHelp:  "测试 DERP 配置",
 			},
 			ccall(debugCaptureCmd),
 			ccall(debugPortmapCmd),
@@ -351,16 +351,16 @@ func debugCmd() *ffcli.Command {
 				Name:       "peer-endpoint-changes",
 				ShortUsage: "tailscale debug peer-endpoint-changes <hostname-or-IP>",
 				Exec:       runPeerEndpointChanges,
-				ShortHelp:  "Print debug information about a peer's endpoint changes",
+				ShortHelp:  "打印关于节点端点变更的调试信息",
 			},
 			{
 				Name:       "dial-types",
 				ShortUsage: "tailscale debug dial-types <hostname-or-IP> <port>",
 				Exec:       runDebugDialTypes,
-				ShortHelp:  "Print debug information about connecting to a given host or IP",
+				ShortHelp:  "打印关于连接到给定主机或 IP 的调试信息",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("dial-types")
-					fs.StringVar(&debugDialTypesArgs.network, "network", "tcp", `network type to dial ("tcp", "udp", etc.)`)
+					fs.StringVar(&debugDialTypesArgs.network, "network", "tcp", `要拨号的网络类型（"tcp"、"udp" 等）`)
 					return fs
 				})(),
 			},
@@ -368,40 +368,40 @@ func debugCmd() *ffcli.Command {
 				Name:       "resolve",
 				ShortUsage: "tailscale debug resolve <hostname>",
 				Exec:       runDebugResolve,
-				ShortHelp:  "Does a DNS lookup",
+				ShortHelp:  "执行 DNS 查找",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("resolve")
-					fs.StringVar(&resolveArgs.net, "net", "ip", "network type to resolve (ip, ip4, ip6)")
+					fs.StringVar(&resolveArgs.net, "net", "ip", "要解析的网络类型（ip、ip4、ip6）")
 					return fs
 				})(),
 			},
 			{
 				Name:       "go-buildinfo",
 				ShortUsage: "tailscale debug go-buildinfo",
-				ShortHelp:  "Print Go's runtime/debug.BuildInfo",
+				ShortHelp:  "打印 Go 的 runtime/debug.BuildInfo",
 				Exec:       runGoBuildInfo,
 			},
 			{
 				Name:       "peer-relay-servers",
 				ShortUsage: "tailscale debug peer-relay-servers",
-				ShortHelp:  "Print the current set of candidate peer relay servers",
+				ShortHelp:  "打印当前候选节点中继服务器集合",
 				Exec:       runPeerRelayServers,
 			},
 			{
 				Name:       "test-risk",
 				ShortUsage: "tailscale debug test-risk",
-				ShortHelp:  "Do a fake risky action",
+				ShortHelp:  "执行一次模拟的危险操作",
 				Exec:       runTestRisk,
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("test-risk")
-					fs.StringVar(&testRiskArgs.acceptedRisk, "accept-risk", "", "comma-separated list of accepted risks")
+					fs.StringVar(&testRiskArgs.acceptedRisk, "accept-risk", "", "以逗号分隔的已接受风险列表")
 					return fs
 				})(),
 			},
 			{
 				Name:       "statedir",
 				ShortUsage: "tailscale debug statedir",
-				ShortHelp:  "Print the location of the state directory (if any)",
+				ShortHelp:  "打印状态目录的位置（若存在）",
 				Exec:       runPrintStateDir,
 			},
 			ccall(debugPeerRelayCmd),
@@ -413,7 +413,7 @@ func debugCmd() *ffcli.Command {
 func runGoBuildInfo(ctx context.Context, args []string) error {
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		return errors.New("no Go build info")
+		return errors.New("无 Go 构建信息")
 	}
 	e := json.NewEncoder(os.Stdout)
 	e.SetIndent("", "\t")
@@ -440,38 +440,38 @@ func outName(dst string) string {
 		return "stdout"
 	}
 	if runtime.GOOS == "darwin" {
-		return fmt.Sprintf("%s (warning: sandboxed macOS binaries write to Library/Containers; use - to write to stdout and redirect to file instead)", dst)
+		return fmt.Sprintf("%s（警告：沙箱化的 macOS 二进制文件会写入 Library/Containers；请使用 - 写入 stdout 再重定向到文件）", dst)
 	}
 	return dst
 }
 
 func runDebug(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return fmt.Errorf("tailscale debug: unknown subcommand: %s", args[0])
+		return fmt.Errorf("tailscale debug: 未知子命令：%s", args[0])
 	}
 	var usedFlag bool
 	if out := debugArgs.cpuFile; out != "" {
 		usedFlag = true // TODO(bradfitz): add "pprof" subcommand
-		log.Printf("Capturing CPU profile for %v seconds ...", debugArgs.cpuSec)
+		log.Printf("正在抓取 CPU 性能分析文件，时长 %v 秒 ...", debugArgs.cpuSec)
 		if v, err := localClient.Pprof(ctx, "profile", debugArgs.cpuSec); err != nil {
 			return err
 		} else {
 			if err := writeProfile(out, v); err != nil {
 				return err
 			}
-			log.Printf("CPU profile written to %s", outName(out))
+			log.Printf("CPU 性能分析文件已写入 %s", outName(out))
 		}
 	}
 	if out := debugArgs.memFile; out != "" {
 		usedFlag = true // TODO(bradfitz): add "pprof" subcommand
-		log.Printf("Capturing memory profile ...")
+		log.Printf("正在抓取内存性能分析文件 ...")
 		if v, err := localClient.Pprof(ctx, "heap", 0); err != nil {
 			return err
 		} else {
 			if err := writeProfile(out, v); err != nil {
 				return err
 			}
-			log.Printf("Memory profile written to %s", outName(out))
+			log.Printf("内存性能分析文件已写入 %s", outName(out))
 		}
 	}
 	if debugArgs.file != "" {
@@ -493,7 +493,7 @@ func runDebug(ctx context.Context, args []string) error {
 		if err != nil {
 			return err
 		}
-		log.Printf("Size: %v\n", size)
+		log.Printf("大小：%v\n", size)
 		io.Copy(Stdout, rc)
 		return nil
 	}
@@ -502,7 +502,7 @@ func runDebug(ctx context.Context, args []string) error {
 		// to subcommands.
 		return nil
 	}
-	return errors.New("tailscale debug: subcommand or flag required")
+	return errors.New("tailscale debug: 需要子命令或标志")
 }
 
 func runLocalCreds(ctx context.Context, args []string) error {
@@ -537,14 +537,14 @@ var localAPIFlags struct {
 
 func runLocalAPI(ctx context.Context, args []string) error {
 	if len(args) == 0 {
-		return errors.New("expected at least one argument")
+		return errors.New("至少需要一个参数")
 	}
 	method := "GET"
 	if looksLikeHTTPMethod(args[0]) {
 		method = args[0]
 		args = args[1:]
 		if len(args) == 0 {
-			return errors.New("expected at least one argument after method")
+			return errors.New("方法后至少需要一个参数")
 		}
 	}
 	path := args[0]
@@ -559,10 +559,10 @@ func runLocalAPI(ctx context.Context, args []string) error {
 	var body io.Reader
 	if len(args) > 1 {
 		if args[1] == "-" {
-			fmt.Fprintf(Stderr, "# reading request body from stdin...\n")
+			fmt.Fprintf(Stderr, "# 正在从 stdin 读取请求体...\n")
 			all, err := io.ReadAll(os.Stdin)
 			if err != nil {
-				return fmt.Errorf("reading Stdin: %q", err)
+				return fmt.Errorf("读取 Stdin：%q", err)
 			}
 			body = bytes.NewReader(all)
 		} else {
@@ -573,7 +573,7 @@ func runLocalAPI(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(Stderr, "# doing request %s %s\n", method, path)
+	fmt.Fprintf(Stderr, "# 正在发起请求 %s %s\n", method, path)
 
 	res, err := localClient.DoLocalRequest(req)
 	if err != nil {
@@ -584,7 +584,7 @@ func runLocalAPI(ctx context.Context, args []string) error {
 		res.Write(Stdout)
 	} else {
 		if !is2xx {
-			fmt.Fprintf(Stderr, "# Response status %s\n", res.Status)
+			fmt.Fprintf(Stderr, "# 响应状态 %s\n", res.Status)
 		}
 		io.Copy(Stdout, res.Body)
 	}
@@ -617,9 +617,9 @@ func runLocalAPIProxy() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Serving LocalAPI proxy on http://%s\n", lc.Addr())
+	fmt.Printf("正在 http://%s 提供 LocalAPI 代理\n", lc.Addr())
 	fmt.Printf("curl.exe http://%v/localapi/v0/status\n", lc.Addr())
-	fmt.Printf("Ctrl+C to stop")
+	fmt.Printf("按 Ctrl+C 停止")
 	http.Serve(lc, rp)
 }
 
@@ -701,7 +701,7 @@ func runWatchIPN(ctx context.Context, args []string) error {
 		return err
 	}
 	defer watcher.Close()
-	fmt.Fprintf(Stderr, "Connected.\n")
+	fmt.Fprintf(Stderr, "已连接。\n")
 	for seen := 0; watchIPNArgs.count == 0 || seen < watchIPNArgs.count; seen++ {
 		n, err := watcher.Next()
 		if err != nil {
@@ -730,7 +730,7 @@ func runDERPMap(ctx context.Context, args []string) error {
 	dm, err := localClient.CurrentDERPMap(ctx)
 	if err != nil {
 		return fmt.Errorf(
-			"failed to get local derp map, instead `curl %s/derpmap/default`: %w", ipn.DefaultControlURL, err,
+			"获取本地 derp 映射失败，请改用 `curl %s/derpmap/default`：%w", ipn.DefaultControlURL, err,
 		)
 	}
 	enc := json.NewEncoder(Stdout)
@@ -742,18 +742,18 @@ func runDERPMap(ctx context.Context, args []string) error {
 func forcePreferDERP(ctx context.Context, args []string) error {
 	var n int
 	if len(args) != 1 {
-		return errors.New("expected exactly one integer argument")
+		return errors.New("需要且仅需要一个整数参数")
 	}
 	n, err := strconv.Atoi(args[0])
 	if err != nil {
-		return fmt.Errorf("expected exactly one integer argument: %w", err)
+		return fmt.Errorf("需要且仅需要一个整数参数：%w", err)
 	}
 	b, err := json.Marshal(n)
 	if err != nil {
-		return fmt.Errorf("failed to marshal DERP region: %w", err)
+		return fmt.Errorf("序列化 DERP 区域失败：%w", err)
 	}
 	if err := localClient.DebugActionBody(ctx, "force-prefer-derp", bytes.NewReader(b)); err != nil {
-		return fmt.Errorf("failed to force preferred DERP: %w", err)
+		return fmt.Errorf("强制首选 DERP 失败：%w", err)
 	}
 	return nil
 }
@@ -761,7 +761,7 @@ func forcePreferDERP(ctx context.Context, args []string) error {
 func localAPIAction(action string) func(context.Context, []string) error {
 	return func(ctx context.Context, args []string) error {
 		if len(args) > 0 {
-			return errors.New("unexpected arguments")
+			return errors.New("意外的参数")
 		}
 		return localClient.DebugAction(ctx, action)
 	}
@@ -773,10 +773,10 @@ func reloadConfig(ctx context.Context, args []string) error {
 		return err
 	}
 	if ok {
-		printf("config reloaded\n")
+		printf("配置已重新加载\n")
 		return nil
 	}
-	printf("config mode not in use\n")
+	printf("未使用配置模式\n")
 	os.Exit(1)
 	panic("unreachable")
 }
@@ -883,12 +883,12 @@ func runDaemonBusGraph(ctx context.Context, args []string) error {
 		return err
 	}
 	if format := daemonBusGraphArgs.format; format != "json" && format != "dot" {
-		return fmt.Errorf("unrecognized output format %q", format)
+		return fmt.Errorf("无法识别的输出格式 %q", format)
 	}
 	if daemonBusGraphArgs.format == "dot" {
 		var topics eventbus.DebugTopics
 		if err := json.Unmarshal(graph, &topics); err != nil {
-			return fmt.Errorf("unable to parse json: %w", err)
+			return fmt.Errorf("无法解析 json：%w", err)
 		}
 		fmt.Print(generateDOTGraph(topics.Topics))
 	} else {
@@ -986,20 +986,20 @@ func runDaemonMetrics(ctx context.Context, args []string) error {
 func runVia(ctx context.Context, args []string) error {
 	switch len(args) {
 	default:
-		return errors.New("expect either <site-id> <v4-cidr> or <v6-route>")
+		return errors.New("需要 <site-id> <v4-cidr> 或 <v6-route> 之一")
 	case 1:
 		ipp, err := netip.ParsePrefix(args[0])
 		if err != nil {
 			return err
 		}
 		if !ipp.Addr().Is6() {
-			return errors.New("with one argument, expect an IPv6 CIDR")
+			return errors.New("当只给出一个参数时，应为一个 IPv6 CIDR")
 		}
 		if !tsaddr.TailscaleViaRange().Contains(ipp.Addr()) {
-			return errors.New("not a via route")
+			return errors.New("不是 via 路由")
 		}
 		if ipp.Bits() < 96 {
-			return errors.New("short length, want /96 or more")
+			return errors.New("长度过短，需要 /96 或更长")
 		}
 		v4 := tsaddr.UnmapVia(ipp.Addr())
 		a := ipp.Addr().As16()
@@ -1008,10 +1008,10 @@ func runVia(ctx context.Context, args []string) error {
 	case 2:
 		siteID, err := strconv.ParseUint(args[0], 0, 32)
 		if err != nil {
-			return fmt.Errorf("invalid site-id %q; must be decimal or hex with 0x prefix", args[0])
+			return fmt.Errorf("无效的 site-id %q；必须为十进制或以 0x 开头的十六进制", args[0])
 		}
 		if siteID > 0xffff {
-			return fmt.Errorf("site-id values over 65535 are currently reserved")
+			return fmt.Errorf("大于 65535 的 site-id 值目前保留")
 		}
 		ipp, err := netip.ParsePrefix(args[1])
 		if err != nil {
@@ -1043,7 +1043,7 @@ func runTS2021(ctx context.Context, args []string) error {
 
 	keyTransport := netutil.NewDefaultTransport()
 	if ts2021Args.aceHost != "" {
-		log.Printf("using ACE server %q", ts2021Args.aceHost)
+		log.Printf("使用 ACE 服务器 %q", ts2021Args.aceHost)
 		keyTransport.Proxy = nil
 		keyTransport.DialContext = (&ace.Dialer{ACEHost: ts2021Args.aceHost}).Dial
 	}
@@ -1064,27 +1064,27 @@ func runTS2021(ctx context.Context, args []string) error {
 	var keys struct {
 		PublicKey key.MachinePublic
 	}
-	log.Printf("Fetching keys from %s ...", keysURL)
+	log.Printf("正在从 %s 获取密钥 ...", keysURL)
 	req, err := http.NewRequestWithContext(ctx, "GET", keysURL, nil)
 	if err != nil {
 		return err
 	}
 	res, err := keyTransport.RoundTrip(req)
 	if err != nil {
-		log.Printf("Do: %v", err)
+		log.Printf("Do：%v", err)
 		return err
 	}
 	if res.StatusCode != 200 {
-		log.Printf("Status: %v", res.Status)
+		log.Printf("状态：%v", res.Status)
 		return errors.New(res.Status)
 	}
 	if err := json.NewDecoder(res.Body).Decode(&keys); err != nil {
-		log.Printf("JSON: %v", err)
-		return fmt.Errorf("decoding /keys JSON: %w", err)
+		log.Printf("JSON：%v", err)
+		return fmt.Errorf("解码 /keys JSON 失败：%w", err)
 	}
 	res.Body.Close()
 	if ts2021Args.verbose {
-		log.Printf("got public key: %v", keys.PublicKey)
+		log.Printf("获取到公钥：%v", keys.PublicKey)
 	}
 
 	dialFunc := func(ctx context.Context, network, address string) (net.Conn, error) {
@@ -1110,18 +1110,18 @@ func runTS2021(ctx context.Context, args []string) error {
 
 	netMon, err := netmon.New(bus, logger.WithPrefix(logf, "netmon: "))
 	if err != nil {
-		return fmt.Errorf("creating netmon: %w", err)
+		return fmt.Errorf("创建 netmon：%w", err)
 	}
 
 	var dialPlan *tailcfg.ControlDialPlan
 	if ts2021Args.dialPlanJSONFile != "" {
 		b, err := os.ReadFile(ts2021Args.dialPlanJSONFile)
 		if err != nil {
-			return fmt.Errorf("reading dial plan JSON file: %w", err)
+			return fmt.Errorf("读取拨号计划 JSON 文件：%w", err)
 		}
 		dialPlan = new(tailcfg.ControlDialPlan)
 		if err := json.Unmarshal(b, dialPlan); err != nil {
-			return fmt.Errorf("unmarshaling dial plan JSON file: %w", err)
+			return fmt.Errorf("反序列化拨号计划 JSON 文件：%w", err)
 		}
 	} else if ts2021Args.aceHost != "" {
 		dialPlan = &tailcfg.ControlDialPlan{
@@ -1181,7 +1181,7 @@ func tryConnect(ctx context.Context, controlPublic key.MachinePublic, opts ts202
 
 	nc, err := ts2021.NewClient(opts)
 	if err != nil {
-		return fmt.Errorf("NewNoiseClient: %w", err)
+		return fmt.Errorf("NewNoiseClient：%w", err)
 	}
 
 	// Make a /whoami request to the server to verify that we can actually
@@ -1193,7 +1193,7 @@ func tryConnect(ctx context.Context, controlPublic key.MachinePublic, opts ts202
 	}
 	resp, err := nc.Do(req)
 	if err != nil {
-		return fmt.Errorf("RoundTrip whoami request: %w", err)
+		return fmt.Errorf("RoundTrip whoami 请求：%w", err)
 	}
 	defer resp.Body.Close()
 
@@ -1202,7 +1202,7 @@ func tryConnect(ctx context.Context, controlPublic key.MachinePublic, opts ts202
 	} else {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("reading whoami response: %w", err)
+			return fmt.Errorf("读取 whoami 响应：%w", err)
 		}
 		log.Printf("whoami response: %q", body)
 	}
@@ -1215,7 +1215,7 @@ var debugComponentLogsArgs struct {
 
 func runDebugComponentLogs(ctx context.Context, args []string) error {
 	if len(args) != 1 {
-		return errors.New("usage: tailscale debug component-logs [" + strings.Join(ipn.DebuggableComponents, "|") + "]")
+		return errors.New("用法：tailscale debug component-logs [" + strings.Join(ipn.DebuggableComponents, "|") + "]")
 	}
 	component := args[0]
 	dur := debugComponentLogsArgs.forDur
@@ -1225,9 +1225,9 @@ func runDebugComponentLogs(ctx context.Context, args []string) error {
 		return err
 	}
 	if debugComponentLogsArgs.forDur <= 0 {
-		fmt.Printf("Disabled debug logs for component %q\n", component)
+		fmt.Printf("已禁用组件 %q 的调试日志\n", component)
 	} else {
-		fmt.Printf("Enabled debug logs for component %q for %v\n", component, dur)
+		fmt.Printf("已启用组件 %q 的调试日志，时长 %v\n", component, dur)
 	}
 	return nil
 }
@@ -1238,10 +1238,10 @@ var devStoreSetArgs struct {
 
 func runDevStoreSet(ctx context.Context, args []string) error {
 	if len(args) != 2 {
-		return errors.New("usage: tailscale debug dev-store-set --danger <key> <value>")
+		return errors.New("用法：tailscale debug dev-store-set --danger <key> <value>")
 	}
 	if !devStoreSetArgs.danger {
-		return errors.New("this command is dangerous; use --danger to proceed")
+		return errors.New("此命令具有危险性；请使用 --danger 继续")
 	}
 	key, val := args[0], args[1]
 	if val == "-" {
@@ -1256,7 +1256,7 @@ func runDevStoreSet(ctx context.Context, args []string) error {
 
 func runDebugDERP(ctx context.Context, args []string) error {
 	if len(args) != 1 {
-		return errors.New("usage: tailscale debug derp <region>")
+		return errors.New("用法：tailscale debug derp <region>")
 	}
 	st, err := localClient.DebugDERPRegion(ctx, args[0])
 	if err != nil {
@@ -1272,7 +1272,7 @@ var setExpireArgs struct {
 
 func runSetExpire(ctx context.Context, args []string) error {
 	if len(args) != 0 || setExpireArgs.in == 0 {
-		return errors.New("usage: tailscale debug set-expire --in=<duration>")
+		return errors.New("用法：tailscale debug set-expire --in=<duration>")
 	}
 	return localClient.DebugSetExpireIn(ctx, setExpireArgs.in)
 }
@@ -1289,7 +1289,7 @@ func runPeerEndpointChanges(ctx context.Context, args []string) error {
 	}
 
 	if len(args) != 1 || args[0] == "" {
-		return errors.New("usage: tailscale debug peer-endpoint-changes <hostname-or-IP>")
+		return errors.New("用法：tailscale debug peer-endpoint-changes <hostname-or-IP>")
 	}
 	var ip string
 
@@ -1299,7 +1299,7 @@ func runPeerEndpointChanges(ctx context.Context, args []string) error {
 		return err
 	}
 	if self {
-		printf("%v is local Tailscale IP\n", ip)
+		printf("%v 是本地 Tailscale IP\n", ip)
 		return nil
 	}
 
@@ -1325,7 +1325,7 @@ func runPeerEndpointChanges(ctx context.Context, args []string) error {
 
 	var dst bytes.Buffer
 	if err := json.Indent(&dst, body, "", "  "); err != nil {
-		return fmt.Errorf("indenting returned JSON: %w", err)
+		return fmt.Errorf("缩进返回的 JSON：%w", err)
 	}
 
 	if ss := dst.String(); !strings.HasSuffix(ss, "\n") {
@@ -1337,7 +1337,7 @@ func runPeerEndpointChanges(ctx context.Context, args []string) error {
 
 func debugControlKnobs(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return errors.New("unexpected arguments")
+		return errors.New("意外的参数")
 	}
 	v, err := localClient.DebugResultJSON(ctx, "control-knobs")
 	if err != nil {
@@ -1365,7 +1365,7 @@ func runDebugDialTypes(ctx context.Context, args []string) error {
 	}
 
 	if len(args) != 2 || args[0] == "" || args[1] == "" {
-		return errors.New("usage: tailscale debug dial-types <hostname-or-IP> <port>")
+		return errors.New("用法：tailscale debug dial-types <hostname-or-IP> <port>")
 	}
 
 	port, err := strconv.ParseUint(args[1], 10, 16)
@@ -1413,7 +1413,7 @@ var resolveArgs struct {
 
 func runDebugResolve(ctx context.Context, args []string) error {
 	if len(args) != 1 {
-		return errors.New("usage: tailscale debug resolve <hostname>")
+		return errors.New("用法：tailscale debug resolve <hostname>")
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -1432,7 +1432,7 @@ func runDebugResolve(ctx context.Context, args []string) error {
 
 func runPeerRelayServers(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return errors.New("unexpected arguments")
+		return errors.New("意外的参数")
 	}
 	v, err := localClient.DebugResultJSON(ctx, "peer-relay-servers")
 	if err != nil {
@@ -1450,18 +1450,18 @@ var testRiskArgs struct {
 
 func runTestRisk(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return errors.New("unexpected arguments")
+		return errors.New("意外的参数")
 	}
-	if err := presentRiskToUser("test-risk", "This is a test risky action.", testRiskArgs.acceptedRisk); err != nil {
+	if err := presentRiskToUser("test-risk", "这是一个测试性的危险操作。", testRiskArgs.acceptedRisk); err != nil {
 		return err
 	}
-	fmt.Println("did-test-risky-action")
+	fmt.Println("已执行模拟危险操作")
 	return nil
 }
 
 func runPrintStateDir(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return errors.New("unexpected arguments")
+		return errors.New("意外的参数")
 	}
 	v, err := localClient.DebugResultJSON(ctx, "statedir")
 	if err != nil {
@@ -1472,8 +1472,8 @@ func runPrintStateDir(ctx context.Context, args []string) error {
 		fmt.Println(statedir)
 		return nil
 	} else if ok && statedir == "" {
-		return errors.New("no statedir is set")
+		return errors.New("未设置 statedir")
 	} else {
-		return fmt.Errorf("got unexpected response from debug API: %v", v)
+		return fmt.Errorf("从调试 API 收到意外响应：%v", v)
 	}
 }

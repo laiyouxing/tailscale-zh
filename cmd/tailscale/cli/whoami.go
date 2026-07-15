@@ -16,15 +16,15 @@ import (
 var whoamiCmd = &ffcli.Command{
 	Name:       "whoami",
 	ShortUsage: "tailscale whoami [--json]",
-	ShortHelp:  "Show the machine and user identity of the current machine",
+	ShortHelp:  "显示当前设备的机器与用户身份",
 	LongHelp: strings.TrimSpace(`
-	'tailscale whoami' shows the machine and user identity of the current machine.
-	It is equivalent to running 'tailscale whois' against one of the current machine's own Tailscale IP addresses.
+	'tailscale whoami' 显示当前设备的机器与用户身份。
+	它等价于针对当前设备自身的某个 Tailscale IP 地址运行 'tailscale whois'。
 	`),
 	Exec: runWhoami,
 	FlagSet: func() *flag.FlagSet {
 		fs := newFlagSet("whoami")
-		fs.BoolVar(&whoamiArgs.json, "json", false, "output in JSON format")
+		fs.BoolVar(&whoamiArgs.json, "json", false, "以 JSON 格式输出")
 		return fs
 	}(),
 }
@@ -35,14 +35,14 @@ var whoamiArgs struct {
 
 func runWhoami(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return errors.New("too many arguments, expected none")
+		return errors.New("参数过多，期望无参数")
 	}
 	st, err := localClient.StatusWithoutPeers(ctx)
 	if err != nil {
 		return err
 	}
 	if len(st.TailscaleIPs) == 0 {
-		return fmt.Errorf("no current Tailscale IP address; state: %v", st.BackendState)
+		return fmt.Errorf("当前没有 Tailscale IP 地址；状态：%v", st.BackendState)
 	}
 	who, err := localClient.WhoIsProto(ctx, "", st.TailscaleIPs[0].String())
 	if err != nil {

@@ -26,10 +26,10 @@ func mkDebugCaptureCmd() *ffcli.Command {
 		Name:       "capture",
 		ShortUsage: "tailscale debug capture",
 		Exec:       runCapture,
-		ShortHelp:  "Stream pcaps for debugging",
+		ShortHelp:  "流式输出 pcap 以进行调试",
 		FlagSet: (func() *flag.FlagSet {
 			fs := newFlagSet("capture")
-			fs.StringVar(&captureArgs.outFile, "o", "", "path to stream the pcap (or - for stdout), leave empty to start wireshark")
+			fs.StringVar(&captureArgs.outFile, "o", "", "流式输出 pcap 的目标路径（或用 - 表示 stdout）；留空则启动 wireshark")
 			return fs
 		})(),
 	}
@@ -48,7 +48,7 @@ func runCapture(ctx context.Context, args []string) error {
 
 	switch captureArgs.outFile {
 	case "-":
-		fmt.Fprintln(Stderr, "Press Ctrl-C to stop the capture.")
+		fmt.Fprintln(Stderr, "按 Ctrl-C 停止抓包。")
 		_, err = io.Copy(os.Stdout, stream)
 		return err
 	case "":
@@ -74,7 +74,7 @@ func runCapture(ctx context.Context, args []string) error {
 		return err
 	}
 	defer f.Close()
-	fmt.Fprintln(Stderr, "Press Ctrl-C to stop the capture.")
+	fmt.Fprintln(Stderr, "按 Ctrl-C 停止抓包。")
 	_, err = io.Copy(f, stream)
 	return err
 }

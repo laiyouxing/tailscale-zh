@@ -127,7 +127,7 @@ export function useAPI() {
               mutate("/data")
               mutate("/auth")
             })
-            .catch(handlePostError("Failed to login"))
+            .catch(handlePostError("登录失败"))
 
         /**
          * "logout" handles logging the node out of tailscale, effectively
@@ -139,7 +139,7 @@ export function useAPI() {
           incrementMetric("web_client_node_disconnect")
           return apiFetch("/local/v0/logout", "POST")
             .then(() => mutate("/auth"))
-            .catch(handlePostError("Failed to logout"))
+            .catch(handlePostError("登出失败"))
 
         /**
          * "new-auth-session" handles creating a new check mode session to
@@ -147,7 +147,7 @@ export function useAPI() {
          */
         case "new-auth-session":
           return apiFetch<AuthSessionNewData>("/auth/session/new", "GET").catch(
-            handlePostError("Failed to create new session")
+            handlePostError("创建新会话失败")
           )
 
         /**
@@ -173,7 +173,7 @@ export function useAPI() {
                     : "web_client_ssh_disable"
                 )
             )
-            .catch(handlePostError("Failed to update node preference"))
+            .catch(handlePostError("更新节点配置失败"))
         }
 
         /**
@@ -190,7 +190,7 @@ export function useAPI() {
             (old) => ({ ...old, AdvertisedRoutes: t.data })
           )
             .then(() => incrementMetric("web_client_advertise_routes_change"))
-            .catch(handlePostError("Failed to update routes"))
+            .catch(handlePostError("更新路由失败"))
         }
 
         /**
@@ -239,7 +239,7 @@ export function useAPI() {
             false // skip final revalidation
           )
             .then(() => metrics.forEach((m) => incrementMetric(m)))
-            .catch(handlePostError("Failed to update exit node"))
+            .catch(handlePostError("更新出口节点失败"))
         }
 
         default:

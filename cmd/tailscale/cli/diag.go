@@ -27,7 +27,7 @@ func init() {
 func fixTailscaledConnectErrorImpl(origErr error) error {
 	procs, err := ps.Processes()
 	if err != nil {
-		return fmt.Errorf("failed to connect to local Tailscaled process and failed to enumerate processes while looking for it")
+		return fmt.Errorf("无法连接到本地 tailscaled 进程，且在查找它时也无法枚举进程")
 	}
 	var foundProc ps.Process
 	for _, proc := range procs {
@@ -48,19 +48,19 @@ func fixTailscaledConnectErrorImpl(origErr error) error {
 	if foundProc == nil {
 		switch runtime.GOOS {
 		case "windows":
-			return fmt.Errorf("failed to connect to local tailscaled process; is the Tailscale service running?")
+			return fmt.Errorf("无法连接到本地 tailscaled 进程；Tailscale 服务是否正在运行？")
 		case "darwin":
-			return fmt.Errorf("failed to connect to local Tailscale service; is Tailscale running?")
+			return fmt.Errorf("无法连接到本地 Tailscale 服务；Tailscale 是否正在运行？")
 		case "linux":
 			var hint string
 			if isSystemdSystem() {
-				hint = " (sudo systemctl start tailscaled ?)"
+				hint = "（sudo systemctl start tailscaled ?）"
 			}
-			return fmt.Errorf("failed to connect to local tailscaled; it doesn't appear to be running%s", hint)
+			return fmt.Errorf("无法连接到本地 tailscaled；它似乎没有在运行%s", hint)
 		}
-		return fmt.Errorf("failed to connect to local tailscaled process; it doesn't appear to be running")
+		return fmt.Errorf("无法连接到本地 tailscaled 进程；它似乎没有在运行")
 	}
-	return fmt.Errorf("failed to connect to local tailscaled (which appears to be running as %v, pid %v). Got error: %w", foundProc.Executable(), foundProc.Pid(), origErr)
+	return fmt.Errorf("无法连接到本地 tailscaled（它似乎以 %v 运行，pid %v）。错误：%w", foundProc.Executable(), foundProc.Pid(), origErr)
 }
 
 // isSystemdSystem reports whether the current machine uses systemd

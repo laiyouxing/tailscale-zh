@@ -29,33 +29,31 @@ import (
 var statusCmd = &ffcli.Command{
 	Name:       "status",
 	ShortUsage: "tailscale status [--active] [--web] [--json]",
-	ShortHelp:  "Show state of tailscaled and its connections",
+	ShortHelp:  "显示 tailscaled 及其连接的状态",
 	LongHelp: strings.TrimSpace(`
 
-JSON FORMAT
+JSON 格式
 
-Warning: this format has changed between releases and might change more
-in the future.
+警告：该格式在不同版本之间发生过变化，未来可能还会变化。
 
-For a description of the fields, see the "type Status" declaration at:
+各字段的说明，参见 "type Status" 声明：
 
 https://github.com/tailscale/tailscale/blob/main/ipn/ipnstate/ipnstate.go
 
-(and be sure to select branch/tag that corresponds to the version
- of Tailscale you're running)
+（请确保选择的分支/标签与你运行的 Tailscale 版本相对应）
 
 `),
 	Exec: runStatus,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("status")
-		fs.BoolVar(&statusArgs.json, "json", false, "output in JSON format (WARNING: format subject to change)")
-		fs.BoolVar(&statusArgs.web, "web", false, "run webserver with HTML showing status")
-		fs.BoolVar(&statusArgs.active, "active", false, "filter output to only peers with active sessions (not applicable to web mode)")
-		fs.BoolVar(&statusArgs.self, "self", true, "show status of local machine")
-		fs.BoolVar(&statusArgs.peers, "peers", true, "show status of peers")
-		fs.StringVar(&statusArgs.listen, "listen", "127.0.0.1:8384", "listen address for web mode; use port 0 for automatic")
-		fs.BoolVar(&statusArgs.browser, "browser", true, "open a browser in web mode")
-		fs.BoolVar(&statusArgs.header, "header", false, "show column headers in table format")
+		fs.BoolVar(&statusArgs.json, "json", false, "以 JSON 格式输出（警告：输出格式可能发生变化）")
+		fs.BoolVar(&statusArgs.web, "web", false, "运行一个展示状态的 Web 服务器（HTML）")
+		fs.BoolVar(&statusArgs.active, "active", false, "仅筛选具有活动会话的对等节点输出（不适用于 web 模式）")
+		fs.BoolVar(&statusArgs.self, "self", true, "显示本机状态")
+		fs.BoolVar(&statusArgs.peers, "peers", true, "显示对等节点状态")
+		fs.StringVar(&statusArgs.listen, "listen", "127.0.0.1:8384", "web 模式下的监听地址；使用端口 0 表示自动分配")
+		fs.BoolVar(&statusArgs.browser, "browser", true, "在 web 模式下打开浏览器")
+		fs.BoolVar(&statusArgs.header, "header", false, "以表格格式显示列标题")
 		return fs
 	})(),
 }
@@ -75,7 +73,7 @@ const mullvadTCD = "mullvad.ts.net."
 
 func runStatus(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return errors.New("unexpected non-flag arguments to 'tailscale status'")
+		return errors.New("'tailscale status' 出现了意外的非 flag 参数")
 	}
 	getStatus := localClient.Status
 	if !statusArgs.peers {
@@ -106,7 +104,7 @@ func runStatus(ctx context.Context, args []string) error {
 			return err
 		}
 		statusURL := netmon.HTTPOfListener(ln)
-		printf("Serving Tailscale status at %v ...\n", statusURL)
+		printf("正在 %v 上提供 Tailscale 状态服务 ...\n", statusURL)
 		go func() {
 			<-ctx.Done()
 			ln.Close()
@@ -136,7 +134,7 @@ func runStatus(ctx context.Context, args []string) error {
 	}
 
 	printHealth := func() {
-		printf("# Health check:\n")
+		printf("# 健康检查：\n")
 		for _, m := range st.Health {
 			printf("#     - %s\n", m)
 		}
@@ -157,7 +155,7 @@ func runStatus(ctx context.Context, args []string) error {
 	w := tabwriter.NewWriter(Stdout, 0, 0, 2, ' ', 0)
 	f := func(format string, a ...any) { fmt.Fprintf(w, format, a...) }
 	if statusArgs.header {
-		fmt.Fprintln(w, "IP\tHostname\tOwner\tOS\tStatus\t")
+		fmt.Fprintln(w, "IP\t主机名\t拥有者\t操作系统\t状态\t")
 		fmt.Fprintln(w, "--\t--------\t-----\t--\t------\t")
 	}
 
@@ -172,40 +170,40 @@ func runStatus(ctx context.Context, args []string) error {
 		anyTraffic := ps.TxBytes != 0 || ps.RxBytes != 0
 		var offline string
 		if !ps.Online {
-			offline = "; offline" + lastSeenFmt(ps.LastSeen)
+			offline = "；离线" + lastSeenFmt(ps.LastSeen)
 		}
 		if !ps.Active {
 			if ps.ExitNode {
-				f("idle; exit node%s", offline)
+				f("空闲；出口节点%s", offline)
 			} else if ps.ExitNodeOption {
-				f("idle; offers exit node%s", offline)
+				f("空闲；提供出口节点%s", offline)
 			} else if anyTraffic {
-				f("idle%s", offline)
+				f("空闲%s", offline)
 			} else if !ps.Online {
-				f("offline%s", lastSeenFmt(ps.LastSeen))
+				f("离线%s", lastSeenFmt(ps.LastSeen))
 			} else {
 				f("-")
 			}
 		} else {
-			f("active; ")
+			f("活动；")
 			if ps.ExitNode {
-				f("exit node; ")
+				f("出口节点；")
 			} else if ps.ExitNodeOption {
-				f("offers exit node; ")
+				f("提供出口节点；")
 			}
 			if relay != "" && ps.CurAddr == "" && ps.PeerRelay == "" {
-				f("relay %q", relay)
+				f("中继 %q", relay)
 			} else if ps.CurAddr != "" {
-				f("direct %s", ps.CurAddr)
+				f("直连 %s", ps.CurAddr)
 			} else if ps.PeerRelay != "" {
-				f("peer-relay %s", ps.PeerRelay)
+				f("对等中继 %s", ps.PeerRelay)
 			}
 			if !ps.Online {
 				f("%s", offline)
 			}
 		}
 		if anyTraffic {
-			f(", tx %d rx %d", ps.TxBytes, ps.RxBytes)
+			f("，发送 %d 接收 %d", ps.TxBytes, ps.RxBytes)
 		}
 		f("\t\n")
 	}
@@ -241,7 +239,7 @@ func runStatus(ctx context.Context, args []string) error {
 
 	if locBasedExitNode {
 		outln()
-		printf("# To see the full list of exit nodes, including location-based exit nodes, run `tailscale exit-node list`  \n")
+		printf("# 要查看包括基于位置的出口节点在内的完整出口节点列表，请运行 `tailscale exit-node list`  \n")
 	}
 	if len(st.Health) > 0 {
 		outln()
@@ -262,17 +260,17 @@ var hookPrintFunnelStatus feature.Hook[func(context.Context)]
 func isRunningOrStarting(st *ipnstate.Status) (description string, ok bool) {
 	switch st.BackendState {
 	default:
-		return fmt.Sprintf("unexpected state: %s", st.BackendState), false
+		return fmt.Sprintf("意外状态：%s", st.BackendState), false
 	case ipn.Stopped.String():
-		return "Tailscale is stopped.", false
+		return "Tailscale 已停止。", false
 	case ipn.NeedsLogin.String():
-		s := "Logged out."
+		s := "已登出。"
 		if st.AuthURL != "" {
-			s += fmt.Sprintf("\nLog in at: %s", st.AuthURL)
+			s += fmt.Sprintf("\n在此登录：%s", st.AuthURL)
 		}
 		return s, false
 	case ipn.NeedsMachineAuth.String():
-		return "Machine is not yet approved by tailnet admin.", false
+		return "主机尚未被 tailnet 管理员批准。", false
 	case ipn.Running.String(), ipn.Starting.String():
 		return st.BackendState, true
 	}

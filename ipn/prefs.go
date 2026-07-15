@@ -909,8 +909,8 @@ func exitNodeIPOfArg(s string, st *ipnstate.Status) (ip netip.Addr, err error) {
 	// If the string is not a valid IP address, assume it's a hostname.
 	// Search the list of peers for a matching hostname.
 	if len(st.Peer) == 0 {
-		return ip, errors.New("cannot resolve exit node by hostname while Tailscale is starting up; " +
-			"please use its Tailscale IP address instead")
+		return ip, errors.New("在 Tailscale 启动过程中无法通过主机名解析出口节点；" +
+			"请改用其 Tailscale IP 地址")
 	}
 	match := 0
 	for _, ps := range st.Peer {

@@ -12,7 +12,7 @@ import (
 	"runtime"
 )
 
-var errFlashUnsupported = errors.New("flash-appliance is only supported on linux and darwin (got " + runtime.GOOS + ")")
+var errFlashUnsupported = errors.New("flash-appliance 仅支持 linux 和 darwin（当前为 " + runtime.GOOS + "）")
 
 func discoverExternalDisks(_ context.Context) ([]diskCandidate, error) {
 	return nil, errFlashUnsupported

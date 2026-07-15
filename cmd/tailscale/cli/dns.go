@@ -11,13 +11,13 @@ import (
 
 var dnsCmd = &ffcli.Command{
 	Name:      "dns",
-	ShortHelp: "Diagnose the internal DNS forwarder",
+	ShortHelp: "诊断内部 DNS 转发器",
 	LongHelp: strings.TrimSpace(`
-The 'tailscale dns' subcommand provides tools for diagnosing the internal DNS
-forwarder (100.100.100.100).
+'tailscale dns' 子命令提供用于诊断内部 DNS 转发器
+（100.100.100.100）的工具。
 
-For more information about the DNS functionality built into Tailscale, refer to
-https://tailscale.com/kb/1054/dns.
+有关 Tailscale 内置 DNS 功能的更多信息，请参阅
+https://tailscale.com/kb/1054/dns。
 `),
 	ShortUsage: strings.Join([]string{
 		dnsStatusCmd.ShortUsage,

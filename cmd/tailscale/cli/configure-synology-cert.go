@@ -36,17 +36,17 @@ func synologyConfigureCertCmd() *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "synology-cert",
 		Exec:       runConfigureSynologyCert,
-		ShortHelp:  "Configure Synology with a TLS certificate for your tailnet",
+		ShortHelp:  "为你的 tailnet 配置带 TLS 证书的 Synology",
 		ShortUsage: "synology-cert [--domain <domain>]",
 		LongHelp: strings.TrimSpace(`
-This command is intended to run periodically as root on a Synology device to
-create or refresh the TLS certificate for the tailnet domain.
+此命令用于在 Synology 设备上以 root 身份定期运行，以创建或刷新
+tailnet 域的 TLS 证书。
 
-See: https://tailscale.com/kb/1153/enabling-https
+参见：https://tailscale.com/kb/1153/enabling-https
 `),
 		FlagSet: (func() *flag.FlagSet {
 			fs := newFlagSet("synology-cert")
-			fs.StringVar(&synologyConfigureCertArgs.domain, "domain", "", "Tailnet domain to create or refresh certificates for. Ignored if only one domain exists.")
+			fs.StringVar(&synologyConfigureCertArgs.domain, "domain", "", "要创建或刷新证书的 tailnet 域。若仅存在一个域，则忽略此项。")
 			return fs
 		})(),
 	}
@@ -58,30 +58,30 @@ var synologyConfigureCertArgs struct {
 
 func runConfigureSynologyCert(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return errors.New("unknown arguments")
+		return errors.New("未知参数")
 	}
 	if runtime.GOOS != "linux" || distro.Get() != distro.Synology {
-		return errors.New("only implemented on Synology")
+		return errors.New("仅在 Synology 上实现")
 	}
 	if uid := os.Getuid(); uid != 0 {
-		return fmt.Errorf("must be run as root, not %q (%v)", os.Getenv("USER"), uid)
+		return fmt.Errorf("必须以 root 身份运行，而非 %q（%v）", os.Getenv("USER"), uid)
 	}
 	hi := hostinfo.New()
 	isDSM6 := strings.HasPrefix(hi.DistroVersion, "6.")
 	isDSM7 := strings.HasPrefix(hi.DistroVersion, "7.")
 	if !isDSM6 && !isDSM7 {
-		return fmt.Errorf("unsupported DSM version %q", hi.DistroVersion)
+		return fmt.Errorf("不支持的 DSM 版本 %q", hi.DistroVersion)
 	}
 
 	domain := synologyConfigureCertArgs.domain
 	if st, err := localClient.Status(ctx); err == nil {
 		if st.BackendState != ipn.Running.String() {
-			return fmt.Errorf("Tailscale is not running.")
+			return fmt.Errorf("Tailscale 未运行。")
 		} else if len(st.CertDomains) == 0 {
-			return fmt.Errorf("TLS certificate support is not enabled/configured for your tailnet.")
+			return fmt.Errorf("你的 tailnet 未启用/配置 TLS 证书支持。")
 		} else if len(st.CertDomains) == 1 {
 			if domain != "" && domain != st.CertDomains[0] {
-				log.Printf("Ignoring supplied domain %q, TLS certificate will be created for %q.\n", domain, st.CertDomains[0])
+				log.Printf("忽略提供的域 %q，将为其创建 TLS 证书 %q。\n", domain, st.CertDomains[0])
 			}
 			domain = st.CertDomains[0]
 		} else {
@@ -90,7 +90,7 @@ func runConfigureSynologyCert(ctx context.Context, args []string) error {
 				found = true
 			}
 			if !found {
-				return fmt.Errorf("Domain %q was not one of the valid domain options: %q.", domain, st.CertDomains)
+				return fmt.Errorf("域 %q 不是有效的域选项之一：%q。", domain, st.CertDomains)
 			}
 		}
 	}
@@ -116,7 +116,7 @@ func runConfigureSynologyCert(ctx context.Context, args []string) error {
 	// Certs have to be written to file for the upload command to work.
 	tmpDir, err := os.MkdirTemp("", "")
 	if err != nil {
-		return fmt.Errorf("can't create temp dir: %w", err)
+		return fmt.Errorf("无法创建临时目录：%w", err)
 	}
 	defer os.RemoveAll(tmpDir)
 	keyFile := path.Join(tmpDir, "key.pem")
@@ -152,7 +152,7 @@ func listCerts(ctx context.Context, c synoAPICaller) ([]certificateInfo, error) 
 		Certificates []certificateInfo `json:"certificates"`
 	}
 	if err := json.Unmarshal(rawData, &payload); err != nil {
-		return nil, fmt.Errorf("decoding certificate list response payload: %w", err)
+		return nil, fmt.Errorf("解码证书列表响应负载：%w", err)
 	}
 
 	return payload.Certificates, nil
@@ -163,7 +163,7 @@ func uploadCert(ctx context.Context, c synoAPICaller, certFile, keyFile string, 
 	params := map[string]string{
 		"key_tmp":  keyFile,
 		"cert_tmp": certFile,
-		"desc":     "Tailnet Certificate",
+		"desc":     "Tailnet 证书",
 	}
 	if id != "" {
 		params["id"] = id
@@ -178,9 +178,9 @@ func uploadCert(ctx context.Context, c synoAPICaller, certFile, keyFile string, 
 		NewID string `json:"id"`
 	}
 	if err := json.Unmarshal(rawData, &payload); err != nil {
-		return fmt.Errorf("decoding certificate upload response payload: %w", err)
+		return fmt.Errorf("解码证书上传响应负载：%w", err)
 	}
-	log.Printf("Tailnet Certificate uploaded with ID %q.", payload.NewID)
+	log.Printf("Tailnet 证书已上传，ID %q。", payload.NewID)
 
 	return nil
 
@@ -213,16 +213,16 @@ func (s synowebapiCommand) Call(ctx context.Context, api, method string, params 
 
 	out, err := exec.CommandContext(ctx, "/usr/syno/bin/synowebapi", args...).Output()
 	if err != nil {
-		return nil, fmt.Errorf("calling %q method of %q API: %v, %s", method, api, err, out)
+		return nil, fmt.Errorf("调用 %q API 的 %q 方法：%v, %s", method, api, err, out)
 	}
 
 	var payload apiResponse
 	if err := json.Unmarshal(out, &payload); err != nil {
-		return nil, fmt.Errorf("decoding response json from %q method of %q API: %w", method, api, err)
+		return nil, fmt.Errorf("解码 %q API 的 %q 方法的响应 JSON：%w", method, api, err)
 	}
 
 	if payload.Error != nil {
-		return nil, fmt.Errorf("error response from %q method of %q API: %v", method, api, payload.Error)
+		return nil, fmt.Errorf("%q API 的 %q 方法返回了错误响应：%v", method, api, payload.Error)
 	}
 
 	return payload.Data, nil

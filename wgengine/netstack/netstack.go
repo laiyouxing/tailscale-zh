@@ -1839,19 +1839,19 @@ func (ns *Impl) ListenPacket(network, address string) (net.PacketConn, error) {
 	var networkProto tcpip.NetworkProtocolNumber
 	switch network {
 	case "udp":
-		return nil, fmt.Errorf("netstack: udp not supported; use udp4 or udp6")
+		return nil, fmt.Errorf("netstack: 不支持 udp，请使用 udp4 或 udp6")
 	case "udp4":
 		networkProto = ipv4.ProtocolNumber
 		if !ap.Addr().Is4() {
-			return nil, fmt.Errorf("netstack: udp4 requires an IPv4 address")
+			return nil, fmt.Errorf("netstack: udp4 需要一个 IPv4 地址")
 		}
 	case "udp6":
 		networkProto = ipv6.ProtocolNumber
 		if !ap.Addr().Is6() {
-			return nil, fmt.Errorf("netstack: udp6 requires an IPv6 address")
+			return nil, fmt.Errorf("netstack: udp6 需要一个 IPv6 地址")
 		}
 	default:
-		return nil, fmt.Errorf("netstack: unsupported network %q", network)
+		return nil, fmt.Errorf("netstack: 不支持的网络 %q", network)
 	}
 	var wq waiter.Queue
 	ep, nserr := ns.ipstack.NewEndpoint(udp.ProtocolNumber, networkProto, &wq)
@@ -1882,15 +1882,15 @@ func (ns *Impl) ListenTCP(network, address string) (*gonet.TCPListener, error) {
 	case "tcp4":
 		networkProto = ipv4.ProtocolNumber
 		if ap.Addr().IsValid() && !ap.Addr().Is4() {
-			return nil, fmt.Errorf("netstack: tcp4 requires an IPv4 address")
+			return nil, fmt.Errorf("netstack: tcp4 需要一个 IPv4 地址")
 		}
 	case "tcp6":
 		networkProto = ipv6.ProtocolNumber
 		if ap.Addr().IsValid() && !ap.Addr().Is6() {
-			return nil, fmt.Errorf("netstack: tcp6 requires an IPv6 address")
+			return nil, fmt.Errorf("netstack: tcp6 需要一个 IPv6 地址")
 		}
 	default:
-		return nil, fmt.Errorf("netstack: unsupported network %q", network)
+		return nil, fmt.Errorf("netstack: 不支持的网络 %q", network)
 	}
 
 	localAddress := tcpip.FullAddress{

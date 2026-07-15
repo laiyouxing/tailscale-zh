@@ -43,23 +43,23 @@ export default function SubnetRouterView({
 
   return (
     <>
-      <h1 className="mb-1">Subnet router</h1>
+      <h1 className="mb-1">子网路由器</h1>
       <p className="description mb-5">
-        Add devices to your tailnet without installing Tailscale.{" "}
+        在不安装 Tailscale 的情况下，将设备添加到你的 tailnet 中。{" "}
         <a
           href="https://tailscale.com/kb/1019/subnets/"
           className="text-blue-700"
           target="_blank"
           rel="noreferrer"
         >
-          Learn more &rarr;
+          了解更多 &rarr;
         </a>
       </p>
       {!readonly &&
         (inputOpen ? (
           <Card noPadding className="-mx-5 p-5 !border-0 shadow-popover">
             <p className="font-medium leading-snug mb-3">
-              Advertise new routes
+              发布新路由
             </p>
             <Input
               type="text"
@@ -78,7 +78,7 @@ export default function SubnetRouterView({
               })}
             >
               {postError ||
-                "Add multiple routes by providing a comma-separated list."}
+                "使用逗号分隔的列表可添加多条路由。"}
             </p>
             <div className="flex gap-3">
               <Button
@@ -98,9 +98,9 @@ export default function SubnetRouterView({
                 }
                 disabled={!inputText || postError !== ""}
               >
-                Advertise {hasRoutes && "new "}routes
+                发布{hasRoutes && "新"}路由
               </Button>
-              {hasRoutes && <Button onClick={resetInput}>Cancel</Button>}
+              {hasRoutes && <Button onClick={resetInput}>取消</Button>}
             </div>
           </Card>
         ) : (
@@ -109,7 +109,7 @@ export default function SubnetRouterView({
             prefixIcon={<Plus />}
             onClick={() => setInputOpen(true)}
           >
-            Advertise new routes
+            发布新路由
           </Button>
         ))}
       <div className="-mx-5 mt-10">
@@ -131,11 +131,11 @@ export default function SubnetRouterView({
                       )}
                       {r.Approved ? (
                         <div className="text-green-500 text-sm leading-tight">
-                          Approved
+                          已批准
                         </div>
                       ) : (
                         <div className="text-gray-500 text-sm leading-tight">
-                          Pending approval
+                          待审批
                         </div>
                       )}
                     </div>
@@ -160,17 +160,17 @@ export default function SubnetRouterView({
                 className="mt-3 w-full text-center text-gray-500 text-sm leading-tight"
                 node={node}
               >
-                To approve routes, in the admin console go to{" "}
+                要批准路由，请在管理控制台中打开{" "}
                 <Control.AdminLink node={node} path={`/machines/${node.IPv4}`}>
-                  the machine’s route settings
+                  此设备的路由设置
                 </Control.AdminLink>
-                .
+                。
               </Control.AdminContainer>
             )}
           </>
         ) : (
           <Card empty>
-            <EmptyState description="Not advertising any routes" />
+            <EmptyState description="未发布任何路由" />
           </Card>
         )}
       </div>
@@ -182,16 +182,16 @@ function StopAdvertisingDialog({ onSubmit }: { onSubmit: () => void }) {
   return (
     <Dialog
       className="max-w-md"
-      title="Stop advertising route"
-      trigger={<Button sizeVariant="small">Stop advertising…</Button>}
+      title="停止发布路由"
+      trigger={<Button sizeVariant="small">停止发布…</Button>}
     >
       <Dialog.Form
         cancelButton
-        submitButton="Stop advertising"
+        submitButton="停止发布"
         destructive
         onSubmit={onSubmit}
       >
-        Any active connections between devices over this route will be broken.
+        此路由上设备之间的任何活动连接都将被中断。
       </Dialog.Form>
     </Dialog>
   )

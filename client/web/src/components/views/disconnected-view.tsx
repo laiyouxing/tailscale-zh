@@ -12,9 +12,8 @@ export default function DisconnectedView() {
     <>
       <TailscaleIcon className="mx-auto" />
       <p className="mt-12 text-center text-text-muted">
-        You logged out of this device. To reconnect it you will have to
-        re-authenticate the device from either the Tailscale app or the
-        Tailscale command line interface.
+        你已退出此设备的登录。要重新连接，你需要从 Tailscale 应用或
+        Tailscale 命令行界面重新验证此设备。
       </p>
     </>
   )

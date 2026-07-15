@@ -43,18 +43,18 @@ import (
 var netcheckCmd = &ffcli.Command{
 	Name:       "netcheck",
 	ShortUsage: "tailscale netcheck",
-	ShortHelp:  "Print an analysis of local network conditions",
+	ShortHelp:  "打印本地网络状况分析",
 	Exec:       runNetcheck,
 	FlagSet:    netcheckFlagSet,
 }
 
 var netcheckFlagSet = func() *flag.FlagSet {
 	fs := newFlagSet("netcheck")
-	fs.StringVar(&netcheckArgs.format, "format", "", `output format; empty (for human-readable), "json" or "json-line"`)
-	fs.DurationVar(&netcheckArgs.every, "every", 0, "if non-zero, do an incremental report with the given frequency")
-	fs.BoolVar(&netcheckArgs.verbose, "verbose", false, "verbose logs")
-	fs.StringVar(&netcheckArgs.bindAddress, "bind-address", "", "send and receive connectivity probes using this locally bound IP address; default: OS-assigned")
-	fs.IntVar(&netcheckArgs.bindPort, "bind-port", 0, "send and receive connectivity probes using this UDP port; default: OS-assigned")
+	fs.StringVar(&netcheckArgs.format, "format", "", `输出格式；为空（人类可读）、"json" 或 "json-line"`)
+	fs.DurationVar(&netcheckArgs.every, "every", 0, "若非 0，则按给定频率进行增量报告")
+	fs.BoolVar(&netcheckArgs.verbose, "verbose", false, "详细日志")
+	fs.StringVar(&netcheckArgs.bindAddress, "bind-address", "", "使用此本地绑定 IP 地址发送和接收连通性探测；默认：由操作系统分配")
+	fs.IntVar(&netcheckArgs.bindPort, "bind-port", 0, "使用此 UDP 端口发送和接收连通性探测；默认：由操作系统分配")
 	return fs
 }()
 
@@ -101,7 +101,7 @@ func runNetcheck(ctx context.Context, args []string) error {
 	}
 
 	if strings.HasPrefix(netcheckArgs.format, "json") {
-		fmt.Fprintln(Stderr, "# Warning: this JSON format is not yet considered a stable interface")
+		fmt.Fprintln(Stderr, "# 警告：此 JSON 格式尚未被视为稳定接口")
 	}
 
 	bind, err := createNetcheckBindString(
@@ -115,13 +115,13 @@ func runNetcheck(ctx context.Context, args []string) error {
 	}
 
 	if err := c.Standalone(ctx, bind); err != nil {
-		fmt.Fprintln(Stderr, "netcheck: UDP test failure:", err)
+		fmt.Fprintln(Stderr, "netcheck：UDP 测试失败：", err)
 	}
 
 	dm, err := localClient.CurrentDERPMap(ctx)
 	noRegions := dm != nil && len(dm.Regions) == 0
 	if noRegions {
-		log.Printf("No DERP map from tailscaled; using default.")
+		log.Printf("tailscaled 未提供 DERP 映射；使用默认映射。")
 	}
 	if err != nil || noRegions {
 		hc := &http.Client{
@@ -130,7 +130,7 @@ func runNetcheck(ctx context.Context, args []string) error {
 		}
 		dm, err = prodDERPMap(ctx, hc)
 		if err != nil {
-			log.Println("Failed to fetch a DERP map, so netcheck cannot continue. Check your Internet connection.")
+			log.Println("获取 DERP 映射失败，netcheck 无法继续。请检查你的网络连接。")
 			return err
 		}
 	}
@@ -142,7 +142,7 @@ func runNetcheck(ctx context.Context, args []string) error {
 			c.Logf("GetReport took %v; err=%v", d.Round(time.Millisecond), err)
 		}
 		if err != nil {
-			return fmt.Errorf("netcheck: %w", err)
+			return fmt.Errorf("netcheck：%w", err)
 		}
 		if err := printNetCheckReport(dm, report); err != nil {
 			return err
@@ -164,7 +164,7 @@ func printNetCheckReport(dm *tailcfg.DERPMap, report *netcheck.Report) error {
 	case "json-line":
 		j, err = json.Marshal(report)
 	default:
-		return fmt.Errorf("unknown output format %q", netcheckArgs.format)
+		return fmt.Errorf("未知的输出格式 %q", netcheckArgs.format)
 	}
 	if err != nil {
 		return err
@@ -175,45 +175,45 @@ func printNetCheckReport(dm *tailcfg.DERPMap, report *netcheck.Report) error {
 		return nil
 	}
 
-	printf("\nReport:\n")
-	printf("\t* Time: %v\n", report.Now.Local().Format(tstime.DateSpTimeNanoZ))
-	printf("\t* UDP: %v\n", report.UDP)
+	printf("\n报告：\n")
+	printf("\t* 时间：%v\n", report.Now.Local().Format(tstime.DateSpTimeNanoZ))
+	printf("\t* UDP：%v\n", report.UDP)
 	if report.GlobalV4.IsValid() {
-		printf("\t* IPv4: yes, %s\n", report.GlobalV4)
+		printf("\t* IPv4：是，%s\n", report.GlobalV4)
 	} else {
-		printf("\t* IPv4: (no addr found)\n")
+		printf("\t* IPv4：（未找到地址）\n")
 	}
 	if report.GlobalV6.IsValid() {
-		printf("\t* IPv6: yes, %s\n", report.GlobalV6)
+		printf("\t* IPv6：是，%s\n", report.GlobalV6)
 	} else if report.IPv6 {
-		printf("\t* IPv6: (no addr found)\n")
+		printf("\t* IPv6：（未找到地址）\n")
 	} else if report.OSHasIPv6 {
-		printf("\t* IPv6: no, but OS has support\n")
+		printf("\t* IPv6：否，但操作系统支持\n")
 	} else {
-		printf("\t* IPv6: no, unavailable in OS\n")
+		printf("\t* IPv6：否，操作系统不支持\n")
 	}
-	printf("\t* MappingVariesByDestIP: %v\n", report.MappingVariesByDestIP)
-	printf("\t* PortMapping: %v\n", portMapping(report))
+	printf("\t* 映射是否随目标 IP 变化：%v\n", report.MappingVariesByDestIP)
+	printf("\t* 端口映射：%v\n", portMapping(report))
 	if report.CaptivePortal != "" {
-		printf("\t* CaptivePortal: %v\n", report.CaptivePortal)
+		printf("\t* 强制门户：%v\n", report.CaptivePortal)
 	}
 
 	// When DERP latency checking failed,
 	// magicsock will try to pick the DERP server that
 	// most of your other nodes are also using
 	if len(report.RegionLatency) == 0 {
-		printf("\t* Nearest DERP: unknown (no response to latency probes)\n")
+		printf("\t* 最近的 DERP：未知（延迟探测无响应）\n")
 	} else {
 		if report.PreferredDERP != 0 {
 			if region, ok := dm.Regions[report.PreferredDERP]; ok {
-				printf("\t* Nearest DERP: %v\n", region.RegionName)
+				printf("\t* 最近的 DERP：%v\n", region.RegionName)
 			} else {
-				printf("\t* Nearest DERP: %v (region not found in map)\n", report.PreferredDERP)
+				printf("\t* 最近的 DERP：%v（在映射中未找到该区域）\n", report.PreferredDERP)
 			}
 		} else {
-			printf("\t* Nearest DERP: [none]\n")
+			printf("\t* 最近的 DERP：[无]\n")
 		}
-		printf("\t* DERP latency:\n")
+		printf("\t* DERP 延迟：\n")
 		var rids []int
 		for rid := range dm.Regions {
 			rids = append(rids, rid)
@@ -248,10 +248,10 @@ func printNetCheckReport(dm *tailcfg.DERPMap, report *netcheck.Report) error {
 
 func portMapping(r *netcheck.Report) string {
 	if !buildfeatures.HasPortMapper {
-		return "binary built without portmapper support"
+		return "该二进制未包含端口映射支持"
 	}
 	if !r.AnyPortMappingChecked() {
-		return "not checked"
+		return "未检查"
 	}
 	var got []string
 	if r.UPnP.EqualBool(true) {
@@ -267,26 +267,26 @@ func portMapping(r *netcheck.Report) string {
 }
 
 func prodDERPMap(ctx context.Context, httpc *http.Client) (*tailcfg.DERPMap, error) {
-	log.Printf("attempting to fetch a DERPMap from %s", ipn.DefaultControlURL)
+	log.Printf("正在尝试从 %s 获取 DERPMap", ipn.DefaultControlURL)
 	req, err := http.NewRequestWithContext(ctx, "GET", ipn.DefaultControlURL+"/derpmap/default", nil)
 	if err != nil {
-		return nil, fmt.Errorf("create prodDERPMap request: %w", err)
+		return nil, fmt.Errorf("创建 prodDERPMap 请求失败：%w", err)
 	}
 	res, err := httpc.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("fetch prodDERPMap failed: %w", err)
+		return nil, fmt.Errorf("获取 prodDERPMap 失败：%w", err)
 	}
 	defer res.Body.Close()
 	b, err := io.ReadAll(io.LimitReader(res.Body, 1<<20))
 	if err != nil {
-		return nil, fmt.Errorf("fetch prodDERPMap failed: %w", err)
+		return nil, fmt.Errorf("获取 prodDERPMap 失败：%w", err)
 	}
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("fetch prodDERPMap: %v: %s", res.Status, b)
+		return nil, fmt.Errorf("获取 prodDERPMap：%v：%s", res.Status, b)
 	}
 	var derpMap tailcfg.DERPMap
 	if err = json.Unmarshal(b, &derpMap); err != nil {
-		return nil, fmt.Errorf("fetch prodDERPMap: %w", err)
+		return nil, fmt.Errorf("获取 prodDERPMap 失败：%w", err)
 	}
 	return &derpMap, nil
 }
@@ -304,7 +304,7 @@ func createNetcheckBindString(cliAddress string, cliAddressIsSet bool, cliPort i
 		if cliPort >= 0 && cliPort <= math.MaxUint16 {
 			port = uint16(cliPort)
 		} else {
-			return "", fmt.Errorf("invalid bind port number: %d", cliPort)
+			return "", fmt.Errorf("无效的绑定端口号：%d", cliPort)
 		}
 	}
 
@@ -312,7 +312,7 @@ func createNetcheckBindString(cliAddress string, cliAddressIsSet bool, cliPort i
 	if cliAddressIsSet {
 		addr, err := netip.ParseAddr(cliAddress)
 		if err != nil {
-			return "", fmt.Errorf("invalid bind address: %q", cliAddress)
+			return "", fmt.Errorf("无效的绑定地址：%q", cliAddress)
 		}
 		return netip.AddrPortFrom(addr, port).String(), nil
 	} else {

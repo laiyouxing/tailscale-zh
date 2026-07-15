@@ -20,40 +20,37 @@ import (
 
 var waitCmd = &ffcli.Command{
 	Name:      "wait",
-	ShortHelp: "Wait for Tailscale interface/IPs to be ready for binding",
+	ShortHelp: "等待 Tailscale 接口/IP 准备好以供绑定",
 	LongHelp: strings.TrimSpace(`
-Wait for Tailscale resources to be available. As of 2026-01-02, the only
-resource that's available to wait for by is the Tailscale interface and its
-IPs.
+等待 Tailscale 资源可用。截至 2026-01-02，唯一可等待的资源是
+Tailscale 接口及其 IP 地址。
 
-With no arguments, this command will block until tailscaled is up, its backend is running,
-and the Tailscale interface is up and has a Tailscale IP address assigned to it.
+不带参数时，此命令会一直阻塞，直到 tailscaled 已启动、其后端正在运行，
+且 Tailscale 接口已启动并分配了 Tailscale IP 地址。
 
-If running in userspace-networking mode, this command only waits for tailscaled and
-the Running state, as no physical network interface exists.
+若运行在用户态网络模式（userspace-networking）下，由于不存在物理网络接口，
+此命令仅等待 tailscaled 与 Running 状态。
 
-A future version of this command may support waiting for other types of resources.
+未来版本可能会支持等待其他类型的资源。
 
-The command returns exit code 0 on success, and non-zero on failure or timeout.
+命令在成功时返回退出码 0，在失败或超时时返回非零退出码。
 
-To wait on a specific type of IP address, use 'tailscale ip' in combination with
-the 'tailscale wait' command. For example, to wait for an IPv4 address:
+要等待特定类型的 IP 地址，可将 'tailscale ip' 与 'tailscale wait' 命令结合使用。
+例如，等待一个 IPv4 地址：
 
     tailscale wait && tailscale ip --assert=<specific-IP-address>
 
-Linux systemd users can wait for the "tailscale-online.target" target, which runs
-this command.
+Linux systemd 用户可以等待运行此命令的 "tailscale-online.target" 目标。
 
-More generally, a service that wants to bind to (listen on) a Tailscale interface or IP address
-can run it like 'tailscale wait && /path/to/service [...]' to ensure that Tailscale is ready
-before the program starts.
+更一般地说，想要绑定（监听）Tailscale 接口或 IP 地址的服务可以这样运行它：
+'tailscale wait && /path/to/service [...]'，以确保在程序启动前 Tailscale 已就绪。
 `),
 
 	ShortUsage: "tailscale wait",
 	Exec:       runWait,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("wait")
-		fs.DurationVar(&waitArgs.timeout, "timeout", 0, "how long to wait before giving up (0 means wait indefinitely)")
+		fs.DurationVar(&waitArgs.timeout, "timeout", 0, "放弃前等待的时长（0 表示无限期等待）")
 		return fs
 	})(),
 }
@@ -64,7 +61,7 @@ var waitArgs struct {
 
 func runWait(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return fmt.Errorf("unexpected arguments: %q", args)
+		return fmt.Errorf("意外的参数：%q", args)
 	}
 	if waitArgs.timeout > 0 {
 		var cancel context.CancelFunc
@@ -153,5 +150,5 @@ func checkForInterfaceIP(ip netip.Addr) error {
 			}
 		}
 	}
-	return fmt.Errorf("no interface has IP %v", ip)
+	return fmt.Errorf("没有任何接口拥有 IP %v", ip)
 }

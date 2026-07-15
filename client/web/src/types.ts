@@ -89,15 +89,15 @@ export type Feature =
 export const featureDescription = (f: Feature) => {
   switch (f) {
     case "advertise-exit-node":
-      return "Advertising as an exit node"
+      return "作为出口节点发布"
     case "advertise-routes":
-      return "Advertising subnet routes"
+      return "发布子网路由"
     case "use-exit-node":
-      return "Using an exit node"
+      return "使用出口节点"
     case "ssh":
-      return "Running a Tailscale SSH server"
+      return "运行 Tailscale SSH 服务"
     case "auto-update":
-      return "Auto updating client versions"
+      return "自动更新客户端版本"
     default:
       assertNever(f)
   }

@@ -33,18 +33,18 @@ var configureKubeconfigArgs struct {
 func configureKubeconfigCmd() *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "kubeconfig",
-		ShortHelp:  "[ALPHA] Connect to a Kubernetes cluster using a Tailscale Auth Proxy",
+		ShortHelp:  "[ALPHA] 通过 Tailscale 认证代理连接到一个 Kubernetes 集群",
 		ShortUsage: "tailscale configure kubeconfig <hostname-or-fqdn>",
 		LongHelp: strings.TrimSpace(`
-Run this command to configure kubectl to connect to a Kubernetes cluster over Tailscale.
+运行此命令以配置 kubectl，通过 Tailscale 连接到 Kubernetes 集群。
 
-The hostname argument should be set to the Tailscale hostname of the peer running as an auth proxy in the cluster.
+hostname 参数应设置为集群中作为认证代理运行的节点的 Tailscale 主机名。
 
-See: https://tailscale.com/s/k8s-auth-proxy
+参见：https://tailscale.com/s/k8s-auth-proxy
 `),
 		FlagSet: (func() *flag.FlagSet {
 			fs := newFlagSet("kubeconfig")
-			fs.BoolVar(&configureKubeconfigArgs.http, "http", false, "use HTTP instead of HTTPS to connect to the auth proxy. Ignored if you include a scheme in the hostname argument.")
+			fs.BoolVar(&configureKubeconfigArgs.http, "http", false, "使用 HTTP 而非 HTTPS 连接到认证代理。若在 hostname 参数中已包含协议，则此项被忽略。")
 			return fs
 		})(),
 		Exec: runConfigureKubeconfig,
@@ -129,9 +129,9 @@ func isWritable(path string) error {
 // guidance when the process is sandboxed.
 func kubeconfigAccessErr(path string, err error) error {
 	if version.IsSandboxedMacOS() {
-		return fmt.Errorf("cannot write kubeconfig at %q: %w; GUI builds of the macOS client run in a sandbox and can only access files under your home directory, use the open-source tailscaled distribution for other locations", path, err)
+		return fmt.Errorf("无法在 %q 写入 kubeconfig：%w；macOS 客户端的 GUI 版本运行在沙箱中，只能访问用户主目录下的文件，其他位置请使用开源的 tailscaled 发行版", path, err)
 	}
-	return fmt.Errorf("cannot write kubeconfig at %q: %w", path, err)
+	return fmt.Errorf("无法在 %q 写入 kubeconfig：%w", path, err)
 }
 
 func runConfigureKubeconfig(ctx context.Context, args []string) error {
@@ -140,7 +140,7 @@ func runConfigureKubeconfig(ctx context.Context, args []string) error {
 	}
 	hostOrFQDNOrIP, http, err := getInputs(args[0], configureKubeconfigArgs.http)
 	if err != nil {
-		return fmt.Errorf("error parsing inputs: %w", err)
+		return fmt.Errorf("解析输入出错：%w", err)
 	}
 
 	st, err := localClient.Status(ctx)
@@ -148,7 +148,7 @@ func runConfigureKubeconfig(ctx context.Context, args []string) error {
 		return err
 	}
 	if st.BackendState != "Running" {
-		return errors.New("Tailscale is not running")
+		return errors.New("Tailscale 未运行")
 	}
 	dnsCfg, err := getDNSConfig(ctx)
 	if err != nil {
@@ -171,7 +171,7 @@ func runConfigureKubeconfig(ctx context.Context, args []string) error {
 	if err = setKubeconfigForPeer(scheme, targetFQDN, kubeconfig); err != nil {
 		return err
 	}
-	printf("kubeconfig configured for %q at URL %q\n", targetFQDN, scheme+targetFQDN)
+	printf("已为 %q 在 URL %q 配置 kubeconfig\n", targetFQDN, scheme+targetFQDN)
 	return nil
 }
 
@@ -205,7 +205,7 @@ func appendOrSetNamed(dst []any, name string, val map[string]any) []any {
 	return dst
 }
 
-var errInvalidKubeconfig = errors.New("invalid kubeconfig")
+var errInvalidKubeconfig = errors.New("无效的 kubeconfig")
 
 func updateKubeconfig(cfgYaml []byte, scheme, fqdn string) ([]byte, error) {
 	var cfg map[string]any
@@ -275,7 +275,7 @@ func setKubeconfigForPeer(scheme, fqdn, filePath string) error {
 	}
 	b, err := os.ReadFile(filePath)
 	if err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("reading kubeconfig: %w", err)
+		return fmt.Errorf("读取 kubeconfig：%w", err)
 	}
 	b, err = updateKubeconfig(b, scheme, fqdn)
 	if err != nil {
@@ -296,13 +296,13 @@ func nodeOrServiceDNSNameFromArg(st *ipnstate.Status, dns *tailcfg.DNSConfig, ar
 	// If not found, check for a Tailscale Service DNS name.
 	rec, ok := serviceDNSRecordFromDNSConfig(dns, arg)
 	if !ok {
-		return "", fmt.Errorf("no peer found for %q", arg)
+		return "", fmt.Errorf("未找到与 %q 对应的节点", arg)
 	}
 
 	// Validate we can see a peer advertising the Tailscale Service.
 	ip, err := netip.ParseAddr(rec.Value)
 	if err != nil {
-		return "", fmt.Errorf("error parsing ExtraRecord IP address %q: %w", rec.Value, err)
+		return "", fmt.Errorf("解析 ExtraRecord IP 地址 %q 出错：%w", rec.Value, err)
 	}
 	ipPrefix := netip.PrefixFrom(ip, ip.BitLen())
 	for _, ps := range st.Peer {
@@ -318,7 +318,7 @@ func nodeOrServiceDNSNameFromArg(st *ipnstate.Status, dns *tailcfg.DNSConfig, ar
 		}
 	}
 
-	return "", fmt.Errorf("%q is in MagicDNS, but is not currently reachable on any known peer", arg)
+	return "", fmt.Errorf("%q 在 MagicDNS 中，但当前无法通过任何已知节点访问", arg)
 }
 
 func getDNSConfig(ctx context.Context) (*tailcfg.DNSConfig, error) {

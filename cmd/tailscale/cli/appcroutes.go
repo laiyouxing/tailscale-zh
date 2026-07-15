@@ -25,28 +25,26 @@ var appcRoutesCmd = &ffcli.Command{
 	Name:       "appc-routes",
 	ShortUsage: "tailscale appc-routes",
 	Exec:       runAppcRoutesInfo,
-	ShortHelp:  "Print the current app connector routes",
+	ShortHelp:  "打印当前的应用连接器路由",
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("appc-routes")
-		fs.BoolVar(&appcRoutesArgs.all, "all", false, "print learned domains and routes and extra policy configured routes.")
-		fs.BoolVar(&appcRoutesArgs.domainMap, "map", false, "print the map of learned domains: [routes].")
-		fs.BoolVar(&appcRoutesArgs.n, "n", false, "print the total number of routes this node advertises.")
+		fs.BoolVar(&appcRoutesArgs.all, "all", false, "打印已学习的域名、路由以及策略中额外配置的路由。")
+		fs.BoolVar(&appcRoutesArgs.domainMap, "map", false, "打印已学习域名与路由的映射关系：[routes]。")
+		fs.BoolVar(&appcRoutesArgs.n, "n", false, "打印此节点播发的路由总数。")
 		return fs
 	})(),
 	LongHelp: strings.TrimSpace(`
-The 'tailscale appc-routes' command prints the current App Connector route status.
+'tailscale appc-routes' 命令用于打印当前 App Connector（应用连接器）的路由状态。
 
-By default this command prints the domains configured in the app connector configuration and how many routes have been
-learned for each domain.
+默认情况下，此命令会打印应用连接器配置中已配置的域名，以及为每个域名学习到的路由数量。
 
---all prints the routes learned from the domains configured in the app connector configuration; and any extra routes provided
-in the policy app connector 'routes' field.
+--all 会打印从应用连接器配置中已配置域名学习到的路由，以及策略中应用连接器 'routes' 字段提供的任何额外路由。
 
---map prints the routes learned from the domains configured in the app connector configuration.
+--map 会打印从应用连接器配置中已配置域名学习到的路由。
 
--n prints the total number of routes advertised by this device, whether learned, set in the policy, or set locally.
+-n 会打印此设备播发的路由总数，无论是学习到的、在策略中设置的，还是在本地设置的。
 
-For more information about App Connectors, refer to
+有关 App Connectors 的更多信息，请参阅
 https://tailscale.com/kb/1281/app-connectors
 `),
 }
@@ -60,11 +58,11 @@ func getAllOutput(ri *appctype.RouteInfo) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	s := fmt.Sprintf(`Learned Routes
+	s := fmt.Sprintf(`已学习路由
 ==============
 %s
 
-Routes from Policy
+来自策略的路由
 ==================
 %s
 `, domains, control)
@@ -116,7 +114,7 @@ func runAppcRoutesInfo(ctx context.Context, args []string) error {
 		return err
 	}
 	if !prefs.AppConnector.Advertise {
-		fmt.Println("not a connector")
+		fmt.Println("不是连接器")
 		return nil
 	}
 

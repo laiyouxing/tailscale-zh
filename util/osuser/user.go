@@ -135,7 +135,7 @@ func userLookupGetent(usernameOrUID string, std lookupStd) (*user.User, string, 
 	// Do some basic validation before passing this string to "getent", even though
 	// getent should do its own validation.
 	if !checkGetentInput(usernameOrUID) {
-		return nil, "", errors.New("invalid username or UID")
+		return nil, "", errors.New("无效的用户名或 UID")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

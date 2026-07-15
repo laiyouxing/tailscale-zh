@@ -16,12 +16,12 @@ import (
 var bugReportCmd = &ffcli.Command{
 	Name:       "bugreport",
 	Exec:       runBugReport,
-	ShortHelp:  "Print a shareable identifier to help diagnose issues",
+	ShortHelp:  "打印一个可分享的标识符以帮助诊断问题",
 	ShortUsage: "tailscale bugreport [note]",
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("bugreport")
-		fs.BoolVar(&bugReportArgs.diagnose, "diagnose", false, "run additional in-depth checks")
-		fs.BoolVar(&bugReportArgs.record, "record", false, "if true, pause and then write another bugreport")
+		fs.BoolVar(&bugReportArgs.diagnose, "diagnose", false, "运行额外的深入检查")
+		fs.BoolVar(&bugReportArgs.record, "record", false, "若为 true，则暂停后再写入另一条 bug 报告")
 		return fs
 	})(),
 }
@@ -38,7 +38,7 @@ func runBugReport(ctx context.Context, args []string) error {
 	case 1:
 		note = args[0]
 	default:
-		return errors.New("unknown arguments")
+		return errors.New("未知参数")
 	}
 	opts := local.BugReportOpts{
 		Note:     note,
@@ -68,7 +68,7 @@ func runBugReport(ctx context.Context, args []string) error {
 		resCh <- bugReportResp{m, err}
 	}()
 
-	outln("Recording started; please reproduce your issue and then press Enter...")
+	outln("已开始录制；请复现您的问题，然后按回车键...")
 	fmt.Scanln()
 	close(done)
 	res := <-resCh
@@ -78,6 +78,6 @@ func runBugReport(ctx context.Context, args []string) error {
 	}
 
 	outln(res.marker)
-	outln("Please provide both bugreport markers above to the support team or GitHub issue.")
+	outln("请将上面的两条 bug 报告标识符提供给支持团队或在 GitHub issue 中附上。")
 	return nil
 }

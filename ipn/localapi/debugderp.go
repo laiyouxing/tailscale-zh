@@ -145,9 +145,9 @@ func (h *Handler) serveDebugDERPRegion(w http.ResponseWriter, r *http.Request) {
 
 		// If we only have an IPv6 conn, then warn; we want both.
 		if hasIPv6 && !hasIPv4 {
-			st.Warnings = append(st.Warnings, fmt.Sprintf("Node %q only has IPv6 connectivity, not IPv4", derpNode.HostName))
+			st.Warnings = append(st.Warnings, fmt.Sprintf("节点 %q 仅有 IPv6 连接，没有 IPv4", derpNode.HostName))
 		} else if hasIPv6 && hasIPv4 {
-			st.Info = append(st.Info, fmt.Sprintf("Node %q has working IPv4 and IPv6 connectivity", derpNode.HostName))
+			st.Info = append(st.Info, fmt.Sprintf("节点 %q 具有正常的 IPv4 和 IPv6 连接", derpNode.HostName))
 		}
 
 		return hasIPv4 || hasIPv6
@@ -233,9 +233,9 @@ func (h *Handler) serveDebugDERPRegion(w http.ResponseWriter, r *http.Request) {
 
 		select {
 		case resp := <-gotResponse:
-			st.Info = append(st.Info, fmt.Sprintf("Node %q returned IPv4 STUN response: %v", derpNode.HostName, resp))
+			st.Info = append(st.Info, fmt.Sprintf("节点 %q 返回了 IPv4 STUN 响应: %v", derpNode.HostName, resp))
 		case <-ctx.Done():
-			st.Warnings = append(st.Warnings, fmt.Sprintf("Node %q did not return a IPv4 STUN response", derpNode.HostName))
+			st.Warnings = append(st.Warnings, fmt.Sprintf("节点 %q 未返回 IPv4 STUN 响应", derpNode.HostName))
 		}
 	}
 
@@ -293,7 +293,7 @@ func (h *Handler) serveDebugDERPRegion(w http.ResponseWriter, r *http.Request) {
 				st.Errors = append(st.Errors, fmt.Sprintf("Received multiple server public keys (%d); is the DERP server behind a load balancer?", len(serverPubKeys)))
 			}
 		} else {
-			st.Info = append(st.Info, fmt.Sprintf("Node %q is marked STUNOnly; skipped non-STUN checks", derpNode.HostName))
+			st.Info = append(st.Info, fmt.Sprintf("节点 %q 被标记为仅 STUN；已跳过非 STUN 检查", derpNode.HostName))
 		}
 
 		// Send a STUN query to this node to verify whether or not it

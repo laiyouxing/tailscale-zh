@@ -20,9 +20,9 @@ export default function LoginView({ data }: { data: NodeData }) {
       {data.Status === "Stopped" ? (
         <>
           <div className="mb-6">
-            <h3 className="text-3xl font-semibold mb-3">Connect</h3>
+            <h3 className="text-3xl font-semibold mb-3">连接</h3>
             <p className="text-gray-700">
-              Your device is disconnected from Tailscale.
+              你的设备已断开与 Tailscale 的连接。
             </p>
           </div>
           <Button
@@ -30,24 +30,23 @@ export default function LoginView({ data }: { data: NodeData }) {
             className="w-full mb-4"
             intent="primary"
           >
-            Connect to Tailscale
+            连接到 Tailscale
           </Button>
         </>
       ) : data.IPv4 ? (
         <>
           <div className="mb-6">
             <p className="text-gray-700">
-              Your device’s key has expired. Reauthenticate this device by
-              logging in again, or{" "}
+              你设备的密钥已过期。请重新登录以重新验证此设备，或{" "}
               <a
                 href="https://tailscale.com/kb/1028/key-expiry"
                 className="link"
                 target="_blank"
                 rel="noreferrer"
               >
-                learn more
+                了解更多
               </a>
-              .
+              。
             </p>
           </div>
           <Button
@@ -57,16 +56,16 @@ export default function LoginView({ data }: { data: NodeData }) {
             className="w-full mb-4"
             intent="primary"
           >
-            Reauthenticate
+            重新验证
           </Button>
         </>
       ) : (
         <>
           <div className="mb-6">
-            <h3 className="text-3xl font-semibold mb-3">Log in</h3>
+            <h3 className="text-3xl font-semibold mb-3">登录</h3>
             <p className="text-gray-700">
-              Get started by logging in to your Tailscale network.
-              Or,&nbsp;learn&nbsp;more at{" "}
+              登录到你的 Tailscale 网络以开始使用。
+              或者，在{" "}
               <a
                 href="https://tailscale.com/"
                 className="link"
@@ -75,7 +74,7 @@ export default function LoginView({ data }: { data: NodeData }) {
               >
                 tailscale.com
               </a>
-              .
+              了解更多。
             </p>
           </div>
           <Button
@@ -90,7 +89,7 @@ export default function LoginView({ data }: { data: NodeData }) {
             className="w-full mb-4"
             intent="primary"
           >
-            Log In
+            登录
           </Button>
         </>
       )}

@@ -35,12 +35,12 @@ import (
 func (n *nftablesRunner) EnsurePortMapRuleForSvc(svc, tun string, targetIP netip.Addr, pm PortMap) error {
 	t, ch, err := n.ensureChainForSvc(svc, targetIP)
 	if err != nil {
-		return fmt.Errorf("error ensuring chain for %s: %w", svc, err)
+		return fmt.Errorf("确保 %s 的链存在时出错：%w", svc, err)
 	}
 	meta := svcPortMapRuleMeta(svc, targetIP, pm)
 	rule, err := n.findRuleByMetadata(t, ch, meta)
 	if err != nil {
-		return fmt.Errorf("error looking up rule: %w", err)
+		return fmt.Errorf("查找规则时出错：%w", err)
 	}
 	if rule != nil {
 		return nil
@@ -63,11 +63,11 @@ func (n *nftablesRunner) EnsurePortMapRuleForSvc(svc, tun string, targetIP netip
 func (n *nftablesRunner) DeletePortMapRuleForSvc(svc, tun string, targetIP netip.Addr, pm PortMap) error {
 	table, err := n.getNFTByAddr(targetIP)
 	if err != nil {
-		return fmt.Errorf("error setting up nftables for IP family of %s: %w", targetIP, err)
+		return fmt.Errorf("为 %s 设置对应 IP 族的 nftables 时出错：%w", targetIP, err)
 	}
 	t, err := getTableIfExists(n.conn, table.Proto, "nat")
 	if err != nil {
-		return fmt.Errorf("error checking if nat table exists: %w", err)
+		return fmt.Errorf("检查 nat 表是否存在时出错：%w", err)
 	}
 	if t == nil {
 		return nil
@@ -88,7 +88,7 @@ func (n *nftablesRunner) DeletePortMapRuleForSvc(svc, tun string, targetIP netip
 		return nil
 	}
 	if err := n.conn.DelRule(rule); err != nil {
-		return fmt.Errorf("error deleting rule: %w", err)
+		return fmt.Errorf("删除规则时出错：%w", err)
 	}
 	return n.conn.Flush()
 }
@@ -102,7 +102,7 @@ func (n *nftablesRunner) DeleteSvc(svc, tun string, targetIPs []netip.Addr, pm [
 		}
 		t, err := getTableIfExists(n.conn, table.Proto, "nat")
 		if err != nil {
-			return fmt.Errorf("error checking if nat table exists: %w", err)
+			return fmt.Errorf("检查 nat 表是否存在时出错：%w", err)
 		}
 		if t == nil {
 			return nil
@@ -126,12 +126,12 @@ func (n *nftablesRunner) DeleteSvc(svc, tun string, targetIPs []netip.Addr, pm [
 func (n *nftablesRunner) EnsureDNATRuleForSvc(svc string, origDst, dst netip.Addr) error {
 	t, ch, err := n.ensurePreroutingChain(origDst)
 	if err != nil {
-		return fmt.Errorf("error ensuring chain for %s: %w", svc, err)
+		return fmt.Errorf("确保 %s 的链存在时出错：%w", svc, err)
 	}
 	meta := svcRuleMeta(svc, origDst, dst)
 	rule, err := n.findRuleByMetadata(t, ch, meta)
 	if err != nil {
-		return fmt.Errorf("error looking up rule: %w", err)
+		return fmt.Errorf("查找规则时出错：%w", err)
 	}
 	if rule != nil {
 		return nil
@@ -146,11 +146,11 @@ func (n *nftablesRunner) EnsureDNATRuleForSvc(svc string, origDst, dst netip.Add
 func (n *nftablesRunner) DeleteDNATRuleForSvc(svcName string, origDst, dst netip.Addr) error {
 	table, err := n.getNFTByAddr(origDst)
 	if err != nil {
-		return fmt.Errorf("error setting up nftables for IP family of %s: %w", origDst, err)
+		return fmt.Errorf("为 %s 设置对应 IP 族的 nftables 时出错：%w", origDst, err)
 	}
 	t, err := getTableIfExists(n.conn, table.Proto, "nat")
 	if err != nil {
-		return fmt.Errorf("error checking if nat table exists: %w", err)
+		return fmt.Errorf("检查 nat 表是否存在时出错：%w", err)
 	}
 	if t == nil {
 		return nil
@@ -160,7 +160,7 @@ func (n *nftablesRunner) DeleteDNATRuleForSvc(svcName string, origDst, dst netip
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("error checking if chain PREROUTING exists: %w", err)
+		return fmt.Errorf("检查 PREROUTING 链是否存在时出错：%w", err)
 	}
 	meta := svcRuleMeta(svcName, origDst, dst)
 	rule, err := n.findRuleByMetadata(t, ch, meta)
@@ -171,7 +171,7 @@ func (n *nftablesRunner) DeleteDNATRuleForSvc(svcName string, origDst, dst netip
 		return nil
 	}
 	if err := n.conn.DelRule(rule); err != nil {
-		return fmt.Errorf("error deleting rule: %w", err)
+		return fmt.Errorf("删除规则时出错：%w", err)
 	}
 	return n.conn.Flush()
 }
@@ -245,7 +245,7 @@ func (n *nftablesRunner) findRuleByMetadata(t *nftables.Table, ch *nftables.Chai
 	}
 	rules, err := n.conn.GetRules(t, ch)
 	if err != nil {
-		return nil, fmt.Errorf("error listing rules: %w", err)
+		return nil, fmt.Errorf("列出规则时出错：%w", err)
 	}
 	for _, rule := range rules {
 		if reflect.DeepEqual(rule.UserData, meta) {
@@ -259,11 +259,11 @@ func (n *nftablesRunner) ensureChainForSvc(svc string, targetIP netip.Addr) (*nf
 	polAccept := nftables.ChainPolicyAccept
 	table, err := n.getNFTByAddr(targetIP)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error setting up nftables for IP family of %v: %w", targetIP, err)
+		return nil, nil, fmt.Errorf("为 %v 设置对应 IP 族的 nftables 时出错：%w", targetIP, err)
 	}
 	nat, err := createTableIfNotExist(n.conn, table.Proto, "nat")
 	if err != nil {
-		return nil, nil, fmt.Errorf("error ensuring nat table: %w", err)
+		return nil, nil, fmt.Errorf("确保 nat 表存在时出错：%w", err)
 	}
 	svcCh, err := getOrCreateChain(n.conn, chainInfo{
 		table:         nat,
@@ -274,7 +274,7 @@ func (n *nftablesRunner) ensureChainForSvc(svc string, targetIP netip.Addr) (*nf
 		chainPolicy:   &polAccept,
 	})
 	if err != nil {
-		return nil, nil, fmt.Errorf("error ensuring prerouting chain: %w", err)
+		return nil, nil, fmt.Errorf("确保 prerouting 链存在时出错：%w", err)
 	}
 	return nat, svcCh, nil
 }
@@ -297,7 +297,7 @@ func protoFromString(s string) (uint8, error) {
 	case "udp":
 		return unix.IPPROTO_UDP, nil
 	default:
-		return 0, fmt.Errorf("unrecognized protocol: %q", s)
+		return 0, fmt.Errorf("无法识别的协议：%q", s)
 	}
 }
 

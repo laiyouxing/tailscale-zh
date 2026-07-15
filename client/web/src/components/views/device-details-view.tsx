@@ -25,7 +25,7 @@ export default function DeviceDetailsView({
 }) {
   return (
     <>
-      <h1 className="mb-10">Device details</h1>
+      <h1 className="mb-10">设备详情</h1>
       <div className="flex flex-col gap-4">
         <Card noPadding className="-mx-5 p-5 details-card">
           <div className="flex items-center justify-between">
@@ -48,11 +48,11 @@ export default function DeviceDetailsView({
             <UpdateAvailableNotification details={node.ClientVersion} />
           )}
         <Card noPadding className="-mx-5 p-5 details-card">
-          <h2 className="mb-2">General</h2>
+          <h2 className="mb-2">常规</h2>
           <table>
             <tbody>
               <tr className="flex">
-                <td>Managed by</td>
+                <td>管理者</td>
                 <td className="flex gap-1 flex-wrap">
                   {node.IsTagged
                     ? node.Tags.map((t) => <ACLTag key={t} tag={t} />)
@@ -60,18 +60,18 @@ export default function DeviceDetailsView({
                 </td>
               </tr>
               <tr>
-                <td>Machine name</td>
+                <td>设备名称</td>
                 <td>
                   <QuickCopy
                     primaryActionValue={node.DeviceName}
-                    primaryActionSubject="machine name"
+                    primaryActionSubject="设备名称"
                   >
                     {node.DeviceName}
                   </QuickCopy>
                 </td>
               </tr>
               <tr>
-                <td>OS</td>
+                <td>操作系统</td>
                 <td>{node.OS}</td>
               </tr>
               <tr>
@@ -86,25 +86,25 @@ export default function DeviceDetailsView({
                 </td>
               </tr>
               <tr>
-                <td>Tailscale version</td>
+                <td>Tailscale 版本</td>
                 <td>{node.IPNVersion}</td>
               </tr>
               <tr>
-                <td>Key expiry</td>
+                <td>密钥过期</td>
                 <td>
                   {node.KeyExpired
-                    ? "Expired"
+                    ? "已过期"
                     : // TODO: present as relative expiry (e.g. "5 months from now")
                     node.KeyExpiry
                     ? new Date(node.KeyExpiry).toLocaleString()
-                    : "No expiry"}
+                    : "永不过期"}
                 </td>
               </tr>
             </tbody>
           </table>
         </Card>
         <Card noPadding className="-mx-5 p-5 details-card">
-          <h2 className="mb-2">Addresses</h2>
+          <h2 className="mb-2">地址</h2>
           <table>
             <tbody>
               <tr>
@@ -112,7 +112,7 @@ export default function DeviceDetailsView({
                 <td>
                   <QuickCopy
                     primaryActionValue={node.IPv4}
-                    primaryActionSubject="IPv4 address"
+                    primaryActionSubject="IPv4 地址"
                   >
                     {node.IPv4}
                   </QuickCopy>
@@ -123,29 +123,29 @@ export default function DeviceDetailsView({
                 <td>
                   <QuickCopy
                     primaryActionValue={node.IPv6}
-                    primaryActionSubject="IPv6 address"
+                    primaryActionSubject="IPv6 地址"
                   >
                     <NiceIP ip={node.IPv6} />
                   </QuickCopy>
                 </td>
               </tr>
               <tr>
-                <td>Short domain</td>
+                <td>短域名</td>
                 <td>
                   <QuickCopy
                     primaryActionValue={node.DeviceName}
-                    primaryActionSubject="short domain"
+                    primaryActionSubject="短域名"
                   >
                     {node.DeviceName}
                   </QuickCopy>
                 </td>
               </tr>
               <tr>
-                <td>Full domain</td>
+                <td>完整域名</td>
                 <td>
                   <QuickCopy
                     primaryActionValue={`${node.DeviceName}.${node.TailnetName}`}
-                    primaryActionSubject="full domain"
+                    primaryActionSubject="完整域名"
                   >
                     {node.DeviceName}.{node.TailnetName}
                   </QuickCopy>
@@ -155,16 +155,16 @@ export default function DeviceDetailsView({
           </table>
         </Card>
         <Card noPadding className="-mx-5 p-5 details-card">
-          <h2 className="mb-2">Debug</h2>
+          <h2 className="mb-2">调试</h2>
           <table>
             <tbody>
               <tr>
-                <td>TUN Mode</td>
-                <td>{node.TUNMode ? "Yes" : "No"}</td>
+                <td>TUN 模式</td>
+                <td>{node.TUNMode ? "是" : "否"}</td>
               </tr>
               {node.IsSynology && (
                 <tr>
-                  <td>Synology Version</td>
+                  <td>Synology 版本</td>
                   <td>{node.DSMVersion}</td>
                 </tr>
               )}
@@ -173,11 +173,11 @@ export default function DeviceDetailsView({
         </Card>
         <footer className="text-gray-500 text-sm leading-tight text-center">
           <Control.AdminContainer node={node}>
-            Want even more details? Visit{" "}
+            想查看更多详情？请在管理控制台中访问{" "}
             <Control.AdminLink node={node} path={`/machines/${node.IPv4}`}>
-              this device’s page
-            </Control.AdminLink>{" "}
-            in the admin console.
+              此设备页面
+            </Control.AdminLink>
+            。
           </Control.AdminContainer>
           <p className="mt-12">
             <a
@@ -186,7 +186,7 @@ export default function DeviceDetailsView({
               target="_blank"
               rel="noreferrer"
             >
-              Acknowledgements
+              致谢
             </a>{" "}
             ·{" "}
             <a
@@ -195,7 +195,7 @@ export default function DeviceDetailsView({
               target="_blank"
               rel="noreferrer"
             >
-              Privacy Policy
+              隐私政策
             </a>{" "}
             ·{" "}
             <a
@@ -204,15 +204,15 @@ export default function DeviceDetailsView({
               target="_blank"
               rel="noreferrer"
             >
-              Terms of Service
+              服务条款
             </a>
           </p>
           <p className="my-2">
-            WireGuard is a registered trademark of Jason A. Donenfeld.
+            WireGuard 是 Jason A. Donenfeld 的注册商标。
           </p>
           <p>
-            © {new Date().getFullYear()} Tailscale Inc. All rights reserved.
-            Tailscale is a registered trademark of Tailscale Inc.
+            © {new Date().getFullYear()} Tailscale Inc. 版权所有。
+            Tailscale 是 Tailscale Inc. 的注册商标。
           </p>
         </footer>
       </div>
@@ -227,22 +227,21 @@ function DisconnectDialog() {
   return (
     <Dialog
       className="max-w-md"
-      title="Log out"
-      trigger={<Button sizeVariant="small">Log out…</Button>}
+      title="登出"
+      trigger={<Button sizeVariant="small">登出…</Button>}
     >
       <Dialog.Form
         cancelButton
-        submitButton="Log out"
+        submitButton="登出"
         destructive
         onSubmit={() => {
           api({ action: "logout" })
           setLocation("/disconnected")
         }}
       >
-        Logging out of this device will disconnect it from your tailnet and
-        expire its node key. You won’t be able to use this web interface until
-        you re-authenticate the device from either the Tailscale app or the
-        Tailscale command line interface.
+        登出此设备将使其断开与你的 tailnet 的连接，并使其节点密钥过期。在
+        你通过 Tailscale 应用或 Tailscale 命令行界面重新验证此设备之前，
+        你将无法使用此 Web 界面。
       </Dialog.Form>
     </Dialog>
   )

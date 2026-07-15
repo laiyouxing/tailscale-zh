@@ -27,32 +27,32 @@ import (
 var sshCmd = &ffcli.Command{
 	Name:       "ssh",
 	ShortUsage: "tailscale ssh [user@]<host> [args...]",
-	ShortHelp:  "SSH to a Tailscale machine",
+	ShortHelp:  "SSH 到 Tailscale 主机",
 	LongHelp: strings.TrimSpace(`
 
-The 'tailscale ssh' command is an optional wrapper around the system 'ssh'
-command that's useful in some cases. Tailscale SSH does not require its use;
-most users running the Tailscale SSH server will prefer to just use the normal
-'ssh' command or their normal SSH client.
+'tailscale ssh' 命令是对系统 'ssh' 命令的一个可选封装，
+在某些场景下很有用。Tailscale SSH 并不要求使用它；
+大多数运行 Tailscale SSH 服务器的用户更愿意直接使用普通的
+'ssh' 命令或他们惯用的 SSH 客户端。
 
-The 'tailscale ssh' wrapper adds a few things:
+'tailscale ssh' 封装额外提供了一些能力：
 
-* It resolves the destination server name in its arguments using MagicDNS,
-  even if --accept-dns=false.
-* It works in userspace-networking mode, by supplying a ProxyCommand to the
-  system 'ssh' command that connects via a pipe through tailscaled.
-* It automatically checks the destination server's SSH host key against the
-  node's SSH host key as advertised via the Tailscale coordination server.
+* 它使用 MagicDNS 解析参数中的目标服务器名称，
+  即使 --accept-dns=false 也是如此。
+* 它通过向系统 'ssh' 命令提供一条 ProxyCommand，
+  经由 tailscaled 的管道连接，从而在用户态网络模式下工作。
+* 它会自动将目标服务器的 SSH 主机密钥与节点通过
+  Tailscale 协调服务器通告的 SSH 主机密钥进行比对。
 `),
 	Exec: runSSH,
 }
 
 func runSSH(ctx context.Context, args []string) error {
 	if runtime.GOOS == "darwin" && version.IsMacAppStore() && !envknob.UseWIPCode() {
-		return errors.New("The 'tailscale ssh' subcommand is not available on macOS builds distributed through the App Store or TestFlight.\nInstall the Standalone variant of Tailscale (download it from https://pkgs.tailscale.com), or use the regular 'ssh' client instead.")
+		return errors.New("'tailscale ssh' 子命令在通过 App Store 或 TestFlight 分发的 macOS 版本中不可用。\n请安装 Tailscale 的独立版本（从 https://pkgs.tailscale.com 下载），或者改用普通的 'ssh' 客户端。")
 	}
 	if len(args) == 0 {
-		return errors.New("usage: tailscale ssh [user@]<host>")
+		return errors.New("用法：tailscale ssh [用户@]<主机>")
 	}
 	arg, argRest := args[0], args[1:]
 	username, host, ok := strings.Cut(arg, "@")
@@ -94,7 +94,7 @@ func runSSH(ctx context.Context, args []string) error {
 	if err != nil {
 		// TODO(bradfitz): use Go's crypto/ssh client instead
 		// of failing. But for now:
-		return fmt.Errorf("no system 'ssh' command found: %w", err)
+		return fmt.Errorf("未找到系统的 'ssh' 命令：%w", err)
 	}
 	knownHostsFile, err := writeKnownHosts(st)
 	if err != nil {

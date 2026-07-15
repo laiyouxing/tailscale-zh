@@ -23,7 +23,7 @@ func (i *iptablesRunner) EnsurePortMapRuleForSvc(svc, tun string, targetIP netip
 	args := argsForPortMapRule(svc, tun, targetIP, pm)
 	exists, err := table.Exists("nat", "PREROUTING", args...)
 	if err != nil {
-		return fmt.Errorf("error checking if rule exists: %w", err)
+		return fmt.Errorf("检查规则是否存在时出错：%w", err)
 	}
 	if exists {
 		return nil
@@ -39,7 +39,7 @@ func (i *iptablesRunner) DeletePortMapRuleForSvc(svc, excludeI string, targetIP 
 	args := argsForPortMapRule(svc, excludeI, targetIP, pm)
 	exists, err := table.Exists("nat", "PREROUTING", args...)
 	if err != nil {
-		return fmt.Errorf("error checking if rule exists: %w", err)
+		return fmt.Errorf("检查规则是否存在时出错：%w", err)
 	}
 	if !exists {
 		return nil
@@ -56,7 +56,7 @@ func (i *iptablesRunner) EnsureDNATRuleForSvc(svcName string, origDst, dst netip
 	args := argsForIngressRule(svcName, origDst, dst)
 	exists, err := table.Exists("nat", "PREROUTING", args...)
 	if err != nil {
-		return fmt.Errorf("error checking if rule exists: %w", err)
+		return fmt.Errorf("检查规则是否存在时出错：%w", err)
 	}
 	if exists {
 		return nil
@@ -70,7 +70,7 @@ func (i *iptablesRunner) DeleteDNATRuleForSvc(svcName string, origDst, dst netip
 	args := argsForIngressRule(svcName, origDst, dst)
 	exists, err := table.Exists("nat", "PREROUTING", args...)
 	if err != nil {
-		return fmt.Errorf("error checking if rule exists: %w", err)
+		return fmt.Errorf("检查规则是否存在时出错：%w", err)
 	}
 	if !exists {
 		return nil
@@ -85,7 +85,7 @@ func (i *iptablesRunner) DeleteSvc(svc, tun string, targetIPs []netip.Addr, pms 
 	for _, tip := range targetIPs {
 		for _, pm := range pms {
 			if err := i.DeletePortMapRuleForSvc(svc, tun, tip, pm); err != nil {
-				return fmt.Errorf("error deleting rule: %w", err)
+				return fmt.Errorf("删除规则时出错：%w", err)
 			}
 		}
 	}

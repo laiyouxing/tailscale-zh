@@ -547,7 +547,7 @@ func (pm *profileManager) setProfilePrefsNoPermCheck(profile ipn.LoginProfileVie
 			return err
 		}
 	} else if !isCurrentProfile {
-		return errors.New("cannot set prefs for a non-current in-memory profile")
+		return errors.New("无法为非当前的的内存中配置文件设置 prefs")
 	}
 	if isCurrentProfile {
 		return pm.setUnattendedModeAsConfigured()
@@ -728,13 +728,13 @@ func (pm *profileManager) CurrentProfile() ipn.LoginProfileView {
 
 // errProfileNotFound is returned by methods that accept a ProfileID
 // when the specified profile does not exist.
-var errProfileNotFound = errors.New("profile not found")
+var errProfileNotFound = errors.New("未找到配置文件")
 
 // errProfileAccessDenied is returned by methods that accept a ProfileID
 // when the current user does not have access to the specified profile.
 // It is used temporarily until we implement access checks based on the
 // caller's identity in tailscale/corp#18342.
-var errProfileAccessDenied = errors.New("profile access denied")
+var errProfileAccessDenied = errors.New("配置文件访问被拒绝")
 
 // DeleteProfile removes the profile with the given id. It returns
 // [errProfileNotFound] if the profile does not exist, or an

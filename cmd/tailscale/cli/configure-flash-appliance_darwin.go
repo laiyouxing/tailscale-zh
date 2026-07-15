@@ -51,8 +51,8 @@ func discoverExternalDisks(ctx context.Context) ([]diskCandidate, error) {
 			return nil, err
 		}
 		if d.SizeBytes > maxAutoDetectDiskBytes {
-			printf("Skipping %s (%s) from auto-detection: looks suspiciously large.\n", d.Path, humanBytes(d.SizeBytes))
-			printf("  To flash it anyway, pass --disk=%s explicitly.\n", d.Path)
+			printf("已从自动检测中跳过 %s (%s)：其大小看起来过大。\n", d.Path, humanBytes(d.SizeBytes))
+			printf("  若要仍刷写它，请显式传入 --disk=%s。\n", d.Path)
 			continue
 		}
 		disks = append(disks, d)
@@ -117,11 +117,11 @@ func dfRootDevice(ctx context.Context) (string, error) {
 	}
 	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
 	if len(lines) < 2 {
-		return "", fmt.Errorf("unexpected df output: %q", out)
+		return "", fmt.Errorf("df 输出异常：%q", out)
 	}
 	fields := strings.Fields(lines[1])
 	if len(fields) == 0 {
-		return "", fmt.Errorf("unexpected df line: %q", lines[1])
+		return "", fmt.Errorf("df 行异常：%q", lines[1])
 	}
 	return strings.TrimPrefix(fields[0], "/dev/"), nil
 }
@@ -154,10 +154,10 @@ func diskutilInfo(ctx context.Context, id string) (diskCandidate, error) {
 // type a /dev/disk path explicitly.
 func validateDiskPath(path string) error {
 	if !strings.HasPrefix(path, "/dev/disk") {
-		return fmt.Errorf("disk path %q does not look like a macOS whole-disk device (/dev/diskN)", path)
+		return fmt.Errorf("磁盘路径 %q 看起来不像 macOS 的整盘设备（/dev/diskN）", path)
 	}
 	if strings.Contains(path, "s") && strings.IndexByte(path, 's') > len("/dev/disk") {
-		return fmt.Errorf("disk path %q looks like a partition (/dev/diskNsP); pass the whole disk", path)
+		return fmt.Errorf("磁盘路径 %q 看起来像分区（/dev/diskNsP）；请传入整盘", path)
 	}
 	return nil
 }
@@ -347,7 +347,7 @@ func (d *plistDict) UnmarshalXML(dec *xml.Decoder, start xml.StartElement) error
 			}
 		case xml.StartElement:
 			if t.Name.Local != "key" {
-				return fmt.Errorf("dict child %q is not <key>", t.Name.Local)
+				return fmt.Errorf("dict 子元素 %q 不是 <key>", t.Name.Local)
 			}
 			var key string
 			if err := dec.DecodeElement(&key, &t); err != nil {

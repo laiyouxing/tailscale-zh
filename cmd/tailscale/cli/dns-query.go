@@ -26,27 +26,26 @@ var dnsQueryCmd = &ffcli.Command{
 	Name:       "query",
 	ShortUsage: "tailscale dns query [--json] <name> [type]",
 	Exec:       runDNSQuery,
-	ShortHelp:  "Perform a DNS query",
+	ShortHelp:  "执行一次 DNS 查询",
 	LongHelp: strings.TrimSpace(`
-The 'tailscale dns query' subcommand performs a DNS query for the specified name
-using the internal DNS forwarder (100.100.100.100).
+'tailscale dns query' 子命令使用内部 DNS 转发器（100.100.100.100）
+对指定的名称执行一次 DNS 查询。
 
-By default, the DNS query will request an A record. Specify the record type as
-a second argument after the name (e.g. AAAA, CNAME, MX, NS, PTR, SRV, TXT).
+默认情况下，DNS 查询会请求一条 A 记录。可将记录类型作为名称后的
+第二个参数指定（如 AAAA、CNAME、MX、NS、PTR、SRV、TXT）。
 
-The output also provides information about the resolver(s) used to resolve the
-query.
+输出还会提供用于解析该查询的解析器（resolver）的相关信息。
 `),
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("query")
-		fs.BoolVar(&dnsQueryArgs.json, "json", false, "output in JSON format")
+		fs.BoolVar(&dnsQueryArgs.json, "json", false, "以 JSON 格式输出")
 		return fs
 	})(),
 }
 
 func runDNSQuery(ctx context.Context, args []string) error {
 	if len(args) == 0 {
-		return errors.New("missing required argument: name")
+		return errors.New("缺少必需参数：名称")
 	}
 	if len(args) > 1 {
 		var flags []string
@@ -56,10 +55,10 @@ func runDNSQuery(ctx context.Context, args []string) error {
 			}
 		}
 		if len(flags) > 0 {
-			return fmt.Errorf("unexpected flags after query name: %s; see 'tailscale dns query --help'", strings.Join(flags, ", "))
+			return fmt.Errorf("查询名称后出现意外的标志：%s；请参见 'tailscale dns query --help'", strings.Join(flags, ", "))
 		}
 		if len(args) > 2 {
-			return fmt.Errorf("unexpected extra arguments: %s", strings.Join(args[2:], " "))
+			return fmt.Errorf("意外的多余参数：%s", strings.Join(args[2:], " "))
 		}
 	}
 	name := args[0]
@@ -70,7 +69,7 @@ func runDNSQuery(ctx context.Context, args []string) error {
 
 	rawBytes, resolvers, err := localClient.QueryDNS(ctx, name, queryType)
 	if err != nil {
-		return fmt.Errorf("failed to query DNS: %w", err)
+		return fmt.Errorf("查询 DNS 失败：%w", err)
 	}
 
 	data := &jsonoutput.DNSQueryResult{
@@ -85,7 +84,7 @@ func runDNSQuery(ctx context.Context, args []string) error {
 	var p dnsmessage.Parser
 	header, err := p.Start(rawBytes)
 	if err != nil {
-		return fmt.Errorf("failed to parse DNS response: %w", err)
+		return fmt.Errorf("解析 DNS 响应失败：%w", err)
 	}
 	data.ResponseCode = header.RCode.String()
 
@@ -94,7 +93,7 @@ func runDNSQuery(ctx context.Context, args []string) error {
 	if header.RCode == dnsmessage.RCodeSuccess {
 		answers, err := p.AllAnswers()
 		if err != nil {
-			return fmt.Errorf("failed to parse DNS answers: %w", err)
+			return fmt.Errorf("解析 DNS 应答失败：%w", err)
 		}
 		data.Answers = make([]jsonoutput.DNSAnswer, 0, len(answers))
 		for _, a := range answers {
@@ -123,31 +122,31 @@ func runDNSQuery(ctx context.Context, args []string) error {
 func formatDNSQueryText(data *jsonoutput.DNSQueryResult) string {
 	var sb strings.Builder
 
-	fmt.Fprintf(&sb, "DNS query for %q (%s) using internal resolver:\n", data.Name, data.QueryType)
+	fmt.Fprintf(&sb, "使用内部解析器对 %q（%s）的 DNS 查询：\n", data.Name, data.QueryType)
 	fmt.Fprintf(&sb, "\n")
 	if len(data.Resolvers) == 1 {
-		fmt.Fprintf(&sb, "Forwarding to resolver: %v\n", formatResolverString(data.Resolvers[0]))
+		fmt.Fprintf(&sb, "转发到解析器：%v\n", formatResolverString(data.Resolvers[0]))
 	} else {
-		fmt.Fprintf(&sb, "Multiple resolvers available:\n")
+		fmt.Fprintf(&sb, "有多个可用解析器：\n")
 		for _, r := range data.Resolvers {
 			fmt.Fprintf(&sb, "  - %v\n", formatResolverString(r))
 		}
 	}
 	fmt.Fprintf(&sb, "\n")
-	fmt.Fprintf(&sb, "Response code: %v\n", data.ResponseCode)
+	fmt.Fprintf(&sb, "响应码：%v\n", data.ResponseCode)
 	fmt.Fprintf(&sb, "\n")
 
 	if data.Answers == nil {
-		fmt.Fprintf(&sb, "No answers were returned.\n")
+		fmt.Fprintf(&sb, "未返回任何应答。\n")
 		return sb.String()
 	}
 
 	if len(data.Answers) == 0 {
-		fmt.Fprintf(&sb, "  (no answers found)\n")
+		fmt.Fprintf(&sb, "  （未找到应答）\n")
 	}
 
 	w := tabwriter.NewWriter(&sb, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(w, "Name\tTTL\tClass\tType\tBody")
+	fmt.Fprintln(w, "名称\tTTL\t类别\t类型\t内容")
 	fmt.Fprintln(w, "----\t---\t-----\t----\t----")
 	for _, a := range data.Answers {
 		fmt.Fprintf(w, "%s\t%d\t%s\t%s\t%s\n", a.Name, a.TTL, a.Class, a.Type, a.Body)

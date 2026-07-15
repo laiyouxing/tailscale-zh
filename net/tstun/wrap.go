@@ -60,9 +60,9 @@ const TAPDebug = false
 
 var (
 	// ErrClosed is returned when attempting an operation on a closed Wrapper.
-	ErrClosed = errors.New("device closed")
+	ErrClosed = errors.New("设备已关闭")
 	// ErrFiltered is returned when the acted-on packet is rejected by a filter.
-	ErrFiltered = errors.New("packet dropped by filter")
+	ErrFiltered = errors.New("数据包被过滤器丢弃")
 )
 
 var (

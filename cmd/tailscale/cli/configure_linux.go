@@ -27,13 +27,13 @@ func systrayConfigCmd() *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "systray",
 		ShortUsage: "tailscale configure systray [options]",
-		ShortHelp:  "[ALPHA] Manage the systray client for Linux",
-		LongHelp:   "[ALPHA] The systray set of commands provides a way to configure the systray application on Linux.",
+		ShortHelp:  "[ALPHA] 管理 Linux 的系统托盘客户端",
+		LongHelp:   "[ALPHA] systray 这组命令提供了一种方式来配置 Linux 上的系统托盘应用程序。",
 		Exec:       configureSystray,
 		FlagSet: (func() *flag.FlagSet {
 			fs := newFlagSet("systray")
 			fs.StringVar(&configSystrayArgs.initSystem, "enable-startup", "",
-				"install startup script for init system. Currently supported systems are [systemd, freedesktop].")
+				"为初始化系统安装开机启动脚本。当前支持的系统为 [systemd, freedesktop]。")
 			return fs
 		})(),
 	}

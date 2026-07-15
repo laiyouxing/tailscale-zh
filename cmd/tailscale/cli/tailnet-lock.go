@@ -38,8 +38,8 @@ func init() {
 var tailnetLockCmd = &ffcli.Command{
 	Name:       "lock",
 	ShortUsage: "tailscale lock <subcommand> [arguments...]",
-	ShortHelp:  "Manage tailnet lock",
-	LongHelp:   "Manage tailnet lock",
+	ShortHelp:  "管理 tailnet lock 锁",
+	LongHelp:   "管理 tailnet lock 锁",
 	Subcommands: []*ffcli.Command{
 		tlInitCmd,
 		tlStatusCmd,
@@ -61,7 +61,7 @@ func runTailnetLockNoSubcommand(ctx context.Context, args []string) error {
 		return runTskeyWrapCmd(ctx, args[1:])
 	}
 	if len(args) > 0 {
-		return fmt.Errorf("tailscale lock: unknown subcommand: %s", args[0])
+		return fmt.Errorf("tailscale lock：未知子命令：%s", args[0])
 	}
 
 	return runTailnetLockStatus(ctx, args)
@@ -76,34 +76,32 @@ var nlInitArgs struct {
 var tlInitCmd = &ffcli.Command{
 	Name:       "init",
 	ShortUsage: "tailscale lock init [--gen-disablement-for-support] --gen-disablements N <trusted-key>...",
-	ShortHelp:  "Initialize tailnet lock",
+	ShortHelp:  "初始化 tailnet lock 锁",
 	LongHelp: strings.TrimSpace(`
 
-The 'tailscale lock init' command initializes tailnet lock for the
-entire tailnet. The tailnet lock keys specified are those initially
-trusted to sign nodes or to make further changes to tailnet lock.
+'tailscale lock init' 命令为整个 tailnet 初始化 tailnet lock 锁。
+所指定的 tailnet lock 密钥是初始被信任用于为节点签名或对
+tailnet lock 进行进一步更改的密钥。
 
-You can identify the tailnet lock key for a node you wish to trust by
-running 'tailscale lock' on that node, and copying the node's tailnet
-lock key.
+你可以通过在该节点上运行 'tailscale lock' 并复制该节点的
+tailnet lock 密钥，来识别你希望信任的节点的 tailnet lock 密钥。
 
-To disable tailnet lock, use the 'tailscale lock disable' command
-along with one of the disablement secrets.
-The number of disablement secrets to be generated is specified using the
---gen-disablements flag. Initializing tailnet lock requires at least
-one disablement.
+要禁用 tailnet lock 锁，请使用 'tailscale lock disable' 命令
+并配合其中一个禁用密钥。
+要生成的禁用密钥数量通过 --gen-disablements 标志指定。
+初始化 tailnet lock 锁至少需要一个禁用密钥。
 
-If --gen-disablement-for-support is specified, an additional disablement secret
-will be generated and transmitted to Tailscale, which support can use to disable
-tailnet lock. We recommend setting this flag.
+如果指定了 --gen-disablement-for-support，将额外生成一个禁用密钥
+并传送给 Tailscale，支持团队可用其禁用 tailnet lock 锁。
+我们建议设置此标志。
 
 `),
 	Exec: runTailnetLockInit,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("lock init")
-		fs.IntVar(&nlInitArgs.numDisablements, "gen-disablements", 1, "number of disablement secrets to generate")
-		fs.BoolVar(&nlInitArgs.disablementForSupport, "gen-disablement-for-support", false, "generates and transmits a disablement secret for Tailscale support")
-		fs.BoolVar(&nlInitArgs.confirm, "confirm", false, "do not prompt for confirmation")
+		fs.IntVar(&nlInitArgs.numDisablements, "gen-disablements", 1, "要生成的禁用密钥数量")
+		fs.BoolVar(&nlInitArgs.disablementForSupport, "gen-disablement-for-support", false, "生成并传送一个供 Tailscale 支持使用的禁用密钥")
+		fs.BoolVar(&nlInitArgs.confirm, "confirm", false, "不进行确认提示")
 		return fs
 	})(),
 }
@@ -114,7 +112,7 @@ func runTailnetLockInit(ctx context.Context, args []string) error {
 		return fixTailscaledConnectError(err)
 	}
 	if st.Enabled {
-		return errors.New("tailnet lock is already enabled")
+		return errors.New("tailnet lock 锁已启用")
 	}
 
 	// Parse initially-trusted keys & disablement values.
@@ -136,26 +134,26 @@ func runTailnetLockInit(ctx context.Context, args []string) error {
 		}
 	}
 	if !foundSelfKey {
-		return errors.New("the tailnet lock key of the current node must be one of the trusted keys during initialization")
+		return errors.New("当前节点的 tailnet lock 密钥必须在初始化时被信任的密钥之一")
 	}
 
-	fmt.Println("You are initializing tailnet lock with the following trusted signing keys:")
+	fmt.Println("你正在使用以下受信任的签名密钥初始化 tailnet lock 锁：")
 	for _, k := range keys {
 		fmt.Printf(" - tlpub:%x (%s key)\n", k.Public, k.Kind.String())
 	}
 	fmt.Println()
 
 	if !nlInitArgs.confirm {
-		fmt.Printf("%d disablement secrets will be generated.\n", nlInitArgs.numDisablements)
+		fmt.Printf("将生成 %d 个禁用密钥。\n", nlInitArgs.numDisablements)
 		if nlInitArgs.disablementForSupport {
-			fmt.Println("A disablement secret will be generated and transmitted to Tailscale support.")
+			fmt.Println("将生成一个禁用密钥并传送给 Tailscale 支持。")
 		}
 
 		genSupportFlag := ""
 		if nlInitArgs.disablementForSupport {
 			genSupportFlag = "--gen-disablement-for-support "
 		}
-		fmt.Println("\nIf this is correct, please re-run this command with the --confirm flag:")
+		fmt.Println("\n如果正确，请使用 --confirm 标志重新运行此命令：")
 		fmt.Printf("\t%s lock init --confirm --gen-disablements %d %s%s", os.Args[0], nlInitArgs.numDisablements, genSupportFlag, strings.Join(args, " "))
 		fmt.Println()
 		return nil
@@ -163,7 +161,7 @@ func runTailnetLockInit(ctx context.Context, args []string) error {
 
 	var successMsg strings.Builder
 
-	fmt.Fprintf(&successMsg, "%d disablement secrets have been generated and are printed below. Take note of them now, they WILL NOT be shown again.\n", nlInitArgs.numDisablements)
+	fmt.Fprintf(&successMsg, "已生成 %d 个禁用密钥，打印如下。请现在记下它们，它们将不会再次显示。\n", nlInitArgs.numDisablements)
 	for range nlInitArgs.numDisablements {
 		var secret [32]byte
 		if _, err := rand.Read(secret[:]); err != nil {
@@ -180,7 +178,7 @@ func runTailnetLockInit(ctx context.Context, args []string) error {
 			return err
 		}
 		disablementValues = append(disablementValues, tka.DisablementKDF(supportDisablement))
-		fmt.Fprintln(&successMsg, "A disablement secret for Tailscale support has been generated and transmitted to Tailscale.")
+		fmt.Fprintln(&successMsg, "已生成供 Tailscale 支持使用的禁用密钥并传送给 Tailscale。")
 	}
 
 	// The state returned by TailnetLockInit likely doesn't contain the initialized state,
@@ -190,7 +188,7 @@ func runTailnetLockInit(ctx context.Context, args []string) error {
 	}
 
 	fmt.Print(successMsg.String())
-	fmt.Println("Initialization complete.")
+	fmt.Println("初始化完成。")
 	return nil
 }
 
@@ -201,18 +199,18 @@ var nlStatusArgs struct {
 var tlStatusCmd = &ffcli.Command{
 	Name:       "status",
 	ShortUsage: "tailscale lock status",
-	ShortHelp:  "Output the state of tailnet lock",
+	ShortHelp:  "输出 tailnet lock 锁的状态",
 	Exec:       runTailnetLockStatus,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("lock status")
-		fs.Var(&nlStatusArgs.json, "json", "output in JSON format")
+		fs.Var(&nlStatusArgs.json, "json", "以 JSON 格式输出")
 		return fs
 	})(),
 }
 
 func runTailnetLockStatus(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return fmt.Errorf("tailscale lock status: unexpected argument")
+		return fmt.Errorf("tailscale lock status：意外参数")
 	}
 
 	st, err := localClient.TailnetLockStatus(ctx)
@@ -224,35 +222,35 @@ func runTailnetLockStatus(ctx context.Context, args []string) error {
 		if nlStatusArgs.json.Version == 1 {
 			return jsonoutput.PrintTailnetLockStatusJSONV1(os.Stdout, st)
 		} else {
-			return fmt.Errorf("unrecognised version: %d", nlStatusArgs.json.Version)
+			return fmt.Errorf("无法识别的版本：%d", nlStatusArgs.json.Version)
 		}
 	}
 
 	if st.Enabled {
-		fmt.Println("Tailnet Lock is ENABLED.")
+		fmt.Println("Tailnet Lock 锁已启用。")
 	} else {
-		fmt.Println("Tailnet Lock is NOT enabled.")
+		fmt.Println("Tailnet Lock 锁未启用。")
 	}
 	fmt.Println()
 
 	if st.Enabled && st.NodeKey != nil && !st.PublicKey.IsZero() {
 		if st.NodeKeySigned {
-			fmt.Println("This node is accessible under Tailnet Lock. Node signature:")
+			fmt.Println("此节点在 Tailnet Lock 锁下可访问。节点签名：")
 			fmt.Println(st.NodeKeySignature.String())
 		} else {
-			fmt.Println("This node is LOCKED OUT by Tailnet Lock, and action is required to establish connectivity.")
-			fmt.Printf("Run the following command on a node with a trusted key:\n\ttailscale lock sign %v %s\n", st.NodeKey, st.PublicKey.CLIString())
+			fmt.Println("此节点已被 Tailnet Lock 锁锁定，需要操作以建立连接。")
+			fmt.Printf("在一个拥有受信任密钥的节点上运行以下命令：\n\ttailscale lock sign %v %s\n", st.NodeKey, st.PublicKey.CLIString())
 		}
 		fmt.Println()
 	}
 
 	if !st.PublicKey.IsZero() {
-		fmt.Printf("This node's tailnet-lock key: %s\n", st.PublicKey.CLIString())
+		fmt.Printf("此节点的 tailnet-lock 密钥：%s\n", st.PublicKey.CLIString())
 		fmt.Println()
 	}
 
 	if st.Enabled && len(st.TrustedKeys) > 0 {
-		fmt.Println("Trusted signing keys:")
+		fmt.Println("受信任的签名密钥：")
 		for _, k := range st.TrustedKeys {
 			var line strings.Builder
 			line.WriteString("\t")
@@ -261,7 +259,7 @@ func runTailnetLockStatus(ctx context.Context, args []string) error {
 			line.WriteString(fmt.Sprint(k.Votes))
 			line.WriteString("\t")
 			if k.Key == st.PublicKey {
-				line.WriteString("(self)")
+				line.WriteString("（本机）")
 			}
 			if k.Metadata["purpose"] == "pre-auth key" {
 				if preauthKeyID := k.Metadata["authkey_stableid"]; preauthKeyID != "" {
@@ -278,7 +276,7 @@ func runTailnetLockStatus(ctx context.Context, args []string) error {
 
 	if st.Enabled && len(st.FilteredPeers) > 0 {
 		fmt.Println()
-		fmt.Println("The following nodes are locked out by tailnet lock and cannot connect to other nodes:")
+		fmt.Println("以下节点已被 tailnet lock 锁锁定，无法连接到其他节点：")
 		for _, p := range st.FilteredPeers {
 			var line strings.Builder
 			line.WriteString("\t")
@@ -304,7 +302,7 @@ func runTailnetLockStatus(ctx context.Context, args []string) error {
 var tlAddCmd = &ffcli.Command{
 	Name:       "add",
 	ShortUsage: "tailscale lock add <public-key>...",
-	ShortHelp:  "Add one or more trusted signing keys to tailnet lock",
+	ShortHelp:  "向 tailnet lock 锁添加一个或多个受信任的签名密钥",
 	Exec:       runTailnetLockAdd,
 }
 
@@ -315,11 +313,11 @@ var nlRemoveArgs struct {
 var tlRemoveCmd = &ffcli.Command{
 	Name:       "remove",
 	ShortUsage: "tailscale lock remove [--re-sign=false] <public-key>...",
-	ShortHelp:  "Remove one or more trusted signing keys from tailnet lock",
+	ShortHelp:  "从 tailnet lock 锁移除一个或多个受信任的签名密钥",
 	Exec:       runTailnetLockRemove,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("lock remove")
-		fs.BoolVar(&nlRemoveArgs.resign, "re-sign", true, "resign signatures which would be invalidated by removal of trusted signing keys")
+		fs.BoolVar(&nlRemoveArgs.resign, "re-sign", true, "为因移除受信任签名密钥而失效的签名重新签名")
 		return fs
 	})(),
 }
@@ -330,17 +328,17 @@ func runTailnetLockRemove(ctx context.Context, args []string) error {
 		return err
 	}
 	if len(removeKeys) == 0 {
-		return fmt.Errorf("missing argument, expected one or more tailnet lock keys")
+		return fmt.Errorf("缺少参数，期望一个或多个 tailnet lock 密钥")
 	}
 	st, err := localClient.TailnetLockStatus(ctx)
 	if err != nil {
 		return fixTailscaledConnectError(err)
 	}
 	if !st.Enabled {
-		return errors.New("tailnet lock is not enabled")
+		return errors.New("tailnet lock 锁未启用")
 	}
 	if len(st.TrustedKeys) == 1 {
-		return errors.New("cannot remove the last trusted signing key; use 'tailscale lock disable' to disable tailnet lock instead, or add another signing key before removing one")
+		return errors.New("无法移除最后一个受信任的签名密钥；请改用 'tailscale lock disable' 禁用 tailnet lock 锁，或在移除前先添加另一个签名密钥")
 	}
 
 	if nlRemoveArgs.resign {
@@ -352,7 +350,7 @@ func runTailnetLockRemove(ctx context.Context, args []string) error {
 				return fmt.Errorf("computing KeyID for key %v: %w", k, err)
 			}
 			if bytes.Equal(st.PublicKey.KeyID(), kID) {
-				return errors.New("cannot remove local trusted signing key while resigning; run command on a different node or with --re-sign=false")
+				return errors.New("重新签名时无法移除本地受信任的签名密钥；请在其他节点上运行命令，或使用 --re-sign=false")
 			}
 		}
 
@@ -384,13 +382,13 @@ func runTailnetLockRemove(ctx context.Context, args []string) error {
 		}
 	} else {
 		if isatty.IsTerminal(os.Stdout.Fd()) {
-			fmt.Printf(`Warning
-Removal of a signing key(s) without resigning nodes (--re-sign=false)
-will cause any nodes signed by the given key(s) to be locked out
-of the Tailscale network. Proceed with caution.
+			fmt.Printf(`警告
+在不重新签名节点的情况下移除签名密钥（--re-sign=false）
+将导致由该密钥签名的任何节点被锁定于
+Tailscale 网络之外。请谨慎操作。
 `)
-			if !prompt.YesNo("Are you sure you want to remove the signing key(s)?", true) {
-				fmt.Printf("aborting removal of signing key(s)\n")
+			if !prompt.YesNo("确定要移除签名密钥吗？", true) {
+				fmt.Printf("中止移除签名密钥\n")
 				os.Exit(0)
 			}
 		}
@@ -413,20 +411,20 @@ func parseTLArgs(args []string, parseKeys, parseDisablements bool) (keys []tka.K
 		if parseDisablements && (strings.HasPrefix(a, "disablement:") || strings.HasPrefix(a, "disablement-secret:")) {
 			b, err := hex.DecodeString(a[strings.Index(a, ":")+1:])
 			if err != nil {
-				return nil, nil, fmt.Errorf("parsing disablement %d: %v", i+1, err)
+				return nil, nil, fmt.Errorf("解析禁用项 %d：%v", i+1, err)
 			}
 			disablements = append(disablements, b)
 			continue
 		}
 
 		if !parseKeys {
-			return nil, nil, fmt.Errorf("parsing argument %d: expected value with \"disablement:\" or \"disablement-secret:\" prefix, got %q", i+1, a)
+			return nil, nil, fmt.Errorf("解析参数 %d：期望值以 \"disablement:\" 或 \"disablement-secret:\" 前缀开头，实际得到 %q", i+1, a)
 		}
 
 		var nlpk key.NLPublic
 		spl := strings.SplitN(a, "?", 2)
 		if err := nlpk.UnmarshalText([]byte(spl[0])); err != nil {
-			return nil, nil, fmt.Errorf("parsing key %d: %v", i+1, err)
+			return nil, nil, fmt.Errorf("解析密钥 %d：%v", i+1, err)
 		}
 
 		k := tka.Key{
@@ -437,7 +435,7 @@ func parseTLArgs(args []string, parseKeys, parseDisablements bool) (keys []tka.K
 		if len(spl) > 1 {
 			votes, err := strconv.Atoi(spl[1])
 			if err != nil {
-				return nil, nil, fmt.Errorf("parsing key %d votes: %v", i+1, err)
+				return nil, nil, fmt.Errorf("解析密钥 %d 的票数：%v", i+1, err)
 			}
 			k.Votes = uint(votes)
 		}
@@ -452,7 +450,7 @@ func runTailnetLockAdd(ctx context.Context, addArgs []string) error {
 		return err
 	}
 	if len(addKeys) == 0 {
-		return fmt.Errorf("missing argument, expected one or more tailnet lock keys")
+		return fmt.Errorf("缺少参数，期望一个或多个 tailnet lock 密钥")
 	}
 
 	st, err := localClient.TailnetLockStatus(ctx)
@@ -460,7 +458,7 @@ func runTailnetLockAdd(ctx context.Context, addArgs []string) error {
 		return fixTailscaledConnectError(err)
 	}
 	if !st.Enabled {
-		return errors.New("tailnet lock is not enabled")
+		return errors.New("tailnet lock 锁未启用")
 	}
 
 	if err := localClient.TailnetLockModify(ctx, addKeys, nil); err != nil {
@@ -472,15 +470,15 @@ func runTailnetLockAdd(ctx context.Context, addArgs []string) error {
 var tlSignCmd = &ffcli.Command{
 	Name:       "sign",
 	ShortUsage: "tailscale lock sign <node-key> [<rotation-key>]\ntailscale lock sign <auth-key>",
-	ShortHelp:  "Sign a node or pre-approved auth key",
-	LongHelp: `Either:
-  - signs a node key and transmits the signature to the coordination
-    server, or
-  - signs a pre-approved auth key, printing it in a form that can be
-    used to bring up nodes under tailnet lock
+	ShortHelp:  "为一个节点或预批准的认证密钥签名",
+	LongHelp: `或者：
+  - 为一个节点密钥签名，并将签名传送到协调
+    服务器，或者
+  - 为一个预批准的认证密钥签名，以可用于
+    在 tailnet lock 锁下启动节点的形式打印出来
 
-If any of the key arguments begin with "file:", the key is retrieved from
-the file at the path specified in the argument suffix.`,
+如果任一密钥参数以 "file:" 开头，则该密钥从
+参数后缀指定路径的文件中读取。`,
 	Exec: runTailnetLockSign,
 }
 
@@ -508,14 +506,14 @@ func runTailnetLockSign(ctx context.Context, args []string) error {
 	)
 
 	if len(args) == 0 || len(args) > 2 {
-		return errors.New("usage: tailscale lock sign <node-key> [<rotation-key>]")
+		return errors.New("用法：tailscale lock sign <node-key> [<rotation-key>]")
 	}
 	if err := nodeKey.UnmarshalText([]byte(args[0])); err != nil {
-		return fmt.Errorf("decoding node-key: %w", err)
+		return fmt.Errorf("解码 node-key：%w", err)
 	}
 	if len(args) > 1 {
 		if err := rotationKey.UnmarshalText([]byte(args[1])); err != nil {
-			return fmt.Errorf("decoding rotation-key: %w", err)
+			return fmt.Errorf("解码 rotation-key：%w", err)
 		}
 	}
 
@@ -523,9 +521,9 @@ func runTailnetLockSign(ctx context.Context, args []string) error {
 	// Provide a better help message for when someone clicks through the signing flow
 	// on the wrong device.
 	if err != nil && strings.Contains(err.Error(), tsconst.TailnetLockNotTrustedMsg) {
-		fmt.Fprintln(Stderr, "Error: Signing is not available on this device because it does not have a trusted tailnet lock key.")
+		fmt.Fprintln(Stderr, "错误：此设备无法进行签名，因为它没有受信任的 tailnet lock 密钥。")
 		fmt.Fprintln(Stderr)
-		fmt.Fprintln(Stderr, "Try again on a signing device instead. Tailnet admins can see signing devices on the admin panel.")
+		fmt.Fprintln(Stderr, "请改在签名设备上重试。Tailnet 管理员可在管理后台查看签名设备。")
 		fmt.Fprintln(Stderr)
 	}
 	return err
@@ -534,16 +532,16 @@ func runTailnetLockSign(ctx context.Context, args []string) error {
 var tlDisableCmd = &ffcli.Command{
 	Name:       "disable",
 	ShortUsage: "tailscale lock disable <disablement-secret>",
-	ShortHelp:  "Consume a disablement secret to shut down tailnet lock for the tailnet",
+	ShortHelp:  "使用一个禁用密钥来关闭整个 tailnet 的 tailnet lock 锁",
 	LongHelp: strings.TrimSpace(`
 
-The 'tailscale lock disable' command uses the specified disablement
-secret to disable tailnet lock.
+'tailscale lock disable' 命令使用指定的禁用
+密钥来禁用 tailnet lock 锁。
 
-If tailnet lock is re-enabled, new disablement secrets can be generated.
+如果重新启用 tailnet lock 锁，可生成新的禁用密钥。
 
-Once this secret is used, it has been distributed
-to all nodes in the tailnet and should be considered public.
+一旦此密钥被使用，它已被分发到
+tailnet 中的所有节点，应被视为公开。
 
 `),
 	Exec: runTailnetLockDisable,
@@ -555,7 +553,7 @@ func runTailnetLockDisable(ctx context.Context, args []string) error {
 		return err
 	}
 	if len(secrets) != 1 {
-		return errors.New("usage: tailscale lock disable <disablement-secret>")
+		return errors.New("用法：tailscale lock disable <disablement-secret>")
 	}
 	return localClient.TailnetLockDisable(ctx, secrets[0])
 }
@@ -563,16 +561,16 @@ func runTailnetLockDisable(ctx context.Context, args []string) error {
 var tlLocalDisableCmd = &ffcli.Command{
 	Name:       "local-disable",
 	ShortUsage: "tailscale lock local-disable",
-	ShortHelp:  "Disable tailnet lock for this node only",
+	ShortHelp:  "仅为此节点禁用 tailnet lock 锁",
 	LongHelp: strings.TrimSpace(`
 
-The 'tailscale lock local-disable' command disables tailnet lock for only
-the current node.
+'tailscale lock local-disable' 命令仅为
+当前节点禁用 tailnet lock 锁。
 
-If the current node is locked out, this does not mean that it can initiate
-connections in a tailnet with tailnet lock enabled. Rather, this means
-that the current node will accept traffic from other nodes in the tailnet
-that are locked out.
+如果当前节点被锁定，这并不意味着它能在启用了
+tailnet lock 锁的 tailnet 中发起连接。而是意味着
+当前节点将接受来自 tailnet 中
+被锁定的其他节点的流量。
 
 `),
 	Exec: runTailnetLockLocalDisable,
@@ -585,14 +583,14 @@ func runTailnetLockLocalDisable(ctx context.Context, args []string) error {
 var tlDisablementKDFCmd = &ffcli.Command{
 	Name:       "disablement-kdf",
 	ShortUsage: "tailscale lock disablement-kdf <hex-encoded-disablement-secret>",
-	ShortHelp:  "Compute a disablement value from a disablement secret (advanced users only)",
-	LongHelp:   "Compute a disablement value from a disablement secret (advanced users only)",
+	ShortHelp:  "根据禁用密钥计算禁用值（仅限高级用户）",
+	LongHelp:   "根据禁用密钥计算禁用值（仅限高级用户）",
 	Exec:       runTailnetLockDisablementKDF,
 }
 
 func runTailnetLockDisablementKDF(ctx context.Context, args []string) error {
 	if len(args) != 1 {
-		return errors.New("usage: tailscale lock disablement-kdf <hex-encoded-disablement-secret>")
+		return errors.New("用法：tailscale lock disablement-kdf <hex-encoded-disablement-secret>")
 	}
 	secret, err := hex.DecodeString(args[0])
 	if err != nil {
@@ -610,13 +608,13 @@ var nlLogArgs struct {
 var tlLogCmd = &ffcli.Command{
 	Name:       "log",
 	ShortUsage: "tailscale lock log [--limit N]",
-	ShortHelp:  "List changes applied to tailnet lock",
-	LongHelp:   "List changes applied to tailnet lock",
+	ShortHelp:  "列出应用于 tailnet lock 锁的变更",
+	LongHelp:   "列出应用于 tailnet lock 锁的变更",
 	Exec:       runTailnetLockLog,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("lock log")
-		fs.IntVar(&nlLogArgs.limit, "limit", 50, "max number of updates to list")
-		fs.Var(&nlLogArgs.json, "json", "output in JSON format")
+		fs.IntVar(&nlLogArgs.limit, "limit", 50, "要列出的最大更新数量")
+		fs.Var(&nlLogArgs.json, "json", "以 JSON 格式输出")
 		return fs
 	})(),
 }
@@ -637,7 +635,7 @@ func nlDescribeUpdate(update ipnstate.TailnetLockUpdate, color bool) (string, er
 		} else {
 			// Older versions of the client shouldn't explode when they encounter an
 			// unknown key type.
-			fmt.Fprintf(&stanza, "%sKeyID: <Error: %v>\n", prefix, err)
+			fmt.Fprintf(&stanza, "%sKeyID：<错误：%v>\n", prefix, err)
 		}
 		if key.Meta != nil {
 			fmt.Fprintf(&stanza, "%sMetadata: %+v\n", prefix, key.Meta)
@@ -646,12 +644,12 @@ func nlDescribeUpdate(update ipnstate.TailnetLockUpdate, color bool) (string, er
 
 	var aum tka.AUM
 	if err := aum.Unserialize(update.Raw); err != nil {
-		return "", fmt.Errorf("decoding: %w", err)
+		return "", fmt.Errorf("解码：%w", err)
 	}
 
 	tkaHead, err := aum.Hash().MarshalText()
 	if err != nil {
-		return "", fmt.Errorf("decoding AUM hash: %w", err)
+		return "", fmt.Errorf("解码 AUM 哈希：%w", err)
 	}
 	fmt.Fprintf(&stanza, "%supdate %s (%s)%s\n", terminalYellow, string(tkaHead), update.Change, terminalClear)
 
@@ -671,11 +669,11 @@ func nlDescribeUpdate(update ipnstate.TailnetLockUpdate, color bool) (string, er
 		}
 
 	case tka.AUMCheckpoint.String():
-		fmt.Fprintln(&stanza, "Disablement values:")
+		fmt.Fprintln(&stanza, "禁用值：")
 		for _, v := range aum.State.DisablementValues {
 			fmt.Fprintf(&stanza, " - %x\n", v)
 		}
-		fmt.Fprintln(&stanza, "Keys:")
+		fmt.Fprintln(&stanza, "密钥：")
 		for _, k := range aum.State.Keys {
 			printKey(&k, "  ")
 		}
@@ -699,7 +697,7 @@ func runTailnetLockLog(ctx context.Context, args []string) error {
 		return fixTailscaledConnectError(err)
 	}
 	if !st.Enabled {
-		return errors.New("Tailnet Lock is not enabled")
+		return errors.New("Tailnet Lock 锁未启用")
 	}
 
 	updates, err := localClient.TailnetLockLog(ctx, nlLogArgs.limit)
@@ -717,7 +715,7 @@ func printTailnetLockLog(updates []ipnstate.NetworkLockUpdate, out io.Writer, js
 		if jsonSchema.Version == 1 {
 			return jsonoutput.PrintTailnetLockLogJSONV1(out, updates)
 		} else {
-			return fmt.Errorf("unrecognised version: %d", jsonSchema.Version)
+			return fmt.Errorf("无法识别的版本：%d", jsonSchema.Version)
 		}
 	}
 
@@ -733,10 +731,10 @@ func printTailnetLockLog(updates []ipnstate.NetworkLockUpdate, out io.Writer, js
 
 func runTskeyWrapCmd(ctx context.Context, args []string) error {
 	if len(args) != 1 {
-		return errors.New("usage: lock tskey-wrap <tailscale pre-auth key>")
+		return errors.New("用法：lock tskey-wrap <tailscale pre-auth key>")
 	}
 	if strings.Contains(args[0], "--TL") {
-		return errors.New("Error: provided key was already wrapped")
+		return errors.New("错误：提供的密钥已被包装")
 	}
 
 	st, err := localClient.StatusWithoutPeers(ctx)
@@ -774,10 +772,10 @@ func wrapAuthKey(ctx context.Context, keyStr string, status *ipnstate.Status) er
 
 	wrapped, err := localClient.TailnetLockWrapPreauthKey(ctx, keyStr, priv)
 	if err != nil {
-		return fmt.Errorf("wrapping failed: %w", err)
+		return fmt.Errorf("包装失败：%w", err)
 	}
 	if err := localClient.TailnetLockModify(ctx, []tka.Key{k}, nil); err != nil {
-		return fmt.Errorf("add key failed: %w", err)
+		return fmt.Errorf("添加密钥失败：%w", err)
 	}
 
 	fmt.Println(wrapped)
@@ -793,25 +791,26 @@ var tlRevokeKeysArgs struct {
 var tlRevokeKeysCmd = &ffcli.Command{
 	Name:       "revoke-keys",
 	ShortUsage: "tailscale lock revoke-keys <tailnet-lock-key>...\n  revoke-keys [--cosign] [--finish] <recovery-blob>",
-	ShortHelp:  "Revoke compromised tailnet-lock keys",
-	LongHelp: `Retroactively revoke the specified tailnet lock keys (tlpub:abc).
+	ShortHelp:  "吊销已被泄露的 tailnet-lock 密钥",
+	LongHelp: `追溯吊销指定的 tailnet lock 密钥（tlpub:abc）。
 
-Revoked keys are prevented from being used in the future. Any nodes previously signed
-by revoked keys lose their authorization and must be signed again.
+被吊销的密钥将被禁止在未来使用。任何此前由被吊销
+密钥签名的节点将失去授权，必须重新签名。
 
-Revocation is a multi-step process that requires several signing nodes to ` + "`--cosign`" + ` the revocation. Use ` + "`tailscale lock remove`" + ` instead if the key has not been compromised.
+吊销是一个多步骤过程，需要多个签名节点对吊销进行 ` + "`--cosign`" + `。
+如果密钥未被泄露，请改用 ` + "`tailscale lock remove`" + `。
 
-1. To start, run ` + "`tailscale revoke-keys <tlpub-keys>`" + ` with the tailnet lock keys to revoke.
-2. Re-run the ` + "`--cosign`" + ` command output by ` + "`revoke-keys`" + ` on other signing nodes. Use the
-   most recent command output on the next signing node in sequence.
-3. Once the number of ` + "`--cosign`" + `s is greater than the number of keys being revoked,
-   run the command one final time with ` + "`--finish`" + ` instead of ` + "`--cosign`" + `.`,
+1. 首先，运行 ` + "`tailscale revoke-keys <tlpub-keys>`" + ` 并指定要吊销的 tailnet lock 密钥。
+2. 在其他签名节点上重新运行 ` + "`revoke-keys`" + ` 输出的 ` + "`--cosign`" + ` 命令。在下一个
+   签名节点上依次使用最近的命令输出。
+3. 一旦 ` + "`--cosign`" + ` 的数量大于被吊销密钥的数量，
+   最后再运行一次该命令，使用 ` + "`--finish`" + ` 替代 ` + "`--cosign`" + `。`,
 	Exec: runTailnetLockRevokeKeys,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("lock revoke-keys")
-		fs.BoolVar(&tlRevokeKeysArgs.cosign, "cosign", false, "continue generating the recovery using the tailnet lock key on this device and the provided recovery blob")
-		fs.BoolVar(&tlRevokeKeysArgs.finish, "finish", false, "finish the recovery process by transmitting the revocation")
-		fs.StringVar(&tlRevokeKeysArgs.forkFrom, "fork-from", "", "parent AUM hash to rewrite from (advanced users only)")
+		fs.BoolVar(&tlRevokeKeysArgs.cosign, "cosign", false, "使用本设备的 tailnet lock 密钥和提供的恢复 blob 继续生成恢复")
+		fs.BoolVar(&tlRevokeKeysArgs.finish, "finish", false, "通过传送吊销来完成恢复过程")
+		fs.StringVar(&tlRevokeKeysArgs.forkFrom, "fork-from", "", "要重写自的父 AUM 哈希（仅限高级用户）")
 		return fs
 	})(),
 }
@@ -825,14 +824,14 @@ func runTailnetLockRevokeKeys(ctx context.Context, args []string) error {
 		}
 
 		if len(revokeKeys) == 0 {
-			return fmt.Errorf("missing argument, expected one or more tailnet lock keys")
+			return fmt.Errorf("缺少参数，期望一个或多个 tailnet lock 密钥")
 		}
 
 		keyIDs := make([]tkatype.KeyID, len(revokeKeys))
 		for i, k := range revokeKeys {
 			keyIDs[i], err = k.ID()
 			if err != nil {
-				return fmt.Errorf("generating keyID: %v", err)
+				return fmt.Errorf("生成 keyID：%v", err)
 			}
 		}
 
@@ -842,22 +841,22 @@ func runTailnetLockRevokeKeys(ctx context.Context, args []string) error {
 				// Hex-encoded: like the output of the lock log command.
 				b, err := hex.DecodeString(tlRevokeKeysArgs.forkFrom)
 				if err != nil {
-					return fmt.Errorf("invalid fork-from hash: %v", err)
+					return fmt.Errorf("无效的 fork-from 哈希：%v", err)
 				}
 				copy(forkFrom[:], b)
 			} else {
 				if err := forkFrom.UnmarshalText([]byte(tlRevokeKeysArgs.forkFrom)); err != nil {
-					return fmt.Errorf("invalid fork-from hash: %v", err)
+					return fmt.Errorf("无效的 fork-from 哈希：%v", err)
 				}
 			}
 		}
 
 		aumBytes, err := localClient.TailnetLockGenRecoveryAUM(ctx, keyIDs, forkFrom)
 		if err != nil {
-			return fmt.Errorf("generation of recovery AUM failed: %w", err)
+			return fmt.Errorf("生成恢复 AUM 失败：%w", err)
 		}
 
-		fmt.Printf(`Run the following command on another machine with a trusted tailnet lock key:
+		fmt.Printf(`在另一台拥有受信任 tailnet lock 密钥的机器上运行以下命令：
 	%s lock revoke-keys --cosign %X
 `, os.Args[0], aumBytes)
 		return nil
@@ -866,34 +865,34 @@ func runTailnetLockRevokeKeys(ctx context.Context, args []string) error {
 	// If we got this far, we need to co-sign the AUM and/or transmit it for distribution.
 	b, err := hex.DecodeString(args[0])
 	if err != nil {
-		return fmt.Errorf("parsing hex: %v", err)
+		return fmt.Errorf("解析十六进制：%v", err)
 	}
 	var recoveryAUM tka.AUM
 	if err := recoveryAUM.Unserialize(b); err != nil {
-		return fmt.Errorf("decoding recovery AUM: %v", err)
+		return fmt.Errorf("解码恢复 AUM：%v", err)
 	}
 
 	if tlRevokeKeysArgs.cosign {
 		aumBytes, err := localClient.TailnetLockCosignRecoveryAUM(ctx, recoveryAUM)
 		if err != nil {
-			return fmt.Errorf("co-signing recovery AUM failed: %w", err)
+			return fmt.Errorf("共同签名恢复 AUM 失败：%w", err)
 		}
 
-		fmt.Printf(`Co-signing completed successfully.
+		fmt.Printf(`共同签名已成功完成。
 
-To accumulate an additional signature, run the following command on another machine with a trusted tailnet lock key:
+要累积额外的签名，请在另一台拥有受信任 tailnet lock 密钥的机器上运行以下命令：
 	%s lock revoke-keys --cosign %X
 
-Alternatively if you are done with co-signing, complete recovery by running the following command:
+或者，如果你已完成共同签名，通过运行以下命令完成恢复：
 	%s lock revoke-keys --finish %X
 `, os.Args[0], aumBytes, os.Args[0], aumBytes)
 	}
 
 	if tlRevokeKeysArgs.finish {
 		if err := localClient.TailnetLockSubmitRecoveryAUM(ctx, recoveryAUM); err != nil {
-			return fmt.Errorf("submitting recovery AUM failed: %w", err)
+			return fmt.Errorf("提交恢复 AUM 失败：%w", err)
 		}
-		fmt.Println("Recovery completed.")
+		fmt.Println("恢复已完成。")
 	}
 
 	return nil

@@ -33,7 +33,7 @@ func peerDialControlFuncNetworkExtension(d *Dialer) func(network, address string
 	netns.SetListenConfigInterfaceIndex(&lc, index)
 	return func(network, address string, c syscall.RawConn) error {
 		if index == -1 {
-			return errors.New("failed to find TUN interface to bind to")
+			return errors.New("未找到可绑定的 TUN 接口")
 		}
 		return lc.Control(network, address, c)
 	}

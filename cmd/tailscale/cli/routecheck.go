@@ -32,8 +32,8 @@ var routecheckCmd = func() *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "routecheck",
 		ShortUsage: "tailscale routecheck",
-		ShortHelp:  "Print a reachability report for routes with multiple paths",
-		LongHelp:   hidden + `"tailscale routecheck" is an experimental feature; it is not a stable interface`,
+		ShortHelp:  "为拥有多条路径的路由打印可达性报告",
+		LongHelp:   hidden + `"tailscale routecheck" 是一项实验性功能，并非稳定接口`,
 		Exec:       runRoutecheck,
 		FlagSet:    routecheckFlagSet,
 	}
@@ -41,9 +41,9 @@ var routecheckCmd = func() *ffcli.Command {
 
 var routecheckFlagSet = func() *flag.FlagSet {
 	fs := newFlagSet("routecheck")
-	fs.BoolVar(&routecheckArgs.probe, "probe", false, "probe now to generate a new reachability report")
-	fs.Var(&routecheckArgs.format, "format", `output format: empty (for human-readable), "json" or "json-line"`)
-	fs.Var(routecheckArgs.format.JSONBool(), "json", "output in JSON format")
+	fs.BoolVar(&routecheckArgs.probe, "probe", false, "立即探测以生成新的可达性报告")
+	fs.Var(&routecheckArgs.format, "format", `输出格式：留空（人类可读），"json" 或 "json-line"`)
+	fs.Var(routecheckArgs.format.JSONBool(), "json", "以 JSON 格式输出")
 	return fs
 }()
 
@@ -76,11 +76,11 @@ func printRouteCheckReport(rp *routecheck.Report) error {
 	case "json-line":
 		enc = jsontext.NewEncoder(Stdout, jsontext.Multiline(false))
 	default:
-		return fmt.Errorf("unknown output format %q", routecheckArgs.format)
+		return fmt.Errorf("未知输出格式 %q", routecheckArgs.format)
 	}
 
 	if rp == nil {
-		return fmt.Errorf("routecheck: report unavailable")
+		return fmt.Errorf("routecheck: 报告不可用")
 	}
 	routes := rp.RoutablePrefixes()
 
@@ -107,8 +107,8 @@ func printRouteCheckReport(rp *routecheck.Report) error {
 
 	w := tabwriter.NewWriter(Stdout, 10, 5, 5, ' ', 0)
 	defer w.Flush()
-	fmt.Fprintf(w, "\nReachable routers at %s:\n", rp.Done.Local().Format(tstime.DateSpTimeZ))
-	fmt.Fprintf(w, "\n %s\t%s\t%s", "PREFIX", "IP", "HOSTNAME")
+	fmt.Fprintf(w, "\n在 %s 时可到达的路由器:\n", rp.Done.Local().Format(tstime.DateSpTimeZ))
+	fmt.Fprintf(w, "\n %s\t%s\t%s", "前缀", "IP", "主机名")
 	for prefix, nodes := range routes.Sorted() {
 		slices.SortFunc(nodes, func(a, b routecheck.Node) int {
 			return cmp.Compare(a.Name, b.Name) // order by hostname

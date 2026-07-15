@@ -26,10 +26,10 @@ var HookNewPortMapper feature.Hook[func(logf logger.Logf,
 	onlyTCP443OrNil func() bool) Client]
 
 var (
-	ErrNoPortMappingServices = errors.New("no port mapping services were found")
-	ErrGatewayRange          = errors.New("skipping portmap; gateway range likely lacks support")
-	ErrGatewayIPv6           = errors.New("skipping portmap; no IPv6 support for portmapping")
-	ErrPortMappingDisabled   = errors.New("port mapping is disabled")
+	ErrNoPortMappingServices = errors.New("未找到任何端口映射服务")
+	ErrGatewayRange          = errors.New("跳过端口映射；网关地址段可能不支持")
+	ErrGatewayIPv6           = errors.New("跳过端口映射；不支持 IPv6 端口映射")
+	ErrPortMappingDisabled   = errors.New("端口映射已禁用")
 )
 
 // ProbeResult is the result of a portmapper probe, saying

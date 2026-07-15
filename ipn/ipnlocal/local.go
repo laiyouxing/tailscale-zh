@@ -156,7 +156,7 @@ var HookListenSSH feature.Hook[func(net.Listener, *LocalBackend, logger.Logf) (n
 func (b *LocalBackend) ListenSSH(ln net.Listener, logf logger.Logf) (net.Listener, error) {
 	fn, ok := HookListenSSH.GetOk()
 	if !ok {
-		return nil, errors.New("SSH support not available; import _ \"tailscale.com/feature/ssh\"")
+		return nil, errors.New("SSH 支持不可用；请导入 _ \"tailscale.com/feature/ssh\"")
 	}
 	return fn(ln, b, logf)
 }
@@ -203,7 +203,7 @@ var (
 
 	// errManagedByPolicy indicates the operation is blocked
 	// because the target state is managed by a GP/MDM policy.
-	errManagedByPolicy = errors.New("managed by policy")
+	errManagedByPolicy = errors.New("由策略管理")
 
 	// ErrProfileStorageUnavailable indicates that profile-specific local data
 	// storage is not available; see [LocalBackend.ProfileMkdirAll].
@@ -3299,7 +3299,7 @@ var invalidPacketFilterWarnable = health.Register(&health.Warnable{
 	Code:     "invalid-packet-filter",
 	Title:    "Invalid packet filter",
 	Severity: health.SeverityHigh,
-	Text:     health.StaticMessage("The coordination server sent an invalid packet filter permitting traffic to unlocked nodes; rejecting all packets for safety"),
+	Text:     health.StaticMessage("协调服务器发送了无效的包过滤器，允许流向未锁定节点的流量；为安全起见已拒绝所有数据包"),
 })
 
 // filterInputs holds the inputs to the packet filter.
@@ -4579,7 +4579,7 @@ func (b *LocalBackend) CheckIPNConnectionAllowed(actor ipnauth.Actor) error {
 
 	uid := actor.UserID()
 	if uid == "" {
-		return errors.New("empty user uid in connection identity")
+		return errors.New("连接身份中的用户 uid 为空")
 	}
 	if uid == b.pm.CurrentUserID() {
 		// The connection is from the current user; allow it.
@@ -4593,7 +4593,7 @@ func (b *LocalBackend) CheckIPNConnectionAllowed(actor ipnauth.Actor) error {
 	} else {
 		reason = "already in use"
 	}
-	return fmt.Errorf("Tailscale %s (%q); connection from %q not allowed",
+	return fmt.Errorf("Tailscale %s (%q)；不允许来自 %q 的连接",
 		reason, b.tryLookupUserName(string(b.pm.CurrentUserID())),
 		b.tryLookupUserName(string(uid)))
 }
@@ -4623,7 +4623,7 @@ func (b *LocalBackend) StartLoginInteractive(ctx context.Context) error {
 // active [watchSession]s.
 func (b *LocalBackend) StartLoginInteractiveAs(ctx context.Context, user ipnauth.Actor) error {
 	if b.health.IsUnhealthy(ipn.StateStoreHealth) {
-		return errors.New("cannot log in when state store is unhealthy")
+		return errors.New("在状态存储不健康时无法登录")
 	}
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -4706,14 +4706,14 @@ func (b *LocalBackend) pingPeerAPI(ctx context.Context, ip netip.Addr) (peer tai
 	}
 	peer, ok := nm.PeerByTailscaleIP(ip)
 	if !ok {
-		return zero, "", fmt.Errorf("no peer found with Tailscale IP %v", ip)
+		return zero, "", fmt.Errorf("未找到 Tailscale IP 为 %v 的节点", ip)
 	}
 	if peer.Expired() {
-		return zero, "", errors.New("peer's node key has expired")
+		return zero, "", errors.New("节点的节点密钥已过期")
 	}
 	base := peerAPIBase(nm, peer)
 	if base == "" {
-		return zero, "", fmt.Errorf("no PeerAPI base found for peer %v (%v)", peer.ID(), ip)
+		return zero, "", fmt.Errorf("未找到节点 %v (%v) 的 PeerAPI 基址", peer.ID(), ip)
 	}
 	outReq, err := http.NewRequestWithContext(ctx, "HEAD", base, nil)
 	if err != nil {
@@ -4726,7 +4726,7 @@ func (b *LocalBackend) pingPeerAPI(ctx context.Context, ip netip.Addr) (peer tai
 	}
 	defer res.Body.Close() // but unnecessary on HEAD responses
 	if res.StatusCode != http.StatusOK {
-		return zero, "", fmt.Errorf("HTTP status %v", res.Status)
+		return zero, "", fmt.Errorf("HTTP 状态 %v", res.Status)
 	}
 	return peer, base, nil
 }
@@ -4936,7 +4936,7 @@ func (b *LocalBackend) isConfigLocked_Locked() bool {
 
 func (b *LocalBackend) checkPrefsLocked(p *ipn.Prefs) error {
 	if b.isConfigLocked_Locked() {
-		return errors.New("can't reconfigure tailscaled when using a config file; config file is locked")
+		return errors.New("使用配置文件时无法重新配置 tailscaled；配置文件已被锁定")
 	}
 	var errs []error
 	if p.Hostname == "badhostname.tailscale." {
@@ -4980,9 +4980,9 @@ func (b *LocalBackend) checkSSHPrefsLocked(p *ipn.Prefs) error {
 	// Assume that we do have the SSH capability if don't have a netmap yet.
 	if !b.currentNode().SelfHasCapOr(tailcfg.CapabilitySSH, true) {
 		if b.isDefaultServerLocked() {
-			return errors.New("Unable to enable local Tailscale SSH server; not enabled on Tailnet. See https://tailscale.com/s/ssh")
+			return errors.New("无法启用本地 Tailscale SSH 服务；Tailnet 上未启用。请参阅 https://tailscale.com/s/ssh")
 		}
-		return errors.New("Unable to enable local Tailscale SSH server; not enabled on Tailnet.")
+		return errors.New("无法启用本地 Tailscale SSH 服务；Tailnet 上未启用。")
 	}
 	return nil
 }
@@ -5034,14 +5034,14 @@ func (b *LocalBackend) checkExitNodePrefsLocked(p *ipn.Prefs) error {
 	}
 
 	if p.AdvertisesExitNode() {
-		return errors.New("Cannot advertise an exit node and use an exit node at the same time.")
+		return errors.New("不能同时发布出口节点和使用出口节点。")
 	}
 	return nil
 }
 
 func (b *LocalBackend) checkFunnelEnabledLocked(p *ipn.Prefs) error {
 	if p.ShieldsUp && b.serveConfig.IsFunnelOn() {
-		return errors.New("Cannot enable shields-up when Funnel is enabled.")
+		return errors.New("无法在已启用 Funnel 时启用 shields-up。")
 	}
 	return nil
 }
@@ -5049,11 +5049,11 @@ func (b *LocalBackend) checkFunnelEnabledLocked(p *ipn.Prefs) error {
 func (b *LocalBackend) checkAutoUpdatePrefsLocked(p *ipn.Prefs) error {
 	if !buildfeatures.HasClientUpdate {
 		if p.AutoUpdate.Apply.EqualBool(true) {
-			return errors.New("Auto-update support is disabled in this build")
+			return errors.New("此构建中已禁用自动更新支持")
 		}
 	}
 	if p.AutoUpdate.Apply.EqualBool(true) && !feature.CanAutoUpdate() {
-		return errors.New("Auto-updates are not supported on this platform.")
+		return errors.New("此平台不支持自动更新。")
 	}
 	return nil
 }
@@ -5064,7 +5064,7 @@ func checkAdvertiseRoutes(p *ipn.Prefs) error {
 	var errs []error
 	for _, route := range p.AdvertiseRoutes {
 		if route != route.Masked() {
-			errs = append(errs, fmt.Errorf("route %s has non-address bits set; expected %s", route, route.Masked()))
+			errs = append(errs, fmt.Errorf("路由 %s 包含非地址位；应为 %s", route, route.Masked()))
 		}
 	}
 	return errors.Join(errs...)
@@ -5095,9 +5095,9 @@ func (b *LocalBackend) SetUseExitNodeEnabled(actor ipnauth.Actor, v bool) (ipn.P
 	var zero ipn.PrefsView
 	if v && p0.InternalExitNodePrior() == "" {
 		if !p0.ExitNodeIP().IsValid() {
-			return zero, errors.New("no exit node IP to enable & prior exit node IP was never resolved an a node")
+			return zero, errors.New("没有可启用的出口节点 IP，且先前出口节点 IP 从未解析到节点")
 		}
-		return zero, errors.New("no prior exit node to enable")
+		return zero, errors.New("没有可启用的先前出口节点")
 	}
 
 	mp := &ipn.MaskedPrefs{}
@@ -5150,7 +5150,7 @@ func (b *LocalBackend) EditPrefs(mp *ipn.MaskedPrefs) (ipn.PrefsView, error) {
 // It returns an error if the actor is not allowed to make the change.
 func (b *LocalBackend) EditPrefsAs(mp *ipn.MaskedPrefs, actor ipnauth.Actor) (ipn.PrefsView, error) {
 	if mp.SetsInternal() {
-		return ipn.PrefsView{}, errors.New("can't set Internal fields")
+		return ipn.PrefsView{}, errors.New("无法设置内部字段")
 	}
 
 	b.mu.Lock()
@@ -5169,7 +5169,7 @@ func (b *LocalBackend) checkEditPrefsAccessLocked(actor ipnauth.Actor, prefs ipn
 	var errs []error
 
 	if mp.RunSSHSet && mp.RunSSH && !envknob.CanSSHD() {
-		errs = append(errs, errors.New("Tailscale SSH server administratively disabled"))
+		errs = append(errs, errors.New("Tailscale SSH 服务已被管理员禁用"))
 	}
 
 	// Check if the user is allowed to disconnect Tailscale.
@@ -5184,7 +5184,7 @@ func (b *LocalBackend) checkEditPrefsAccessLocked(actor ipnauth.Actor, prefs ipn
 	if mp.ExitNodeIDSet || mp.ExitNodeIPSet || mp.AutoExitNodeSet {
 		isManaged, err := b.polc.HasAnyOf(pkey.ExitNodeID, pkey.ExitNodeIP)
 		if err != nil {
-			err = fmt.Errorf("policy check failed: %w", err)
+			err = fmt.Errorf("策略检查失败: %w", err)
 		} else if isManaged {
 			// Allow users to override ExitNode policy settings and select an exit node manually
 			// if permitted by [pkey.AllowExitNodeOverride].
@@ -5196,7 +5196,7 @@ func (b *LocalBackend) checkEditPrefsAccessLocked(actor ipnauth.Actor, prefs ipn
 			}
 		}
 		if err != nil {
-			errs = append(errs, fmt.Errorf("exit node cannot be changed: %w", err))
+			errs = append(errs, fmt.Errorf("出口节点无法更改: %w", err))
 		}
 	}
 
@@ -5466,7 +5466,7 @@ func (b *LocalBackend) checkProfileNameLocked(p *ipn.Prefs) error {
 	}
 	if id != b.pm.CurrentProfile().ID() {
 		// Name is already in use by another profile.
-		return fmt.Errorf("profile name %q already in use", p.ProfileName)
+		return fmt.Errorf("配置文件名称 %q 已被使用", p.ProfileName)
 	}
 	return nil
 }
@@ -8393,7 +8393,7 @@ func (b *LocalBackend) CurrentProfile() ipn.LoginProfileView {
 // NewProfile creates and switches to the new profile.
 func (b *LocalBackend) NewProfile() error {
 	if b.health.IsUnhealthy(ipn.StateStoreHealth) {
-		return errors.New("cannot log in when state store is unhealthy")
+		return errors.New("在状态存储不健康时无法登录")
 	}
 	b.mu.Lock()
 	defer b.mu.Unlock()

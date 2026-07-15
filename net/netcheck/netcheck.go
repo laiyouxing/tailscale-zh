@@ -801,7 +801,7 @@ func (c *Client) GetReport(ctx context.Context, dm *tailcfg.DERPMap, opts *GetRe
 	onlySTUN := false
 	if opts != nil && opts.OnlySTUN {
 		if opts.OnlyTCP443 {
-			return nil, errors.New("netcheck: only one of OnlySTUN or OnlyTCP443 may be set in opts")
+			return nil, errors.New("netcheck: OnlySTUN 与 OnlyTCP443 不能同时在 opts 中设置")
 		}
 		onlySTUN = true
 	}
@@ -820,16 +820,16 @@ func (c *Client) GetReport(ctx context.Context, dm *tailcfg.DERPMap, opts *GetRe
 	ctx = sockstats.WithSockStats(ctx, sockstats.LabelNetcheckClient, c.logf)
 
 	if dm == nil {
-		return nil, errors.New("netcheck: GetReport: DERP map is nil")
+		return nil, errors.New("netcheck: GetReport: DERP 映射为空")
 	}
 	if c.NetMon == nil {
-		return nil, errors.New("netcheck: GetReport: Client.NetMon is nil")
+		return nil, errors.New("netcheck: GetReport: Client.NetMon 为空")
 	}
 
 	c.mu.Lock()
 	if c.curState != nil {
 		c.mu.Unlock()
-		return nil, errors.New("invalid concurrent call to GetReport")
+		return nil, errors.New("对 GetReport 的并发调用无效")
 	}
 	now := c.timeNow()
 	rs := &reportState{
@@ -1232,7 +1232,7 @@ func (c *Client) measureAllICMPLatency(ctx context.Context, rs *reportState, nee
 
 func (c *Client) measureICMPLatency(ctx context.Context, reg *tailcfg.DERPRegion, p *ping.Pinger) (_ time.Duration, ok bool, err error) {
 	if len(reg.Nodes) == 0 {
-		return 0, false, fmt.Errorf("no nodes for region %d (%v)", reg.RegionID, reg.RegionCode)
+		return 0, false, fmt.Errorf("区域 %d (%v) 没有可用节点", reg.RegionID, reg.RegionCode)
 	}
 
 	// Try pinging the first node in the region
@@ -1245,7 +1245,7 @@ func (c *Client) measureICMPLatency(ctx context.Context, reg *tailcfg.DERPRegion
 	const unusedPort = 0
 	stunAddrPort, ok := c.nodeAddrPort(ctx, node, unusedPort, probeIPv4)
 	if !ok {
-		return 0, false, fmt.Errorf("no address for node %v (v4-for-icmp)", node.Name)
+		return 0, false, fmt.Errorf("节点 %v 没有可用地址 (v4-for-icmp)", node.Name)
 	}
 	ip := stunAddrPort.Addr()
 	addr := &net.IPAddr{

@@ -17,21 +17,21 @@ export function UpdateAvailableNotification({
   return (
     <Card>
       <h2 className="mb-2">
-        Update available{" "}
+        有可用更新{" "}
         {details.LatestVersion && `(v${details.LatestVersion})`}
       </h2>
       <p className="text-sm mb-1 mt-1">
         {details.LatestVersion
-          ? `Version ${details.LatestVersion}`
-          : "A new update"}{" "}
-        is now available. <ChangelogText version={details.LatestVersion} />
+          ? `版本 ${details.LatestVersion}`
+          : "一个新的更新"}{" "}
+        现已可用。<ChangelogText version={details.LatestVersion} />
       </p>
       <Button
         className="mt-3 inline-block"
         sizeVariant="small"
         onClick={() => setLocation("/update")}
       >
-        Update now
+        立即更新
       </Button>
     </Card>
   )
@@ -57,11 +57,11 @@ export function ChangelogText({ version }: { version?: string }) {
   }
   return (
     <>
-      Check out the{" "}
+      查看{" "}
       <a href="https://tailscale.com/changelog/" className="link">
-        release notes
+        更新日志
       </a>{" "}
-      to find out what’s new!
+      了解新增内容！
     </>
   )
 }

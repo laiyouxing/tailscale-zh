@@ -15,9 +15,9 @@ var loginArgs upArgsT
 var loginCmd = &ffcli.Command{
 	Name:       "login",
 	ShortUsage: "tailscale login [flags]",
-	ShortHelp:  "Log in to a Tailscale account",
-	LongHelp: `"tailscale login" logs this machine in to your Tailscale network.
-This command is currently in alpha and may change in the future.`,
+	ShortHelp:  "登录到 Tailscale 账户",
+	LongHelp: `"tailscale login" 将此主机登录到你的 Tailscale 网络。
+此命令目前处于 alpha 阶段，未来可能发生变化。`,
 	FlagSet: func() *flag.FlagSet {
 		return newUpFlagSet(effectiveGOOS(), &loginArgs, "login")
 	}(),

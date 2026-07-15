@@ -53,7 +53,7 @@ func (c *Client) Standalone(ctx context.Context, bindAddr string) error {
 			pc = u6
 		}
 		if pc == nil {
-			return 0, errors.New("no UDP socket")
+			return 0, errors.New("无可用 UDP 套接字")
 		}
 
 		return pc.WriteToUDPAddrPort(pkt, dst)

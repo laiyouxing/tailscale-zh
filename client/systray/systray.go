@@ -165,15 +165,15 @@ func (menu *Menu) onReady() {
 	log.Printf("starting")
 	if os.Getuid() == 0 || os.Getuid() != os.Geteuid() || os.Getenv("SUDO_USER") != "" || os.Getenv("DOAS_USER") != "" {
 		fmt.Fprintln(os.Stderr, `
-It appears that you might be running the systray with sudo/doas.
-This can lead to issues with D-Bus, and should be avoided.
+看起来你可能正在使用 sudo/doas 运行系统托盘程序。
+这可能会导致 D-Bus 相关的问题，应当避免。
 
-The systray application should be run with the same user as your desktop session.
-This usually means that you should run the application like:
+系统托盘程序应当使用与你的桌面会话相同的用户来运行。
+这通常意味着你应该像下面这样运行该程序：
 
 tailscale systray
 
-See https://tailscale.com/kb/1597/linux-systray for more information.`)
+更多信息请参见 https://tailscale.com/kb/1597/linux-systray。`)
 	}
 	setAppIcon(disconnected)
 
@@ -182,11 +182,11 @@ See https://tailscale.com/kb/1597/linux-systray for more information.`)
 	menu.mu.Lock()
 	if menu.readonly {
 		fmt.Fprintln(os.Stderr, `
-No permission to manage Tailscale. Set operator by running:
+无权管理 Tailscale。设置 operator 请运行：
 
 sudo tailscale set --operator=$USER
 
-See https://tailscale.com/s/cli-operator for more information.`)
+更多信息请参见 https://tailscale.com/s/cli-operator。`)
 	}
 	menu.mu.Unlock()
 }
@@ -232,7 +232,7 @@ func (menu *Menu) rebuild() {
 	systray.ResetMenu()
 
 	if menu.readonly {
-		const readonlyMsg = "No permission to manage Tailscale.\nSee tailscale.com/s/cli-operator"
+		const readonlyMsg = "无权管理 Tailscale。\n请参阅 tailscale.com/s/cli-operator"
 		m := systray.AddMenuItem(readonlyMsg, "")
 		onClick(ctx, m, func(_ context.Context) {
 			webbrowser.Open("https://tailscale.com/s/cli-operator")
@@ -240,8 +240,8 @@ func (menu *Menu) rebuild() {
 		systray.AddSeparator()
 	}
 
-	menu.connect = systray.AddMenuItem("Connect", "")
-	menu.disconnect = systray.AddMenuItem("Disconnect", "")
+	menu.connect = systray.AddMenuItem("连接", "")
+	menu.disconnect = systray.AddMenuItem("断开连接", "")
 	menu.disconnect.Hide()
 	systray.AddSeparator()
 
@@ -258,25 +258,25 @@ func (menu *Menu) rebuild() {
 	case ipn.Running.String():
 		if menu.status.ExitNodeStatus != nil && !menu.status.ExitNodeStatus.ID.IsZero() {
 			if menu.status.ExitNodeStatus.Online {
-				setTooltip("Using exit node")
+				setTooltip("正在使用出口节点")
 				setAppIcon(exitNodeOnline)
 			} else {
-				setTooltip("Exit node offline")
+				setTooltip("出口节点离线")
 				setAppIcon(exitNodeOffline)
 			}
 		} else {
-			setTooltip(fmt.Sprintf("Connected to %s", menu.status.CurrentTailnet.Name))
+			setTooltip(fmt.Sprintf("已连接到 %s", menu.status.CurrentTailnet.Name))
 			setAppIcon(connected)
 		}
-		menu.connect.SetTitle("Connected")
+		menu.connect.SetTitle("已连接")
 		menu.connect.Disable()
 		menu.disconnect.Show()
 		menu.disconnect.Enable()
 	case ipn.Starting.String():
-		setTooltip("Connecting")
+		setTooltip("连接中")
 		setAppIcon(loading)
 	default:
-		setTooltip("Disconnected")
+		setTooltip("已断开")
 		setAppIcon(disconnected)
 	}
 
@@ -285,7 +285,7 @@ func (menu *Menu) rebuild() {
 		menu.disconnect.Disable()
 	}
 
-	account := "Account"
+	account := "账户"
 	if pt := profileTitle(menu.curProfile); pt != "" {
 		account = pt
 	}
@@ -314,10 +314,10 @@ func (menu *Menu) rebuild() {
 	}
 
 	if menu.status != nil && menu.status.Self != nil && len(menu.status.Self.TailscaleIPs) > 0 {
-		title := fmt.Sprintf("This Device: %s (%s)", menu.status.Self.HostName, menu.status.Self.TailscaleIPs[0])
+		title := fmt.Sprintf("此设备: %s (%s)", menu.status.Self.HostName, menu.status.Self.TailscaleIPs[0])
 		menu.self = systray.AddMenuItem(title, "")
 	} else {
-		menu.self = systray.AddMenuItem("This Device: not connected", "")
+		menu.self = systray.AddMenuItem("此设备：未连接", "")
 		menu.self.Disable()
 	}
 	systray.AddSeparator()
@@ -326,7 +326,7 @@ func (menu *Menu) rebuild() {
 		menu.rebuildExitNodeMenu(ctx)
 	}
 
-	menu.more = systray.AddMenuItem("More settings", "")
+	menu.more = systray.AddMenuItem("更多设置", "")
 	if menu.status != nil && menu.status.BackendState == "Running" {
 		// web client is only available if backend is running
 		onClick(ctx, menu.more, func(_ context.Context) {
@@ -338,7 +338,7 @@ func (menu *Menu) rebuild() {
 
 	// TODO(#15528): this menu item shouldn't be necessary at all,
 	// but is at least more discoverable than having users switch profiles or exit nodes.
-	menu.rebuildMenu = systray.AddMenuItem("Rebuild menu", "Fix missing menu items")
+	menu.rebuildMenu = systray.AddMenuItem("重建菜单", "修复缺失的菜单项")
 	onClick(ctx, menu.rebuildMenu, func(ctx context.Context) {
 		select {
 		case <-ctx.Done():
@@ -347,7 +347,7 @@ func (menu *Menu) rebuild() {
 	})
 	menu.rebuildMenu.Enable()
 
-	menu.quit = systray.AddMenuItem("Quit", "Quit the app")
+	menu.quit = systray.AddMenuItem("退出", "退出应用")
 	menu.quit.Enable()
 
 	go menu.eventLoop(ctx)
@@ -581,7 +581,7 @@ func (menu *Menu) copyTailscaleIP(device *ipnstate.PeerStatus) {
 	if err != nil {
 		log.Printf("clipboard error: %v", err)
 	} else {
-		menu.sendNotification(fmt.Sprintf("Copied Address for %v", name), ip)
+		menu.sendNotification(fmt.Sprintf("已复制 %v 的地址", name), ip)
 	}
 }
 
@@ -607,7 +607,7 @@ func (menu *Menu) rebuildExitNodeMenu(ctx context.Context) {
 	}
 
 	status := menu.status
-	menu.exitNodes = systray.AddMenuItem("Exit Nodes", "")
+	menu.exitNodes = systray.AddMenuItem("出口节点", "")
 	time.Sleep(newMenuDelay)
 
 	// register a click handler for a menu item to set nodeID as the exit node.
@@ -620,14 +620,14 @@ func (menu *Menu) rebuildExitNodeMenu(ctx context.Context) {
 		})
 	}
 
-	noExitNodeMenu := menu.exitNodes.AddSubMenuItemCheckbox("None", "", status.ExitNodeStatus == nil)
+	noExitNodeMenu := menu.exitNodes.AddSubMenuItemCheckbox("无", "", status.ExitNodeStatus == nil)
 	setExitNodeOnClick(noExitNodeMenu, "")
 
 	// Show recommended exit node if available.
 	if status.Self.CapMap.Contains(tailcfg.NodeAttrSuggestExitNodeUI) {
 		sugg, err := menu.lc.SuggestExitNode(ctx)
 		if err == nil {
-			title := "Recommended: "
+			title := "推荐："
 			if loc := sugg.Location; loc.Valid() && loc.Country() != "" {
 				flag := countryFlag(loc.CountryCode())
 				title += fmt.Sprintf("%s %s: %s", flag, loc.Country(), loc.City())
@@ -650,14 +650,14 @@ func (menu *Menu) rebuildExitNodeMenu(ctx context.Context) {
 	}
 	if len(tailnetExitNodes) > 0 {
 		menu.exitNodes.AddSeparator()
-		menu.exitNodes.AddSubMenuItem("Tailnet Exit Nodes", "").Disable()
+		menu.exitNodes.AddSubMenuItem("Tailnet 出口节点", "").Disable()
 		for _, ps := range status.Peer {
 			if !ps.ExitNodeOption || ps.Location != nil {
 				continue
 			}
 			name := strings.Split(ps.DNSName, ".")[0]
 			if !ps.Online {
-				name += " (offline)"
+				name += " (离线)"
 			}
 			active := status.ExitNodeStatus != nil && ps.ID == status.ExitNodeStatus.ID
 			sm := menu.exitNodes.AddSubMenuItemCheckbox(name, "", active)
@@ -675,7 +675,7 @@ func (menu *Menu) rebuildExitNodeMenu(ctx context.Context) {
 	}
 	if len(mullvadExitNodes.countries) > 0 {
 		menu.exitNodes.AddSeparator()
-		menu.exitNodes.AddSubMenuItem("Location-based Exit Nodes", "").Disable()
+		menu.exitNodes.AddSubMenuItem("基于位置的出口节点", "").Disable()
 		mullvadMenu := menu.exitNodes.AddSubMenuItemCheckbox("Mullvad VPN", "", false)
 
 		for _, country := range mullvadExitNodes.sortedCountries() {
@@ -700,7 +700,7 @@ func (menu *Menu) rebuildExitNodeMenu(ctx context.Context) {
 
 			// multi-city country, build submenu with "best available" option and cities.
 			time.Sleep(newMenuDelay)
-			bm := countryMenu.AddSubMenuItemCheckbox("Best Available", "", false)
+			bm := countryMenu.AddSubMenuItemCheckbox("最佳可用", "", false)
 			setExitNodeOnClick(bm, country.best.ID)
 			countryMenu.AddSeparator()
 

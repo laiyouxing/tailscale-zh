@@ -19,15 +19,15 @@ import (
 var ipCmd = &ffcli.Command{
 	Name:       "ip",
 	ShortUsage: "tailscale ip [-1] [-4] [-6] [peer or service hostname or ip address]",
-	ShortHelp:  "Show Tailscale IP addresses",
-	LongHelp:   "Show Tailscale IP addresses for peer or service. Peer defaults to the current machine.",
+	ShortHelp:  "显示 Tailscale IP 地址",
+	LongHelp:   "显示对等节点或服务的 Tailscale IP 地址。未指定对等节点时默认为当前主机。",
 	Exec:       runIP,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("ip")
-		fs.BoolVar(&ipArgs.want1, "1", false, "only print one IP address")
-		fs.BoolVar(&ipArgs.want4, "4", false, "only print IPv4 address")
-		fs.BoolVar(&ipArgs.want6, "6", false, "only print IPv6 address")
-		fs.StringVar(&ipArgs.assert, "assert", "", "assert that one of the node's IP(s) matches this IP address")
+		fs.BoolVar(&ipArgs.want1, "1", false, "只打印一个 IP 地址")
+		fs.BoolVar(&ipArgs.want4, "4", false, "只打印 IPv4 地址")
+		fs.BoolVar(&ipArgs.want6, "6", false, "只打印 IPv6 地址")
+		fs.StringVar(&ipArgs.assert, "assert", "", "断言节点的某个 IP 与此 IP 地址相匹配")
 		return fs
 	})(),
 }
@@ -41,7 +41,7 @@ var ipArgs struct {
 
 func runIP(ctx context.Context, args []string) error {
 	if len(args) > 1 {
-		return errors.New("too many arguments, expected at most one peer")
+		return errors.New("参数过多，最多期望一个对等节点")
 	}
 	var of string
 	if len(args) == 1 {
@@ -56,7 +56,7 @@ func runIP(ctx context.Context, args []string) error {
 		}
 	}
 	if nflags > 1 {
-		return errors.New("tailscale ip -1, -4, and -6 are mutually exclusive")
+		return errors.New("tailscale ip 的 -1、-4 和 -6 选项互相排斥")
 	}
 	if !v4 && !v6 {
 		v4, v6 = true, true
@@ -72,7 +72,7 @@ func runIP(ctx context.Context, args []string) error {
 				return nil
 			}
 		}
-		return fmt.Errorf("assertion failed: IP %q not found among %v", ipArgs.assert, ips)
+		return fmt.Errorf("断言失败：在 %v 中未找到 IP %q", ips, ipArgs.assert)
 	}
 	if of != "" {
 		ip, _, err := tailscaleIPFromArg(ctx, of)
@@ -91,12 +91,12 @@ func runIP(ctx context.Context, args []string) error {
 			if serviceIPs != nil {
 				ips = serviceIPs
 			} else {
-				return fmt.Errorf("no peer or service found with IP %v", ip)
+				return fmt.Errorf("未找到使用该 IP %v 的对等节点或服务", ip)
 			}
 		}
 	}
 	if len(ips) == 0 {
-		return fmt.Errorf("no current Tailscale IPs; state: %v", st.BackendState)
+		return fmt.Errorf("当前没有 Tailscale IP；状态：%v", st.BackendState)
 	}
 
 	if ipArgs.want1 {
@@ -111,10 +111,10 @@ func runIP(ctx context.Context, args []string) error {
 	}
 	if !match {
 		if ipArgs.want4 {
-			return errors.New("no Tailscale IPv4 address")
+			return errors.New("没有 Tailscale IPv4 地址")
 		}
 		if ipArgs.want6 {
-			return errors.New("no Tailscale IPv6 address")
+			return errors.New("没有 Tailscale IPv6 地址")
 		}
 	}
 	return nil

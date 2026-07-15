@@ -19,14 +19,14 @@ func init() {
 func driveCmdStub() *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "drive",
-		ShortHelp:  "Share a directory with your tailnet",
+		ShortHelp:  "与你的 tailnet 上的其他设备共享目录",
 		ShortUsage: "tailscale drive [...any]",
-		LongHelp:   hidden + "Taildrive allows you to share directories with other machines on your tailnet.",
+		LongHelp:   hidden + "Taildrive 允许你与 tailnet 上的其他设备共享目录。",
 		Exec: func(_ context.Context, args []string) error {
 			return errors.New(
-				"Taildrive CLI commands are not supported when using the macOS GUI app. " +
-					"Please use the Tailscale menu bar icon to configure Taildrive in Settings.\n\n" +
-					"See https://tailscale.com/docs/features/taildrive",
+				"使用 macOS GUI 应用时不支持 Taildrive 命令行命令。" +
+					"请使用 Tailscale 菜单栏图标在「设置」中配置 Taildrive。\n\n" +
+					"详见 https://tailscale.com/docs/features/taildrive",
 			)
 		},
 	}

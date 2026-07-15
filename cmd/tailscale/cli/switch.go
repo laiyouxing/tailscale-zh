@@ -24,18 +24,18 @@ var switchCmd = &ffcli.Command{
 		"tailscale switch <id>",
 		"tailscale switch --list [--json]",
 	}, "\n"),
-	ShortHelp: "Switch to a different Tailscale account",
-	LongHelp: `"tailscale switch" switches between logged in accounts. You can
-use the ID that's returned from 'tailnet switch -list'
-to pick which profile you want to switch to. Alternatively, you
-can use the Tailnet, account names, or display names to switch as well.
+	ShortHelp: "切换到不同的 Tailscale 账户",
+	LongHelp: `"tailscale switch" 在已登录的账户之间切换。你可以
+使用从 'tailnet switch -list' 返回的 ID
+来选择要切换到的配置。此外，你也可以
+使用 Tailnet、账户名或显示名来切换。
 
-This command is currently in alpha and may change in the future.`,
+此命令目前处于 alpha 阶段，未来可能发生变化。`,
 
 	FlagSet: func() *flag.FlagSet {
 		fs := flag.NewFlagSet("switch", flag.ExitOnError)
-		fs.BoolVar(&switchArgs.list, "list", false, "list available accounts")
-		fs.BoolVar(&switchArgs.json, "json", false, "list available accounts in JSON format")
+		fs.BoolVar(&switchArgs.list, "list", false, "列出可用的账户")
+		fs.BoolVar(&switchArgs.json, "json", false, "以 JSON 格式列出可用账户")
 		return fs
 	}(),
 	Exec: switchProfile,
@@ -45,13 +45,12 @@ This command is currently in alpha and may change in the future.`,
 		{
 			Name:       "remove",
 			ShortUsage: "tailscale switch remove <id>",
-			ShortHelp:  "Remove a Tailscale account",
-			LongHelp: `"tailscale switch remove" removes a Tailscale account from the
-local machine. This does not delete the account itself, but
-it will no longer be available for switching to. You can
-add it back by logging in again.
+			ShortHelp:  "移除一个 Tailscale 账户",
+			LongHelp: `"tailscale switch remove" 从本机移除一个 Tailscale 账户。
+这不会删除账户本身，但它将不再可用于切换。
+你可以重新登录来将其加回。
 
-This command is currently in alpha and may change in the future.`,
+此命令目前处于 alpha 阶段，未来可能发生变化。`,
 			Exec: removeProfile,
 		},
 	},
@@ -78,7 +77,7 @@ func init() {
 					continue
 				}
 				seen[word] = true
-				words = append(words, fmt.Sprintf("%s\tid: %s, tailnet: %s, account: %s", word, prof.ID, prof.NetworkProfile.DisplayNameOrDefault(), prof.Name))
+				words = append(words, fmt.Sprintf("%s\tid：%s，tailnet：%s，account：%s", word, prof.ID, prof.NetworkProfile.DisplayNameOrDefault(), prof.Name))
 			}
 		}
 		return words, ffcomplete.ShellCompDirectiveNoFileComp, nil
@@ -100,7 +99,7 @@ func listProfiles(ctx context.Context) error {
 	printRow := func(vals ...string) {
 		fmt.Fprintln(tw, strings.Join(vals, "\t"))
 	}
-	printRow("ID", "Tailnet", "Account")
+	printRow("ID", "Tailnet", "账户")
 	for _, prof := range all {
 		name := prof.Name
 		if prof.ID == curP.ID {
@@ -154,42 +153,42 @@ func switchProfile(ctx context.Context, args []string) error {
 		return listProfiles(ctx)
 	}
 	if switchArgs.json {
-		outln("--json argument cannot be used with tailscale switch NAME")
+		outln("--json 参数不能与 tailscale switch NAME 一起使用")
 		os.Exit(1)
 	}
 	if len(args) != 1 {
-		outln("usage: tailscale switch NAME")
+		outln("用法：tailscale switch NAME")
 		os.Exit(1)
 	}
 	cp, all, err := localClient.ProfileStatus(ctx)
 	if err != nil {
-		errf("Failed to switch to account: %v\n", err)
+		errf("切换到账户失败：%v\n", err)
 		os.Exit(1)
 	}
 	profID, ok := matchProfile(args[0], all)
 	if !ok {
-		errf("No profile named %q\n", args[0])
+		errf("没有名为 %q 的配置\n", args[0])
 		os.Exit(1)
 	}
 	if profID == cp.ID {
-		printf("Already on account %q\n", args[0])
+		printf("已在账户 %q\n", args[0])
 		os.Exit(0)
 	}
 	if err := localClient.SwitchProfile(ctx, profID); err != nil {
-		errf("Failed to switch to account: %v\n", err)
+		errf("切换到账户失败：%v\n", err)
 		os.Exit(1)
 	}
-	printf("Switching to account %q\n", args[0])
+	printf("正在切换到账户 %q\n", args[0])
 	for {
 		select {
 		case <-ctx.Done():
-			errf("Timed out waiting for switch to complete.")
+			errf("等待切换完成超时。")
 			os.Exit(1)
 		default:
 		}
 		st, err := localClient.StatusWithoutPeers(ctx)
 		if err != nil {
-			errf("Error getting status: %v", err)
+			errf("获取状态出错：%v", err)
 			os.Exit(1)
 		}
 		switch st.BackendState {
@@ -199,12 +198,12 @@ func switchProfile(ctx context.Context, args []string) error {
 			time.Sleep(100 * time.Millisecond)
 			continue
 		case "NeedsLogin":
-			outln("Logged out.")
-			outln("To log in, run:")
+			outln("已登出。")
+			outln("要登录，请运行：")
 			outln("  tailscale up")
 			return nil
 		case "Running":
-			outln("Success.")
+			outln("成功。")
 			return nil
 		}
 		// For all other states, use the default error message.
@@ -217,23 +216,23 @@ func switchProfile(ctx context.Context, args []string) error {
 
 func removeProfile(ctx context.Context, args []string) error {
 	if len(args) != 1 {
-		outln("usage: tailscale switch remove NAME")
+		outln("用法：tailscale switch remove NAME")
 		os.Exit(1)
 	}
 	cp, all, err := localClient.ProfileStatus(ctx)
 	if err != nil {
-		errf("Failed to remove account: %v\n", err)
+		errf("移除账户失败：%v\n", err)
 		os.Exit(1)
 	}
 
 	profID, ok := matchProfile(args[0], all)
 	if !ok {
-		errf("No profile named %q\n", args[0])
+		errf("没有名为 %q 的配置\n", args[0])
 		os.Exit(1)
 	}
 
 	if profID == cp.ID {
-		printf("Already on account %q\n", args[0])
+		printf("已在账户 %q\n", args[0])
 		os.Exit(0)
 	}
 

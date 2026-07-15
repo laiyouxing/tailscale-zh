@@ -118,7 +118,7 @@ function TriggerWhenReading({
       onClick={() => setOpen(!open)}
     >
       <Eye />
-      <div className="text-white leading-snug ml-2 mr-1">Viewing</div>
+      <div className="text-white leading-snug ml-2 mr-1">正在查看</div>
       <ChevronDown className="stroke-white w-[15px] h-[15px]" />
       {auth.viewerIdentity && (
         <ProfilePic
@@ -137,8 +137,8 @@ function TriggerWhenReading({
 function PopoverContentHeader({ auth }: { auth: AuthResponse }) {
   return (
     <div className="text-black text-sm font-medium leading-tight mb-1">
-      {auth.authorized ? "Managing" : "Viewing"}
-      {auth.viewerIdentity && ` as ${auth.viewerIdentity.loginName}`}
+      {auth.authorized ? "管理" : "查看"}
+      {auth.viewerIdentity && ` 身份为 ${auth.viewerIdentity.loginName}`}
     </div>
   )
 }
@@ -153,10 +153,11 @@ function PopoverContentFooter({ auth }: { auth: AuthResponse }) {
       <div className="flex items-center">
         <User className="flex-shrink-0" />
         <p className="text-gray-500 text-xs ml-2">
-          We recognize you because you are accessing this page from{" "}
+          我们能识别你，是因为你正从{" "}
           <span className="font-medium">
             {auth.viewerIdentity.nodeName || auth.viewerIdentity.nodeIP}
-          </span>
+          </span>{" "}
+          访问此页面
         </p>
       </div>
     </>
@@ -172,14 +173,14 @@ function ReadonlyModeContent({ auth }: { auth: AuthResponse }) {
     <>
       <PopoverContentHeader auth={auth} />
       <p className="text-gray-500 text-xs">
-        This web interface is running in read-only mode.{" "}
+        此 Web 界面正以只读模式运行。{" "}
         <a
           href="https://tailscale.com/s/web-client-read-only"
           className="text-blue-700"
           target="_blank"
           rel="noreferrer"
         >
-          Learn more &rarr;
+          了解更多 &rarr;
         </a>
       </p>
       <PopoverContentFooter auth={auth} />
@@ -246,21 +247,18 @@ function LoginModeContent({
               // restricted to readonly. No point in sending them over to the
               // tailscaleIP:5252 address.
               <>
-                You don’t have permission to make changes to this device, but
-                you can view most of its details.
+                你无权更改此设备，但可以查看其大部分详情。
               </>
             ) : !node.ACLAllowsAnyIncomingTraffic ? (
               // Tailnet ACLs don't allow access to anyone.
               <>
-                The current tailnet policy file does not allow connecting to
-                this device.
+                当前的 tailnet 策略文件不允许连接到此设备。
               </>
             ) : (
               // ACLs don't allow access to this user specifically.
               <>
-                Cannot access this device’s Tailscale IP. Make sure you are
-                connected to your tailnet, and that your policy file allows
-                access.
+                无法访问此设备的 Tailscale IP。请确保你已连接到你的 tailnet，
+                且你的策略文件允许访问。
               </>
             )}{" "}
             <a
@@ -269,7 +267,7 @@ function LoginModeContent({
               target="_blank"
               rel="noreferrer"
             >
-              Learn more &rarr;
+              了解更多 &rarr;
             </a>
           </p>
         </>
@@ -277,15 +275,13 @@ function LoginModeContent({
         // User can connect to Tailcale IP; sign in when ready.
         <>
           <p className="text-gray-500 text-xs">
-            You can see most of this device’s details. To make changes, you need
-            to sign in.
+            你可以查看此设备的大部分详情。要进行更改，你需要登录。
           </p>
           {https && (
             // we don't know if the user can connect over TS, so
             // provide extra tips in case they have trouble.
             <p className="text-gray-500 text-xs font-semibold pt-2">
-              Make sure you are connected to your tailnet, and that your policy
-              file allows access.
+              请确保你已连接到你的 tailnet，且你的策略文件允许访问。
             </p>
           )}
           <SignInButton auth={auth} onClick={handleLogin} />
@@ -329,23 +325,21 @@ function ManageModeContent({
           // User is connected over Tailscale, but needs to complete check mode.
           <>
             <p className="text-gray-500 text-xs">
-              To make changes, sign in to confirm your identity. This extra step
-              helps us keep your device secure.
+              要进行更改，请登录以确认你的身份。这一额外步骤有助于保障你的设备安全。
             </p>
             <SignInButton auth={auth} onClick={handleLogin} />
           </>
         ) : (
           // User is connected over tailscale, but doesn't have permission to manage.
           <p className="text-gray-500 text-xs">
-            You don’t have permission to make changes to this device, but you
-            can view most of its details.{" "}
+            你无权更改此设备，但可以查看其大部分详情。{" "}
             <a
               href="https://tailscale.com/s/web-client-access"
               className="text-blue-700"
               target="_blank"
               rel="noreferrer"
             >
-              Learn more &rarr;
+              了解更多 &rarr;
             </a>
           </p>
         ))}
@@ -370,7 +364,7 @@ function SignInButton({
       sizeVariant="small"
       onClick={onClick}
     >
-      {auth.viewerIdentity ? "Sign in to confirm identity" : "Sign in"}
+      {auth.viewerIdentity ? "登录以确认身份" : "登录"}
     </Button>
   )
 }

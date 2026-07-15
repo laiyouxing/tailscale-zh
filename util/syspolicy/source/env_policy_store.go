@@ -93,8 +93,8 @@ func (s *EnvPolicyStore) lookupSettingVariable(key pkey.Key) (name, value string
 }
 
 var (
-	errEmptyKey   = errors.New("key must not be empty")
-	errInvalidKey = errors.New("key must consist of alphanumeric characters and slashes")
+	errEmptyKey   = errors.New("键不能为空")
+	errInvalidKey = errors.New("键只能由字母、数字和斜杠组成")
 )
 
 // keyToEnvVarName returns the environment variable name for a given policy

@@ -26,8 +26,8 @@ func init() {
 	sysPolicyCmd = func() *ffcli.Command {
 		return &ffcli.Command{
 			Name:       "syspolicy",
-			ShortHelp:  "Diagnose the MDM and system policy configuration",
-			LongHelp:   "The 'tailscale syspolicy' command provides tools for diagnosing the MDM and system policy configuration.",
+			ShortHelp:  "诊断 MDM 与系统策略配置",
+			LongHelp:   "'tailscale syspolicy' 命令提供用于诊断 MDM 与系统策略配置的工具。",
 			ShortUsage: "tailscale syspolicy <subcommand>",
 			UsageFunc:  usageFuncNoDefaultValues,
 			Subcommands: []*ffcli.Command{
@@ -35,27 +35,27 @@ func init() {
 					Name:       "list",
 					ShortUsage: "tailscale syspolicy list",
 					Exec:       runSysPolicyList,
-					ShortHelp:  "Print effective policy settings",
-					LongHelp:   "The 'tailscale syspolicy list' subcommand displays the effective policy settings and their sources (e.g., MDM or environment variables).",
+					ShortHelp:  "打印生效的策略设置",
+					LongHelp:   "'tailscale syspolicy list' 子命令显示生效的策略设置及其来源（例如 MDM 或环境变量）。",
 					FlagSet: (func() *flag.FlagSet {
 						fs := newFlagSet("syspolicy list")
-						fs.BoolVar(&syspolicyArgs.json, "json", false, "output in JSON format")
-						return fs
-					})(),
-				},
-				{
-					Name:       "reload",
+					fs.BoolVar(&syspolicyArgs.json, "json", false, "以 JSON 格式输出")
+					return fs
+				})(),
+			},
+			{
+				Name:       "reload",
 					ShortUsage: "tailscale syspolicy reload",
 					Exec:       runSysPolicyReload,
-					ShortHelp:  "Force a reload of policy settings, even if no changes are detected, and prints the result",
-					LongHelp:   "The 'tailscale syspolicy reload' subcommand forces a reload of policy settings, even if no changes are detected, and prints the result.",
+					ShortHelp:  "强制重新加载策略设置（即使未检测到变更）并打印结果",
+					LongHelp:   "'tailscale syspolicy reload' 子命令强制重新加载策略设置，即使未检测到变更，并打印结果。",
 					FlagSet: (func() *flag.FlagSet {
 						fs := newFlagSet("syspolicy reload")
-						fs.BoolVar(&syspolicyArgs.json, "json", false, "output in JSON format")
-						return fs
-					})(),
-				},
+					fs.BoolVar(&syspolicyArgs.json, "json", false, "以 JSON 格式输出")
+					return fs
+				})(),
 			},
+		},
 		}
 	}
 }
@@ -82,19 +82,19 @@ func printPolicySettings(policy *setting.Snapshot) {
 	if syspolicyArgs.json {
 		json, err := json.MarshalIndent(policy, "", "\t")
 		if err != nil {
-			errf("syspolicy marshalling error: %v", err)
+			errf("syspolicy 序列化错误：%v", err)
 		} else {
 			outln(string(json))
 		}
 		return
 	}
 	if policy.Len() == 0 {
-		outln("No policy settings")
+		outln("无策略设置")
 		return
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(w, "Name\tOrigin\tValue\tError")
+	fmt.Fprintln(w, "名称\t来源\t值\t错误")
 	fmt.Fprintln(w, "----\t------\t-----\t-----")
 	for _, k := range slices.Sorted(policy.Keys()) {
 		setting, _ := policy.GetSetting(k)

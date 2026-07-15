@@ -26,28 +26,28 @@ func exitNodeCmd() *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "exit-node",
 		ShortUsage: "tailscale exit-node [flags]",
-		ShortHelp:  "Show machines on your tailnet configured as exit nodes",
+		ShortHelp:  "显示你的 tailnet 上配置为出口节点的设备",
 		Subcommands: append([]*ffcli.Command{
 			{
 				Name:       "list",
 				ShortUsage: "tailscale exit-node list [flags]",
-				ShortHelp:  "Show exit nodes",
+				ShortHelp:  "显示出口节点",
 				Exec:       runExitNodeList,
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("list")
-					fs.StringVar(&exitNodeArgs.filter, "filter", "", "filter exit nodes by country")
+					fs.StringVar(&exitNodeArgs.filter, "filter", "", "按国家筛选出口节点")
 					return fs
 				})(),
 			},
 			{
 				Name:       "suggest",
 				ShortUsage: "tailscale exit-node suggest",
-				ShortHelp:  "Suggest the best available exit node",
+				ShortHelp:  "推荐当前最佳的可用出口节点",
 				Exec:       runExitNodeSuggest,
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("suggest")
 					if buildfeatures.HasRouteCheck {
-						fs.BoolVar(&exitNodeArgs.probe, "force-probe", false, hidden+"perform a routecheck probe before suggesting")
+						fs.BoolVar(&exitNodeArgs.probe, "force-probe", false, hidden+"在推荐前执行一次 routecheck 探测")
 					}
 					return fs
 				})(),
@@ -60,13 +60,13 @@ func exitNodeCmd() *ffcli.Command {
 					{
 						Name:       "connect",
 						ShortUsage: "tailscale exit-node connect",
-						ShortHelp:  "Connect to most recently used exit node",
+						ShortHelp:  "连接至最近使用的出口节点",
 						Exec:       exitNodeSetUse(true),
 					},
 					{
 						Name:       "disconnect",
 						ShortUsage: "tailscale exit-node disconnect",
-						ShortHelp:  "Disconnect from current exit node, if any",
+						ShortHelp:  "与当前出口节点断开连接（如果有）",
 						Exec:       exitNodeSetUse(false),
 					},
 				}
@@ -82,7 +82,7 @@ var exitNodeArgs struct {
 func exitNodeSetUse(wantOn bool) func(ctx context.Context, args []string) error {
 	return func(ctx context.Context, args []string) error {
 		if len(args) > 0 {
-			return errors.New("unexpected non-flag arguments")
+			return errors.New("出现意料之外的非标志参数")
 		}
 		err := localClient.SetUseExitNode(ctx, wantOn)
 		if err != nil {
@@ -107,7 +107,7 @@ func exitNodeSetUse(wantOn bool) func(ctx context.Context, args []string) error 
 // For countries without location data, each exit node is displayed.
 func runExitNodeList(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return errors.New("unexpected non-flag arguments to 'tailscale exit-node list'")
+		return errors.New("'tailscale exit-node list' 出现了意料之外的非标志参数")
 	}
 	getStatus := localClient.Status
 	st, err := getStatus(ctx)
@@ -125,18 +125,18 @@ func runExitNodeList(ctx context.Context, args []string) error {
 	}
 
 	if len(peers) == 0 {
-		return errors.New("no exit nodes found")
+		return errors.New("未找到任何出口节点")
 	}
 
 	filteredPeers := filterFormatAndSortExitNodes(peers, exitNodeArgs.filter)
 
 	if len(filteredPeers.Countries) == 0 && exitNodeArgs.filter != "" {
-		return fmt.Errorf("no exit nodes found for %q", exitNodeArgs.filter)
+		return fmt.Errorf("未找到属于 %q 的出口节点", exitNodeArgs.filter)
 	}
 
 	w := tabwriter.NewWriter(Stdout, 10, 5, 5, ' ', 0)
 	defer w.Flush()
-	fmt.Fprintf(w, "\n %s\t%s\t%s\t%s\t%s\t", "IP", "HOSTNAME", "COUNTRY", "CITY", "STATUS")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t%s\t%s\t", "IP", "主机名", "国家", "城市", "状态")
 	for _, country := range filteredPeers.Countries {
 		for _, city := range country.Cities {
 			for _, peer := range city.Peers {
@@ -146,10 +146,10 @@ func runExitNodeList(ctx context.Context, args []string) error {
 	}
 	fmt.Fprintln(w)
 	fmt.Fprintln(w)
-	fmt.Fprintln(w, "# To view the complete list of exit nodes for a country, use `tailscale exit-node list --filter=` followed by the country name.")
-	fmt.Fprintln(w, "# To use an exit node, use `tailscale set --exit-node=` followed by the IP or hostname.")
+	fmt.Fprintln(w, "# 要查看某个国家的完整出口节点列表，请使用 `tailscale exit-node list --filter=` 后跟国家名称。")
+	fmt.Fprintln(w, "# 要使用某个出口节点，请使用 `tailscale set --exit-node=` 后跟 IP 或主机名。")
 	if hasAnyExitNodeSuggestions(peers) {
-		fmt.Fprintln(w, "# To have Tailscale suggest an exit node, use `tailscale exit-node suggest`.")
+		fmt.Fprintln(w, "# 要让 Tailscale 推荐一个出口节点，请使用 `tailscale exit-node suggest`。")
 	}
 	return nil
 }
@@ -163,13 +163,13 @@ func runExitNodeSuggest(ctx context.Context, args []string) error {
 	}
 	res, err := suggestExitNode(ctx)
 	if err != nil {
-		return fmt.Errorf("suggest exit node: %w", err)
+		return fmt.Errorf("推荐出口节点: %w", err)
 	}
 	if res.ID == "" {
-		fmt.Println("No exit node suggestion is available.")
+		fmt.Println("当前没有可用的出口节点推荐。")
 		return nil
 	}
-	fmt.Printf("Suggested exit node: %v\nTo accept this suggestion, use `tailscale set --exit-node=%v`.\n", res.Name, shellquote.Join(res.Name))
+	fmt.Printf("推荐的出口节点: %v\n要接受此推荐，请使用 `tailscale set --exit-node=%v`。\n", res.Name, shellquote.Join(res.Name))
 	return nil
 }
 
@@ -189,15 +189,15 @@ func peerStatus(peer *ipnstate.PeerStatus) string {
 		lastseen := lastSeenFmt(peer.LastSeen)
 
 		if peer.ExitNode {
-			return "selected but offline" + lastseen
+			return "已选中但离线" + lastseen
 		}
 		if !peer.Online {
-			return "offline" + lastseen
+			return "离线" + lastseen
 		}
 	}
 
 	if peer.ExitNode {
-		return "selected"
+		return "已选中"
 	}
 
 	return "-"

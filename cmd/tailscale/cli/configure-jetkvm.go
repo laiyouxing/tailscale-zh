@@ -30,9 +30,9 @@ func jetKVMConfigureCmd() *ffcli.Command {
 		Name:       "jetkvm",
 		Exec:       runConfigureJetKVM,
 		ShortUsage: "tailscale configure jetkvm",
-		ShortHelp:  "Configure JetKVM to run tailscaled at boot",
+		ShortHelp:  "配置 JetKVM 在开机时运行 tailscaled",
 		LongHelp: strings.TrimSpace(`
-This command configures the JetKVM host to run tailscaled at boot.
+此命令配置 JetKVM 主机，使其在开机时运行 tailscaled。
 `),
 		FlagSet: (func() *flag.FlagSet {
 			fs := newFlagSet("jetkvm")
@@ -43,13 +43,13 @@ This command configures the JetKVM host to run tailscaled at boot.
 
 func runConfigureJetKVM(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return errors.New("unknown arguments")
+		return errors.New("未知参数")
 	}
 	if runtime.GOOS != "linux" || distro.Get() != distro.JetKVM {
-		return errors.New("only implemented on JetKVM")
+		return errors.New("仅在 JetKVM 上实现")
 	}
 	if err := os.MkdirAll("/userdata/init.d", 0755); err != nil {
-		return errors.New("unable to create /userdata/init.d")
+		return errors.New("无法创建 /userdata/init.d")
 	}
 	err := os.WriteFile("/userdata/init.d/S22tailscale", bytes.TrimLeft([]byte(`
 #!/bin/sh
@@ -79,6 +79,6 @@ esac
 		}
 	}
 
-	printf("Done. Now restart your JetKVM.\n")
+	printf("完成。现在请重启您的 JetKVM。\n")
 	return nil
 }

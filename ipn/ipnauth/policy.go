@@ -59,10 +59,10 @@ func CheckDisconnectPolicy(actor Actor, profile ipn.LoginProfileView, reason str
 		return nil
 	}
 	if allowWithReason, _ := policyclient.Get().GetBoolean(pkey.AlwaysOnOverrideWithReason, false); !allowWithReason {
-		return errors.New("disconnect not allowed: always-on mode is enabled")
+		return errors.New("不允许断开连接：已启用始终在线模式")
 	}
 	if reason == "" {
-		return errors.New("disconnect not allowed: reason required")
+		return errors.New("不允许断开连接：需要填写原因")
 	}
 	if auditFn != nil {
 		var details string

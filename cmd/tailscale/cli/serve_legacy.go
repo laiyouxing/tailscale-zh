@@ -49,7 +49,7 @@ var serveCmd = func() *ffcli.Command {
 func newServeLegacyCommand(e *serveEnv) *ffcli.Command {
 	return &ffcli.Command{
 		Name:      "serve",
-		ShortHelp: "Serve content and local servers",
+		ShortHelp: "提供内容服务与本地服务器",
 		ShortUsage: strings.Join([]string{
 			"tailscale serve http:<port> <mount-point> <source> [off]",
 			"tailscale serve https:<port> <mount-point> <source> [off]",
@@ -59,43 +59,42 @@ func newServeLegacyCommand(e *serveEnv) *ffcli.Command {
 			"tailscale serve reset",
 		}, "\n"),
 		LongHelp: strings.TrimSpace(`
-*** BETA; all of this is subject to change ***
+*** 测试版（BETA）；相关内容均可能发生变化 ***
 
-The 'tailscale serve' set of commands allows you to serve
-content and local servers from your Tailscale node to
-your tailnet.
+'tailscale serve' 这组命令允许你从自己的 Tailscale 节点向
+tailnet 提供内容服务与本地服务器。
 
-You can also choose to enable the Tailscale Funnel with:
-'tailscale funnel on'. Funnel allows you to publish
-a 'tailscale serve' server publicly, open to the entire
-internet. See https://tailscale.com/funnel.
+你也可以选择启用 Tailscale Funnel：
+'tailscale funnel on'。Funnel 允许你将
+'tailscale serve' 服务器公开发布到整个
+互联网。详见 https://tailscale.com/funnel。
 
-EXAMPLES
-  - To proxy requests to a web server at 127.0.0.1:3000:
+示例
+  - 将请求代理到 127.0.0.1:3000 上的 Web 服务器：
     $ tailscale serve https:443 / http://127.0.0.1:3000
 
-    Or, using the default port (443):
+    或者使用默认端口（443）：
     $ tailscale serve https / http://127.0.0.1:3000
 
-  - To serve a single file or a directory of files:
+  - 提供单个文件或某个文件目录：
     $ tailscale serve https / /home/alice/blog/index.html
     $ tailscale serve https /images/ /home/alice/blog/images
 
-  - To serve simple static text:
+  - 提供简单的静态文本：
     $ tailscale serve https:8080 / text:"Hello, world!"
 
-  - To serve over HTTP (tailnet only):
+  - 通过 HTTP 提供（仅限 tailnet）：
     $ tailscale serve http:80 / http://127.0.0.1:3000
 
-    Or, using the default port (80):
+    或者使用默认端口（80）：
     $ tailscale serve http / http://127.0.0.1:3000
 
-  - To forward incoming TCP connections on port 2222 to a local TCP server on
-    port 22 (e.g. to run OpenSSH in parallel with Tailscale SSH):
+  - 将端口 2222 上的入站 TCP 连接转发到本地端口 22 的
+    TCP 服务器（例如与 Tailscale SSH 并行运行 OpenSSH）：
     $ tailscale serve tcp:2222 tcp://localhost:22
 
-  - To accept TCP TLS connections (terminated within tailscaled) proxied to a
-    local plaintext server on port 80:
+  - 接受 TCP TLS 连接（在 tailscaled 内部终结）并代理到
+    本地端口 80 的明文服务器：
     $ tailscale serve tls-terminated-tcp:443 tcp://localhost:80
 `),
 		Exec: e.runServe,
@@ -103,15 +102,15 @@ EXAMPLES
 			{
 				Name:      "status",
 				Exec:      e.runServeStatus,
-				ShortHelp: "Show current serve/funnel status",
+				ShortHelp: "显示当前 serve/funnel 状态",
 				FlagSet: e.newFlags("serve-status", func(fs *flag.FlagSet) {
-					fs.BoolVar(&e.json, "json", false, "output JSON")
+					fs.BoolVar(&e.json, "json", false, "以 JSON 格式输出")
 				}),
 			},
 			{
 				Name:      "reset",
 				Exec:      e.runServeReset,
-				ShortHelp: "Reset current serve/funnel config",
+				ShortHelp: "重置当前的 serve/funnel 配置",
 				FlagSet:   e.newFlags("serve-reset", nil),
 			},
 		},
@@ -120,7 +119,7 @@ EXAMPLES
 
 // errHelp is standard error text that prompts users to
 // run `serve --help` for information on how to use serve.
-var errHelp = errors.New("try `tailscale serve --help` for usage info")
+var errHelp = errors.New("请运行 `tailscale serve --help` 查看用法信息")
 
 func (e *serveEnv) newFlags(name string, setup func(fs *flag.FlagSet)) *flag.FlagSet {
 	onError, out := flag.ExitOnError, Stderr
@@ -190,7 +189,7 @@ type serveEnv struct {
 func (e *serveEnv) getSelfDNSName(ctx context.Context) (string, error) {
 	st, err := e.getLocalClientStatusWithoutPeers(ctx)
 	if err != nil {
-		return "", fmt.Errorf("getting client status: %w", err)
+		return "", fmt.Errorf("获取客户端状态: %w", err)
 	}
 	return strings.TrimSuffix(st.Self.DNSName, "."), nil
 }
@@ -212,7 +211,7 @@ func (e *serveEnv) getLocalClientStatusWithoutPeers(ctx context.Context) (*ipnst
 		os.Exit(1)
 	}
 	if st.Self == nil {
-		return nil, errors.New("no self node")
+		return nil, errors.New("无自身节点")
 	}
 	return st, nil
 }
@@ -241,7 +240,7 @@ func (e *serveEnv) runServe(ctx context.Context, args []string) error {
 		}
 		sc := new(ipn.ServeConfig)
 		if err := json.Unmarshal(valb, sc); err != nil {
-			return fmt.Errorf("invalid JSON: %w", err)
+			return fmt.Errorf("无效 JSON: %w", err)
 		}
 		return e.lc.SetServeConfig(ctx, sc)
 	}
@@ -262,7 +261,7 @@ func (e *serveEnv) runServe(ctx context.Context, args []string) error {
 	turnOff := "off" == args[len(args)-1]
 
 	if len(args) < 2 || ((srcType == "https" || srcType == "http") && !turnOff && len(args) < 3) {
-		fmt.Fprintf(Stderr, "error: invalid number of arguments\n\n")
+		fmt.Fprintf(Stderr, "错误: 参数数量无效\n\n")
 		return errHelp
 	}
 
@@ -281,7 +280,7 @@ func (e *serveEnv) runServe(ctx context.Context, args []string) error {
 
 	srcPort, err := parseServePort(srcPortStr)
 	if err != nil {
-		return fmt.Errorf("invalid port %q: %w", srcPortStr, err)
+		return fmt.Errorf("无效端口 %q: %w", srcPortStr, err)
 	}
 
 	switch srcType {
@@ -301,8 +300,8 @@ func (e *serveEnv) runServe(ctx context.Context, args []string) error {
 		}
 		return e.handleTCPServe(ctx, srcType, srcPort, args[1])
 	default:
-		fmt.Fprintf(Stderr, "error: invalid serve type %q\n", srcType)
-		fmt.Fprint(Stderr, "must be one of: http:<port>, https:<port>, tcp:<port> or tls-terminated-tcp:<port>\n\n", srcType)
+		fmt.Fprintf(Stderr, "错误: 无效的 serve 类型 %q\n", srcType)
+		fmt.Fprint(Stderr, "必须是以下之一: http:<端口>, https:<端口>, tcp:<端口> 或 tls-terminated-tcp:<端口>\n\n", srcType)
 		return errHelp
 	}
 }
@@ -323,7 +322,7 @@ func (e *serveEnv) handleWebServe(ctx context.Context, srvPort uint16, useTLS bo
 	case ts == "text":
 		text := strings.TrimPrefix(source, "text:")
 		if text == "" {
-			return errors.New("unable to serve; text cannot be an empty string")
+			return errors.New("无法提供服务；文本不能为空字符串")
 		}
 		h.Text = text
 	case isProxyTarget(source):
@@ -335,16 +334,16 @@ func (e *serveEnv) handleWebServe(ctx context.Context, srvPort uint16, useTLS bo
 	default: // assume path
 		if version.IsSandboxedMacOS() {
 			// don't allow path serving for now on macOS (2022-11-15)
-			return fmt.Errorf("path serving is not supported if sandboxed on macOS")
+			return fmt.Errorf("在 macOS 沙箱环境下不支持路径服务")
 		}
 		if !filepath.IsAbs(source) {
-			fmt.Fprintf(Stderr, "error: path must be absolute\n\n")
+			fmt.Fprintf(Stderr, "错误: 路径必须为绝对路径\n\n")
 			return errHelp
 		}
 		source = filepath.Clean(source)
 		fi, err := os.Stat(source)
 		if err != nil {
-			fmt.Fprintf(Stderr, "error: invalid path: %v\n\n", err)
+			fmt.Fprintf(Stderr, "错误: 无效路径: %v\n\n", err)
 			return errHelp
 		}
 		if fi.IsDir() && !strings.HasSuffix(mount, "/") {
@@ -368,7 +367,7 @@ func (e *serveEnv) handleWebServe(ctx context.Context, srvPort uint16, useTLS bo
 		return err
 	}
 	if sc.IsTCPForwardingOnPort(srvPort, noService) {
-		fmt.Fprintf(Stderr, "error: cannot serve web; already serving TCP\n")
+		fmt.Fprintf(Stderr, "错误: 无法提供 Web 服务；已经在提供 TCP 服务\n")
 		return errHelp
 	}
 
@@ -418,18 +417,18 @@ func (e *serveEnv) handleWebServeRemove(ctx context.Context, srvPort uint16, mou
 		return err
 	}
 	if sc == nil {
-		return errors.New("error: serve config does not exist")
+		return errors.New("错误: serve 配置不存在")
 	}
 	dnsName, err := e.getSelfDNSName(ctx)
 	if err != nil {
 		return err
 	}
 	if sc.IsTCPForwardingOnPort(srvPort, noService) {
-		return errors.New("cannot remove web handler; currently serving TCP")
+		return errors.New("无法移除 Web 处理程序；当前正在提供 TCP 服务")
 	}
 	hp := ipn.HostPort(net.JoinHostPort(dnsName, strconv.Itoa(int(srvPort))))
 	if !sc.WebHandlerExists(noService, hp, mount) {
-		return errors.New("error: handler does not exist")
+		return errors.New("错误: 处理程序不存在")
 	}
 	sc.RemoveWebHandler(dnsName, srvPort, []string{mount}, false)
 	if err := e.lc.SetServeConfig(ctx, sc); err != nil {
@@ -440,7 +439,7 @@ func (e *serveEnv) handleWebServeRemove(ctx context.Context, srvPort uint16, mou
 
 func cleanMountPoint(mount string) (string, error) {
 	if mount == "" {
-		return "", errors.New("mount point cannot be empty")
+		return "", errors.New("挂载点不能为空")
 	}
 	mount = cleanMinGWPathConversionIfNeeded(mount)
 	if !strings.HasPrefix(mount, "/") {
@@ -450,7 +449,7 @@ func cleanMountPoint(mount string) (string, error) {
 	if mount == c || mount == c+"/" {
 		return mount, nil
 	}
-	return "", fmt.Errorf("invalid mount point %q", mount)
+	return "", fmt.Errorf("无效的挂载点 %q", mount)
 }
 
 // cleanMinGWPathConversionIfNeeded strips the EXEPATH prefix from the given
@@ -479,18 +478,18 @@ func expandProxyTarget(source string) (string, error) {
 	}
 	u, err := url.ParseRequestURI(source)
 	if err != nil {
-		return "", fmt.Errorf("parsing url: %w", err)
+		return "", fmt.Errorf("解析 url: %w", err)
 	}
 	switch u.Scheme {
 	case "http", "https", "https+insecure":
 		// ok
 	default:
-		return "", fmt.Errorf("must be a URL starting with http://, https://, or https+insecure://")
+		return "", fmt.Errorf("必须是以 http://、https:// 或 https+insecure:// 开头的 URL")
 	}
 
 	port, err := strconv.ParseUint(u.Port(), 10, 16)
 	if port == 0 || err != nil {
-		return "", fmt.Errorf("invalid port %q: %w", u.Port(), err)
+		return "", fmt.Errorf("无效端口 %q: %w", u.Port(), err)
 	}
 
 	host := u.Hostname()
@@ -498,7 +497,7 @@ func expandProxyTarget(source string) (string, error) {
 	case "localhost", "127.0.0.1":
 		host = "127.0.0.1"
 	default:
-		return "", fmt.Errorf("only localhost or 127.0.0.1 proxies are currently supported")
+		return "", fmt.Errorf("目前仅支持 localhost 或 127.0.0.1 的代理")
 	}
 	url := u.Scheme + "://" + host
 	if u.Port() != "" {
@@ -523,18 +522,18 @@ func (e *serveEnv) handleTCPServe(ctx context.Context, srcType string, srcPort u
 	case "tls-terminated-tcp":
 		terminateTLS = true
 	default:
-		fmt.Fprintf(Stderr, "error: invalid TCP source %q\n\n", dest)
+		fmt.Fprintf(Stderr, "错误: 无效的 TCP 源 %q\n\n", dest)
 		return errHelp
 	}
 
 	dstURL, err := url.Parse(dest)
 	if err != nil {
-		fmt.Fprintf(Stderr, "error: invalid TCP source %q: %v\n\n", dest, err)
+		fmt.Fprintf(Stderr, "错误: 无效的 TCP 源 %q: %v\n\n", dest, err)
 		return errHelp
 	}
 	host, dstPortStr, err := net.SplitHostPort(dstURL.Host)
 	if err != nil {
-		fmt.Fprintf(Stderr, "error: invalid TCP source %q: %v\n\n", dest, err)
+		fmt.Fprintf(Stderr, "错误: 无效的 TCP 源 %q: %v\n\n", dest, err)
 		return errHelp
 	}
 
@@ -542,13 +541,13 @@ func (e *serveEnv) handleTCPServe(ctx context.Context, srcType string, srcPort u
 	case "localhost", "127.0.0.1":
 		// ok
 	default:
-		fmt.Fprintf(Stderr, "error: invalid TCP source %q\n", dest)
-		fmt.Fprint(Stderr, "must be one of: localhost or 127.0.0.1\n\n", dest)
+		fmt.Fprintf(Stderr, "错误: 无效的 TCP 源 %q\n", dest)
+		fmt.Fprint(Stderr, "必须是以下之一: localhost 或 127.0.0.1\n\n", dest)
 		return errHelp
 	}
 
 	if p, err := strconv.ParseUint(dstPortStr, 10, 16); p == 0 || err != nil {
-		fmt.Fprintf(Stderr, "error: invalid port %q\n\n", dstPortStr)
+		fmt.Fprintf(Stderr, "错误: 无效端口 %q\n\n", dstPortStr)
 		return errHelp
 	}
 
@@ -569,7 +568,7 @@ func (e *serveEnv) handleTCPServe(ctx context.Context, srcType string, srcPort u
 	}
 
 	if sc.IsServingWeb(srcPort, noService) {
-		return fmt.Errorf("cannot serve TCP; already serving web on %d", srcPort)
+		return fmt.Errorf("无法提供 TCP 服务；已在端口 %d 上提供 Web 服务", srcPort)
 	}
 
 	sc.SetTCPForwarding(srcPort, fwdAddr, terminateTLS, 0 /* proxy proto */, dnsName)
@@ -595,13 +594,13 @@ func (e *serveEnv) handleTCPServeRemove(ctx context.Context, src uint16) error {
 		sc = new(ipn.ServeConfig)
 	}
 	if sc.IsServingWeb(src, noService) {
-		return fmt.Errorf("unable to remove; serving web, not TCP forwarding on serve port %d", src)
+		return fmt.Errorf("无法移除；在 serve 端口 %d 上提供的是 Web 服务而非 TCP 转发", src)
 	}
 	if ph := sc.GetTCPPortHandler(src, noService); ph != nil {
 		sc.RemoveTCPForwarding(noService, src)
 		return e.lc.SetServeConfig(ctx, sc)
 	}
-	return errors.New("error: serve config does not exist")
+	return errors.New("错误: serve 配置不存在")
 }
 
 // runServeStatus is the entry point for the "serve status"
@@ -629,7 +628,7 @@ func (e *serveEnv) runServeStatus(ctx context.Context, args []string) error {
 	}
 	printFunnelStatus(ctx)
 	if isServeConfigEmpty(sc) {
-		printf("No serve config\n")
+		printf("无 serve 配置\n")
 		return nil
 	}
 	st, err := e.getLocalClientStatusWithoutPeers(ctx)
@@ -650,12 +649,12 @@ func printTCPStatusTree(ctx context.Context, sc *ipn.ServeConfig, st *ipnstate.S
 			continue
 		}
 		hp := ipn.HostPort(net.JoinHostPort(dnsName, strconv.Itoa(int(p))))
-		fStatus := "tailnet only"
+		fStatus := "仅 tailnet"
 		if sc.AllowFunnel[hp] {
-			fStatus = "Funnel on"
+			fStatus = "Funnel 已开启"
 		}
 		if h.TerminateTLS != "" {
-			printf("|-- tcp://%s (TLS-terminated TCP, %s)\n", hp, fStatus)
+			printf("|-- tcp://%s (TLS 终结的 TCP, %s)\n", hp, fStatus)
 		} else {
 			printf("|-- tcp://%s (%s)\n", hp, fStatus)
 		}
@@ -690,9 +689,9 @@ func printWebStatusTree(wsc *ipn.WebServerConfig, hp ipn.HostPort, funnel, https
 		portPart = ""
 	}
 
-	fStatus := "tailnet only"
+	fStatus := "仅 tailnet"
 	if funnel {
-		fStatus = "Funnel on"
+		fStatus = "Funnel 已开启"
 	}
 	if svcName != "" {
 		printf("%s://%s%s (%s) (%s)\n", scheme, host, portPart, fStatus, svcName)
@@ -728,11 +727,11 @@ func printWebStatusTree(wsc *ipn.WebServerConfig, hp ipn.HostPort, funnel, https
 func serveHandlerDesc(h *ipn.HTTPHandler) (string, string) {
 	switch {
 	case h.Path != "":
-		return "path", h.Path
+		return "路径", h.Path
 	case h.Proxy != "":
-		return "proxy", h.Proxy
+		return "代理", h.Proxy
 	case h.Text != "":
-		return "text", "\"" + elipticallyTruncate(h.Text, 20) + "\""
+		return "文本", "\"" + elipticallyTruncate(h.Text, 20) + "\""
 	}
 	return "", ""
 }
@@ -764,7 +763,7 @@ func parseServePort(s string) (uint16, error) {
 		return 0, err
 	}
 	if p == 0 {
-		return 0, errors.New("port number must be non-zero")
+		return 0, errors.New("端口号必须为非零值")
 	}
 	return uint16(p), nil
 }
@@ -789,10 +788,10 @@ func parseServePort(s string) (uint16, error) {
 func (e *serveEnv) enableFeatureInteractive(ctx context.Context, feature string, caps ...tailcfg.NodeCapability) (err error) {
 	st, err := e.getLocalClientStatusWithoutPeers(ctx)
 	if err != nil {
-		return fmt.Errorf("getting client status: %w", err)
+		return fmt.Errorf("获取客户端状态: %w", err)
 	}
 	if st.Self == nil {
-		return errors.New("no self node")
+		return errors.New("无自身节点")
 	}
 	hasCaps := func() bool {
 		for _, c := range caps {
@@ -861,7 +860,7 @@ func (e *serveEnv) enableFeatureInteractive(ctx context.Context, feature string,
 			}
 			if gotAll {
 				e.lc.IncrementCounter(ctx, fmt.Sprintf("%s_enabled", feature), 1)
-				fmt.Fprintln(Stdout, "Success.")
+				fmt.Fprintln(Stdout, "成功。")
 				return nil
 			}
 		}

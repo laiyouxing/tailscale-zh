@@ -71,10 +71,10 @@ func captivePortalHealthChange(b *LocalBackend, state *health.State) {
 // captivePortalWarnable is a Warnable which is set to an unhealthy state when a captive portal is detected.
 var captivePortalWarnable = health.Register(&health.Warnable{
 	Code:  "captive-portal-detected",
-	Title: "Captive portal detected",
+	Title: "检测到强制门户",
 	// High severity, because captive portals block all traffic and require user intervention.
 	Severity:            health.SeverityHigh,
-	Text:                health.StaticMessage("This network requires you to log in using your web browser."),
+	Text:                health.StaticMessage("此网络要求你使用 Web 浏览器登录。"),
 	ImpactsConnectivity: true,
 })
 

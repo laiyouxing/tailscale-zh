@@ -20,17 +20,16 @@ export default function SSHView({
 
   return (
     <>
-      <h1 className="mb-1">Tailscale SSH server</h1>
+      <h1 className="mb-1">Tailscale SSH 服务</h1>
       <p className="description mb-10">
-        Run a Tailscale SSH server on this device and allow other devices in
-        your tailnet to SSH into it.{" "}
+        在此设备上运行 Tailscale SSH 服务，并允许你 tailnet 中的其他设备通过 SSH 连接进来。{" "}
         <a
           href="https://tailscale.com/kb/1193/tailscale-ssh/"
           className="text-blue-700"
           target="_blank"
           rel="noreferrer"
         >
-          Learn more &rarr;
+          了解更多 &rarr;
         </a>
       </p>
       <Card noPadding className="-mx-5 p-5">
@@ -49,7 +48,7 @@ export default function SSHView({
               }
             />
             <div className="text-black text-sm font-medium leading-tight">
-              Run Tailscale SSH server
+              运行 Tailscale SSH 服务
             </div>
           </label>
         ) : (
@@ -60,7 +59,7 @@ export default function SSHView({
                 "bg-gray-300": !node.RunningSSHServer,
               })}
             />
-            {node.RunningSSHServer ? "Running" : "Not running"}
+            {node.RunningSSHServer ? "运行中" : "未运行"}
           </div>
         )}
       </Card>
@@ -69,11 +68,11 @@ export default function SSHView({
           className="text-gray-500 text-sm leading-tight mt-3"
           node={node}
         >
-          Remember to make sure that the{" "}
+          请记得确认{" "}
           <Control.AdminLink node={node} path="/acls">
-            tailnet policy file
+            tailnet 策略文件
           </Control.AdminLink>{" "}
-          allows other devices to SSH into this device.
+          允许其他设备通过 SSH 连接此设备。
         </Control.AdminContainer>
       )}
     </>

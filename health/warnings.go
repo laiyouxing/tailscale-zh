@@ -28,13 +28,13 @@ This file contains definitions for the Warnables maintained within this `health`
 var updateAvailableWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:     tsconst.HealthWarnableUpdateAvailable,
-		Title:    "Update available",
+		Title:    "有可用更新",
 		Severity: SeverityLow,
 		Text: func(args Args) string {
 			if version.IsMacAppStore() || version.IsAppleTV() || version.IsMacSys() || version.IsWindowsGUI() || runtime.GOOS == "android" {
-				return fmt.Sprintf("An update from version %s to %s is available.", args[ArgCurrentVersion], args[ArgAvailableVersion])
+				return fmt.Sprintf("有可用更新：从版本 %s 到 %s。", args[ArgCurrentVersion], args[ArgAvailableVersion])
 			} else {
-				return fmt.Sprintf("An update from version %s to %s is available. Run `tailscale update` or `tailscale set --auto-update` to update now.", args[ArgCurrentVersion], args[ArgAvailableVersion])
+				return fmt.Sprintf("有可用更新：从版本 %s 到 %s。运行 `tailscale update` 或 `tailscale set --auto-update` 立即更新。", args[ArgCurrentVersion], args[ArgAvailableVersion])
 			}
 		},
 	}
@@ -44,13 +44,13 @@ var updateAvailableWarnable = condRegister(func() *Warnable {
 var securityUpdateAvailableWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:     tsconst.HealthWarnableSecurityUpdateAvailable,
-		Title:    "Security update available",
+		Title:    "有可用安全更新",
 		Severity: SeverityMedium,
 		Text: func(args Args) string {
 			if version.IsMacAppStore() || version.IsAppleTV() || version.IsMacSys() || version.IsWindowsGUI() || runtime.GOOS == "android" {
-				return fmt.Sprintf("A security update from version %s to %s is available.", args[ArgCurrentVersion], args[ArgAvailableVersion])
+				return fmt.Sprintf("有可用安全更新：从版本 %s 到 %s。", args[ArgCurrentVersion], args[ArgAvailableVersion])
 			} else {
-				return fmt.Sprintf("A security update from version %s to %s is available. Run `tailscale update` or `tailscale set --auto-update` to update now.", args[ArgCurrentVersion], args[ArgAvailableVersion])
+				return fmt.Sprintf("有可用安全更新：从版本 %s 到 %s。运行 `tailscale update` 或 `tailscale set --auto-update` 立即更新。", args[ArgCurrentVersion], args[ArgAvailableVersion])
 			}
 		},
 	}
@@ -61,9 +61,9 @@ var securityUpdateAvailableWarnable = condRegister(func() *Warnable {
 var unstableWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:     tsconst.HealthWarnableIsUsingUnstableVersion,
-		Title:    "Using an unstable version",
+		Title:    "使用的是不稳定版本",
 		Severity: SeverityLow,
-		Text:     StaticMessage("This is an unstable version of Tailscale meant for testing and development purposes. Please report any issues to Tailscale."),
+		Text:     StaticMessage("这是用于测试与开发的 Tailscale 不稳定版本，仅供测试与开发用途。如有问题请向 Tailscale 反馈。"),
 	}
 })
 
@@ -71,9 +71,9 @@ var unstableWarnable = condRegister(func() *Warnable {
 var NetworkStatusWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:                tsconst.HealthWarnableNetworkStatus,
-		Title:               "Network down",
+		Title:               "网络已断开",
 		Severity:            SeverityMedium,
-		Text:                StaticMessage("Tailscale cannot connect because the network is down. Check your Internet connection."),
+		Text:                StaticMessage("Tailscale 无法连接，因为网络已断开。请检查你的 Internet 网络连接。"),
 		ImpactsConnectivity: true,
 		TimeToVisible:       5 * time.Second,
 	}
@@ -83,9 +83,9 @@ var NetworkStatusWarnable = condRegister(func() *Warnable {
 var IPNStateWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:     tsconst.HealthWarnableWantRunningFalse,
-		Title:    "Tailscale off",
+		Title:    "Tailscale 已关闭",
 		Severity: SeverityLow,
-		Text:     StaticMessage("Tailscale is stopped."),
+		Text:     StaticMessage("Tailscale 已停止运行。"),
 	}
 })
 
@@ -93,10 +93,10 @@ var IPNStateWarnable = condRegister(func() *Warnable {
 var localLogWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:     tsconst.HealthWarnableLocalLogConfigError,
-		Title:    "Local log misconfiguration",
+		Title:    "本地日志配置错误",
 		Severity: SeverityLow,
 		Text: func(args Args) string {
-			return fmt.Sprintf("The local log is misconfigured: %v", args[ArgError])
+			return fmt.Sprintf("本地日志配置不正确：%v", args[ArgError])
 		},
 	}
 })
@@ -106,13 +106,13 @@ var localLogWarnable = condRegister(func() *Warnable {
 var LoginStateWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:     tsconst.HealthWarnableLoginState,
-		Title:    "Logged out",
+		Title:    "已退出登录",
 		Severity: SeverityMedium,
 		Text: func(args Args) string {
 			if args[ArgError] != "" {
-				return fmt.Sprintf("You are logged out. The last login error was: %v", args[ArgError])
+				return fmt.Sprintf("你已退出登录。上次登录错误为：%v", args[ArgError])
 			} else {
-				return "You are logged out."
+				return "你已退出登录。"
 			}
 		},
 		DependsOn: []*Warnable{IPNStateWarnable},
@@ -123,10 +123,10 @@ var LoginStateWarnable = condRegister(func() *Warnable {
 var notInMapPollWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:      tsconst.HealthWarnableNotInMapPoll,
-		Title:     "Out of sync",
+		Title:     "状态不同步",
 		Severity:  SeverityMedium,
 		DependsOn: []*Warnable{NetworkStatusWarnable, IPNStateWarnable},
-		Text:      StaticMessage("Unable to connect to the Tailscale coordination server to synchronize the state of your tailnet. Peer reachability might degrade over time."),
+		Text:      StaticMessage("无法连接到 Tailscale 协调服务器以同步你的 tailnet 状态。节点间的可达性可能会随时间下降。"),
 		// 8 minutes reflects a maximum maintenance window for the coordination server.
 		TimeToVisible: 8 * time.Minute,
 	}
@@ -136,10 +136,10 @@ var notInMapPollWarnable = condRegister(func() *Warnable {
 var noDERPHomeWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:                tsconst.HealthWarnableNoDERPHome,
-		Title:               "No home relay server",
+		Title:               "无主中继服务器",
 		Severity:            SeverityMedium,
 		DependsOn:           []*Warnable{NetworkStatusWarnable},
-		Text:                StaticMessage("Tailscale could not connect to any relay server. Check your Internet connection."),
+		Text:                StaticMessage("Tailscale 无法连接到任何中继服务器。请检查你的 Internet 网络连接。"),
 		ImpactsConnectivity: true,
 		TimeToVisible:       10 * time.Second,
 	}
@@ -149,7 +149,7 @@ var noDERPHomeWarnable = condRegister(func() *Warnable {
 var noDERPConnectionWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:     tsconst.HealthWarnableNoDERPConnection,
-		Title:    "Relay server unavailable",
+		Title:    "中继服务器不可用",
 		Severity: SeverityMedium,
 		DependsOn: []*Warnable{
 			NetworkStatusWarnable,
@@ -164,9 +164,9 @@ var noDERPConnectionWarnable = condRegister(func() *Warnable {
 		},
 		Text: func(args Args) string {
 			if n := args[ArgDERPRegionName]; n != "" {
-				return fmt.Sprintf("Tailscale could not connect to the '%s' relay server. Your Internet connection might be down, or the server might be temporarily unavailable.", n)
+				return fmt.Sprintf("Tailscale 无法连接到 '%s' 中继服务器。你的 Internet 连接可能已断开，或该服务器可能暂时不可用。", n)
 			} else {
-				return fmt.Sprintf("Tailscale could not connect to the relay server with ID '%s'. Your Internet connection might be down, or the server might be temporarily unavailable.", args[ArgDERPRegionID])
+				return fmt.Sprintf("Tailscale 无法连接到 ID 为 '%s' 的中继服务器。你的 Internet 连接可能已断开，或该服务器可能暂时不可用。", args[ArgDERPRegionID])
 			}
 		},
 		ImpactsConnectivity: true,
@@ -179,7 +179,7 @@ var noDERPConnectionWarnable = condRegister(func() *Warnable {
 var derpTimeoutWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:     tsconst.HealthWarnableDERPTimedOut,
-		Title:    "Relay server timed out",
+		Title:    "中继服务器超时",
 		Severity: SeverityMedium,
 		DependsOn: []*Warnable{
 			NetworkStatusWarnable,
@@ -188,9 +188,9 @@ var derpTimeoutWarnable = condRegister(func() *Warnable {
 		},
 		Text: func(args Args) string {
 			if n := args[ArgDERPRegionName]; n != "" {
-				return fmt.Sprintf("Tailscale hasn't heard from the '%s' relay server in %v. The server might be temporarily unavailable, or your Internet connection might be down.", n, args[ArgDuration])
+				return fmt.Sprintf("Tailscale 已有 %v 没有收到 '%s' 中继服务器的消息。该服务器可能暂时不可用，或你的 Internet 连接可能已断开。", args[ArgDuration], n)
 			} else {
-				return fmt.Sprintf("Tailscale hasn't heard from the home relay server (region ID '%v') in %v. The server might be temporarily unavailable, or your Internet connection might be down.", args[ArgDERPRegionID], args[ArgDuration])
+				return fmt.Sprintf("Tailscale 已有 %v 没有收到主中继服务器（区域 ID '%v'）的消息。该服务器可能暂时不可用，或你的 Internet 连接可能已断开。", args[ArgDuration], args[ArgDERPRegionID])
 			}
 		},
 	}
@@ -200,11 +200,11 @@ var derpTimeoutWarnable = condRegister(func() *Warnable {
 var derpRegionErrorWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:      tsconst.HealthWarnableDERPRegionError,
-		Title:     "Relay server error",
+		Title:     "中继服务器错误",
 		Severity:  SeverityLow,
 		DependsOn: []*Warnable{NetworkStatusWarnable},
 		Text: func(args Args) string {
-			return fmt.Sprintf("The relay server #%v is reporting an issue: %v", args[ArgDERPRegionID], args[ArgError])
+			return fmt.Sprintf("中继服务器 #%v 报告了一个问题：%v", args[ArgDERPRegionID], args[ArgError])
 		},
 	}
 })
@@ -213,10 +213,10 @@ var derpRegionErrorWarnable = condRegister(func() *Warnable {
 var noUDP4BindWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:                tsconst.HealthWarnableNoUDP4Bind,
-		Title:               "NAT traversal setup failure",
+		Title:               "NAT 穿透设置失败",
 		Severity:            SeverityMedium,
 		DependsOn:           []*Warnable{NetworkStatusWarnable, IPNStateWarnable},
-		Text:                StaticMessage("Tailscale couldn't listen for incoming UDP connections."),
+		Text:                StaticMessage("Tailscale 无法监听传入的 UDP 连接。"),
 		ImpactsConnectivity: true,
 	}
 })
@@ -225,11 +225,11 @@ var noUDP4BindWarnable = condRegister(func() *Warnable {
 var mapResponseTimeoutWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:      tsconst.HealthWarnableMapResponseTimeout,
-		Title:     "Network map response timeout",
+		Title:     "网络映射响应超时",
 		Severity:  SeverityMedium,
 		DependsOn: []*Warnable{NetworkStatusWarnable, IPNStateWarnable},
 		Text: func(args Args) string {
-			return fmt.Sprintf("Tailscale hasn't received a network map from the coordination server in %s.", args[ArgDuration])
+			return fmt.Sprintf("Tailscale 已有 %s 没有收到来自协调服务器的网络映射。", args[ArgDuration])
 		},
 	}
 })
@@ -238,11 +238,11 @@ var mapResponseTimeoutWarnable = condRegister(func() *Warnable {
 var tlsConnectionFailedWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:      tsconst.HealthWarnableTLSConnectionFailed,
-		Title:     "Encrypted connection failed",
+		Title:     "加密连接失败",
 		Severity:  SeverityMedium,
 		DependsOn: []*Warnable{NetworkStatusWarnable},
 		Text: func(args Args) string {
-			return fmt.Sprintf("Tailscale could not establish an encrypted connection with '%q': %v", args[ArgServerName], args[ArgError])
+			return fmt.Sprintf("Tailscale 无法与 '%q' 建立加密连接：%v", args[ArgServerName], args[ArgError])
 		},
 	}
 })
@@ -251,10 +251,10 @@ var tlsConnectionFailedWarnable = condRegister(func() *Warnable {
 var magicsockReceiveFuncWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:     tsconst.HealthWarnableMagicsockReceiveFuncError,
-		Title:    "MagicSock function not running",
+		Title:    "MagicSock 函数未运行",
 		Severity: SeverityMedium,
 		Text: func(args Args) string {
-			return fmt.Sprintf("The MagicSock function %s is not running. You might experience connectivity issues.", args[ArgMagicsockFunctionName])
+			return fmt.Sprintf("MagicSock 函数 %s 未运行。你可能会遇到连接问题。", args[ArgMagicsockFunctionName])
 		},
 	}
 })
@@ -263,7 +263,7 @@ var magicsockReceiveFuncWarnable = condRegister(func() *Warnable {
 var testWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:     tsconst.HealthWarnableTestWarnable,
-		Title:    "Test warnable",
+		Title:    "测试告警项",
 		Severity: SeverityLow,
 		Text: func(args Args) string {
 			return args[ArgError]
@@ -275,10 +275,10 @@ var testWarnable = condRegister(func() *Warnable {
 var applyDiskConfigWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:     tsconst.HealthWarnableApplyDiskConfig,
-		Title:    "Could not apply configuration",
+		Title:    "无法应用配置",
 		Severity: SeverityMedium,
 		Text: func(args Args) string {
-			return fmt.Sprintf("An error occurred applying the Tailscale envknob configuration stored on disk: %v", args[ArgError])
+			return fmt.Sprintf("应用存储在磁盘上的 Tailscale envknob 配置时发生错误：%v", args[ArgError])
 		},
 	}
 })
@@ -293,9 +293,9 @@ const warmingUpWarnableDuration = 5 * time.Second
 var warmingUpWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:     tsconst.HealthWarnableWarmingUp,
-		Title:    "Tailscale is starting",
+		Title:    "Tailscale 正在启动",
 		Severity: SeverityLow,
-		Text:     StaticMessage("Tailscale is starting. Please wait."),
+		Text:     StaticMessage("Tailscale 正在启动，请稍候。"),
 	}
 })
 
@@ -304,10 +304,10 @@ var warmingUpWarnable = condRegister(func() *Warnable {
 var ipForwardingWarnable = condRegister(func() *Warnable {
 	return &Warnable{
 		Code:                "ip-forwarding-off",
-		Title:               "IP forwarding is off",
+		Title:               "IP 转发已关闭",
 		Severity:            SeverityMedium,
 		MapDebugFlag:        "warn-ip-forwarding-off",
-		Text:                StaticMessage("Subnet routing is enabled, but IP forwarding is disabled. Check that IP forwarding is enabled on your machine."),
+		Text:                StaticMessage("已启用子网路由，但 IP 转发已禁用。请检查你的设备是否已启用 IP 转发。"),
 		ImpactsConnectivity: true,
 	}
 })

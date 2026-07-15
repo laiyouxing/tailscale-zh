@@ -40,17 +40,17 @@ var funnelCmd = func() *ffcli.Command {
 func newFunnelCommand(e *serveEnv) *ffcli.Command {
 	return &ffcli.Command{
 		Name:      "funnel",
-		ShortHelp: "Turn on/off Funnel service",
+		ShortHelp: "开启/关闭 Funnel 服务",
 		ShortUsage: strings.Join([]string{
 			"tailscale funnel <serve-port> {on|off}",
 			"tailscale funnel status [--json]",
 		}, "\n"),
 		LongHelp: strings.Join([]string{
-			"Funnel allows you to publish a 'tailscale serve'",
-			"server publicly, open to the entire internet.",
+			"Funnel 允许你将 'tailscale serve'",
+			"服务器公开发布到整个互联网。",
 			"",
-			"Turning off Funnel only turns off serving to the internet.",
-			"It does not affect serving to your tailnet.",
+			"关闭 Funnel 仅会停止对互联网的发布服务，",
+			"不会影响对你自己的 tailnet 的服务。",
 		}, "\n"),
 		Exec: e.runFunnel,
 		Subcommands: []*ffcli.Command{
@@ -58,9 +58,9 @@ func newFunnelCommand(e *serveEnv) *ffcli.Command {
 				Name:       "status",
 				Exec:       e.runServeStatus,
 				ShortUsage: "tailscale funnel status [--json]",
-				ShortHelp:  "Show current serve/funnel status",
+				ShortHelp:  "显示当前 serve/funnel 状态",
 				FlagSet: e.newFlags("funnel-status", func(fs *flag.FlagSet) {
-					fs.BoolVar(&e.json, "json", false, "output JSON")
+					fs.BoolVar(&e.json, "json", false, "输出 JSON")
 				}),
 			},
 		},
@@ -108,7 +108,7 @@ func (e *serveEnv) runFunnel(ctx context.Context, args []string) error {
 
 	st, err := e.getLocalClientStatusWithoutPeers(ctx)
 	if err != nil {
-		return fmt.Errorf("getting client status: %w", err)
+		return fmt.Errorf("获取客户端状态出错：%w", err)
 	}
 	dnsName := strings.TrimSuffix(st.Self.DNSName, ".")
 	hp := ipn.HostPort(dnsName + ":" + strconv.Itoa(int(port)))
@@ -141,7 +141,7 @@ func (e *serveEnv) verifyFunnelEnabled(ctx context.Context, port uint16) error {
 	st, statusErr := e.getLocalClientStatusWithoutPeers(ctx) // get updated status; interactive flow may block
 	switch {
 	case statusErr != nil:
-		return fmt.Errorf("getting client status: %w", statusErr)
+		return fmt.Errorf("获取客户端状态出错：%w", statusErr)
 	case enableErr != nil:
 		// enableFeatureInteractive is a new flow behind a control server
 		// feature flag. If anything caused it to error, fallback to using
@@ -173,11 +173,11 @@ func printFunnelWarning(sc *ipn.ServeConfig) {
 		p, _ := strconv.ParseUint(portStr, 10, 16)
 		if _, ok := sc.TCP[uint16(p)]; !ok {
 			warn = true
-			fmt.Fprintf(Stderr, "\nWarning: funnel=on for %s, but no serve config\n", hp)
+			fmt.Fprintf(Stderr, "\n警告：%s 的 funnel 已开启，但没有 serve 配置\n", hp)
 		}
 	}
 	if warn {
-		fmt.Fprintf(Stderr, "         run: `tailscale serve --help` to see how to configure handlers\n")
+		fmt.Fprintf(Stderr, "         运行：`tailscale serve --help` 查看如何配置处理器\n")
 	}
 }
 
@@ -191,15 +191,15 @@ func printFunnelStatus(ctx context.Context) {
 	sc, err := localClient.GetServeConfig(ctx)
 	if err != nil {
 		outln()
-		printf("# Funnel:\n")
-		printf("#     - Unable to get Funnel status: %v\n", err)
+		printf("# Funnel：\n")
+		printf("#     - 无法获取 Funnel 状态：%v\n", err)
 		return
 	}
 	if !sc.IsFunnelOn() {
 		return
 	}
 	outln()
-	printf("# Funnel on:\n")
+	printf("# Funnel 已开启：\n")
 	for hp, on := range sc.AllowFunnel {
 		if !on { // if present, should be on
 			continue

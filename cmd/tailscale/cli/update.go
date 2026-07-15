@@ -34,12 +34,12 @@ func init() {
 var updateCmd = &ffcli.Command{
 	Name:       "update",
 	ShortUsage: "tailscale update",
-	ShortHelp:  "Update Tailscale to the latest/different version",
+	ShortHelp:  "将 Tailscale 更新到最新/其他版本",
 	Exec:       runUpdate,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("update")
-		fs.BoolVar(&updateArgs.yes, "yes", false, "update without interactive prompts")
-		fs.BoolVar(&updateArgs.dryRun, "dry-run", false, "print what update would do without doing it, or prompts")
+		fs.BoolVar(&updateArgs.yes, "yes", false, "不进行交互式提示直接更新")
+		fs.BoolVar(&updateArgs.dryRun, "dry-run", false, "仅打印更新将执行的操作而不实际执行，也不提示")
 		// These flags are not supported on several systems that only provide
 		// the latest version of Tailscale:
 		//
@@ -54,8 +54,8 @@ var updateCmd = &ffcli.Command{
 			distro.Get() != distro.Synology &&
 			runtime.GOOS != "freebsd" &&
 			runtime.GOOS != "darwin" {
-			fs.StringVar(&updateArgs.track, "track", "", `which track to check for updates: "stable", "release-candidate", or "unstable" (dev); empty means same as current`)
-			fs.StringVar(&updateArgs.version, "version", "", `explicit version to update/downgrade to`)
+			fs.StringVar(&updateArgs.track, "track", "", `要检查更新的轨道："stable"、"release-candidate" 或 "unstable"（开发版）；留空表示与当前相同`)
+			fs.StringVar(&updateArgs.version, "version", "", `要更新/降级到的明确版本`)
 		}
 		return fs
 	})(),
@@ -84,7 +84,7 @@ func runUpdate(ctx context.Context, args []string) error {
 		return flag.ErrHelp
 	}
 	if updateArgs.version != "" && updateArgs.track != "" {
-		return errors.New("cannot specify both --version and --track")
+		return errors.New("不能同时指定 --version 和 --track")
 	}
 	err := clientupdate.Update(clientupdate.Arguments{
 		Version: updateArgs.version,
@@ -95,23 +95,23 @@ func runUpdate(ctx context.Context, args []string) error {
 		Confirm: confirmUpdate,
 	})
 	if errors.Is(err, errors.ErrUnsupported) {
-		return errors.New("The 'update' command is not supported on this platform; see https://tailscale.com/s/client-updates")
+		return errors.New("此平台不支持 'update' 命令；请参阅 https://tailscale.com/s/client-updates")
 	}
 	return err
 }
 
 func confirmUpdate(ver string) bool {
 	if updateArgs.yes {
-		fmt.Printf("Updating Tailscale from %v to %v; --yes given, continuing without prompts.\n", version.Short(), ver)
+		fmt.Printf("正在将 Tailscale 从 %v 更新到 %v；已给定 --yes，不进行提示直接继续。\n", version.Short(), ver)
 		return true
 	}
 
 	if updateArgs.dryRun {
-		fmt.Printf("Current: %v, Latest: %v\n", version.Short(), ver)
+		fmt.Printf("当前：%v，最新：%v\n", version.Short(), ver)
 		return false
 	}
 
-	msg := fmt.Sprintf("This will update Tailscale from %v to %v. Continue?", version.Short(), ver)
+	msg := fmt.Sprintf("这将把 Tailscale 从 %v 更新到 %v。是否继续？", version.Short(), ver)
 	return prompt.YesNo(msg, true)
 }
 
@@ -125,8 +125,8 @@ func gokrazyUpdateArgsFromMagicArg(args []string) (*clientupdate.GokrazyUpdateAr
 	fs := flag.NewFlagSet("gokrazy-update", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	// This flag path is exercised end-to-end by TestGokrazyUpdatesItselfToSameImage.
-	fs.StringVar(&updateURL, gokrazyUpdateFromURLMagicArg[2:], "", "URL of the Gokrazy archive format file to install")
-	fs.BoolVar(&unsigned, "unsigned", false, "skip GAF signature verification; for tests only")
+	fs.StringVar(&updateURL, gokrazyUpdateFromURLMagicArg[2:], "", "要安装的 Gokrazy 归档格式文件的 URL")
+	fs.BoolVar(&unsigned, "unsigned", false, "跳过 GAF 签名校验；仅用于测试")
 	if err := fs.Parse(args); err != nil {
 		return nil, err
 	}

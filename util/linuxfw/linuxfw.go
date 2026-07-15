@@ -135,10 +135,10 @@ func CheckIPv6(logf logger.Logf) error {
 	}
 	disabled, err := strconv.ParseBool(strings.TrimSpace(string(bs)))
 	if err != nil {
-		return errors.New("disable_ipv6 has invalid bool")
+		return errors.New("disable_ipv6 不是合法的布尔值")
 	}
 	if disabled {
-		return errors.New("disable_ipv6 is set")
+		return errors.New("已设置 disable_ipv6")
 	}
 
 	// Older kernels don't support IPv6 policy routing. Some kernels
@@ -148,10 +148,10 @@ func CheckIPv6(logf logger.Logf) error {
 	if err == nil {
 		disabled, err = strconv.ParseBool(strings.TrimSpace(string(bs)))
 		if err != nil {
-			return errors.New("disable_policy has invalid bool")
+			return errors.New("disable_policy 不是合法的布尔值")
 		}
 		if disabled {
-			return errors.New("disable_policy is set")
+			return errors.New("已设置 disable_policy")
 		}
 	}
 

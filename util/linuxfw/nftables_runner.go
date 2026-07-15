@@ -79,11 +79,11 @@ func (n *nftablesRunner) ensurePreroutingChain(dst netip.Addr) (*nftables.Table,
 	polAccept := nftables.ChainPolicyAccept
 	table, err := n.getNFTByAddr(dst)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error setting up nftables for IP family of %v: %w", dst, err)
+		return nil, nil, fmt.Errorf("为 %v 设置对应 IP 族的 nftables 时出错：%w", dst, err)
 	}
 	nat, err := createTableIfNotExist(n.conn, table.Proto, "nat")
 	if err != nil {
-		return nil, nil, fmt.Errorf("error ensuring nat table: %w", err)
+		return nil, nil, fmt.Errorf("确保 nat 表存在时出错：%w", err)
 	}
 
 	// ensure prerouting chain exists
@@ -96,7 +96,7 @@ func (n *nftablesRunner) ensurePreroutingChain(dst netip.Addr) (*nftables.Table,
 		chainPolicy:   &polAccept,
 	})
 	if err != nil {
-		return nil, nil, fmt.Errorf("error ensuring prerouting chain: %w", err)
+		return nil, nil, fmt.Errorf("确保 prerouting 链存在时出错：%w", err)
 	}
 	return nat, preroutingCh, nil
 }
@@ -204,11 +204,11 @@ func (n *nftablesRunner) EnsureSNATForDst(src, dst netip.Addr) error {
 	polAccept := nftables.ChainPolicyAccept
 	table, err := n.getNFTByAddr(dst)
 	if err != nil {
-		return fmt.Errorf("error setting up nftables for IP family of %v: %w", dst, err)
+		return fmt.Errorf("为 %v 设置对应 IP 族的 nftables 时出错：%w", dst, err)
 	}
 	nat, err := createTableIfNotExist(n.conn, table.Proto, "nat")
 	if err != nil {
-		return fmt.Errorf("error ensuring nat table exists: %w", err)
+		return fmt.Errorf("确保 nat 表存在时出错：%w", err)
 	}
 
 	// ensure postrouting chain exists
@@ -221,12 +221,12 @@ func (n *nftablesRunner) EnsureSNATForDst(src, dst netip.Addr) error {
 		chainPolicy:   &polAccept,
 	})
 	if err != nil {
-		return fmt.Errorf("error ensuring postrouting chain: %w", err)
+		return fmt.Errorf("确保 postrouting 链存在时出错：%w", err)
 	}
 
 	rules, err := n.conn.GetRules(nat, postRoutingCh)
 	if err != nil {
-		return fmt.Errorf("error listing rules: %w", err)
+		return fmt.Errorf("列出规则时出错：%w", err)
 	}
 	snatRulePrefixMatch := fmt.Sprintf("dst:%s,src:", dst.String())
 	snatRuleFullMatch := fmt.Sprintf("%s%s", snatRulePrefixMatch, src.String())
@@ -237,7 +237,7 @@ func (n *nftablesRunner) EnsureSNATForDst(src, dst netip.Addr) error {
 				return nil // already exists, do nothing
 			}
 			if err := n.conn.DelRule(rule); err != nil {
-				return fmt.Errorf("error deleting SNAT rule: %w", err)
+				return fmt.Errorf("删除 SNAT 规则时出错：%w", err)
 			}
 		}
 	}
@@ -274,11 +274,11 @@ func (n *nftablesRunner) ClampMSSToPMTU(tun string, addr netip.Addr) error {
 	polAccept := nftables.ChainPolicyAccept
 	table, err := n.getNFTByAddr(addr)
 	if err != nil {
-		return fmt.Errorf("error setting up nftables for IP family of %v: %w", addr, err)
+		return fmt.Errorf("为 %v 设置对应 IP 族的 nftables 时出错：%w", addr, err)
 	}
 	filterTable, err := createTableIfNotExist(n.conn, table.Proto, "filter")
 	if err != nil {
-		return fmt.Errorf("error ensuring filter table: %w", err)
+		return fmt.Errorf("确保 filter 表存在时出错：%w", err)
 	}
 
 	// ensure ts-clamp chain exists
@@ -291,7 +291,7 @@ func (n *nftablesRunner) ClampMSSToPMTU(tun string, addr netip.Addr) error {
 		chainPolicy:   &polAccept,
 	})
 	if err != nil {
-		return fmt.Errorf("error ensuring forward chain: %w", err)
+		return fmt.Errorf("确保 forward 链存在时出错：%w", err)
 	}
 
 	// clampRuleForIface builds a rule that clamps the MSS of forwarded TCP
@@ -395,7 +395,7 @@ func deleteTableIfExists(c *nftables.Conn, family nftables.TableFamily, name str
 func getTableIfExists(c *nftables.Conn, family nftables.TableFamily, name string) (*nftables.Table, error) {
 	tables, err := c.ListTables()
 	if err != nil {
-		return nil, fmt.Errorf("get tables: %w", err)
+		return nil, fmt.Errorf("获取表列表失败：%w", err)
 	}
 	for _, table := range tables {
 		if table.Name == name && table.Family == family {
@@ -436,7 +436,7 @@ func (e errorChainNotFound) Error() string {
 // Note that a chain name is unique within a table.
 func getChainFromTable(c *nftables.Conn, table *nftables.Table, name string) (*nftables.Chain, error) {
 	if table == nil {
-		return nil, fmt.Errorf("could not get chain %q: table not initialized", name)
+		return nil, fmt.Errorf("无法获取链 %q：表未初始化", name)
 	}
 	chains, err := c.ListChainsOfTableFamily(table.Family)
 	if err != nil {
@@ -477,10 +477,10 @@ func getOrCreateChain(c *nftables.Conn, cinfo chainInfo) (*nftables.Chain, error
 		// the future).
 		if isTSChain(chain.Name) {
 			if chain.Hooknum == nil || chain.Priority == nil {
-				return nil, errors.New("nftables chain has nil hooknum or priority; kernel may lack nftables support (CONFIG_NF_TABLES)")
+				return nil, errors.New("nftables 链缺少 hooknum 或 priority；内核可能缺少 nftables 支持 (CONFIG_NF_TABLES)")
 			}
 			if chain.Type != cinfo.chainType || *chain.Hooknum != *cinfo.chainHook || *chain.Priority != *cinfo.chainPriority {
-				return nil, fmt.Errorf("chain %s already exists with different type/hook/priority", cinfo.name)
+				return nil, fmt.Errorf("链 %s 已存在，但 type/hook/priority 不同", cinfo.name)
 			}
 		}
 		return chain, nil
@@ -654,7 +654,7 @@ func New(logf logger.Logf, prefHint string) (NetfilterRunner, error) {
 		}
 		return nfr, nil
 	default:
-		return nil, fmt.Errorf("unknown firewall mode %v", mode)
+		return nil, fmt.Errorf("未知的防火墙模式 %v", mode)
 	}
 }
 
@@ -663,7 +663,7 @@ func New(logf logger.Logf, prefHint string) (NetfilterRunner, error) {
 func newNfTablesRunner(logf logger.Logf) (*nftablesRunner, error) {
 	conn, err := nftables.New()
 	if err != nil {
-		return nil, fmt.Errorf("nftables connection: %w", err)
+		return nil, fmt.Errorf("nftables 连接失败：%w", err)
 	}
 	return newNfTablesRunnerWithConn(logf, conn), nil
 }
@@ -712,7 +712,7 @@ func newLoadSaddrExpr(proto nftables.TableFamily, destReg uint32) (expr.Any, err
 			Len:          16,
 		}, nil
 	default:
-		return nil, fmt.Errorf("table family %v is neither IPv4 nor IPv6", proto)
+		return nil, fmt.Errorf("表族 %v 既不是 IPv4 也不是 IPv6", proto)
 	}
 }
 
@@ -752,7 +752,7 @@ func (n *nftablesRunner) HasIPV6Filter() bool {
 func findRule(conn *nftables.Conn, rule *nftables.Rule) (*nftables.Rule, error) {
 	rules, err := conn.GetRules(rule.Table, rule.Chain)
 	if err != nil {
-		return nil, fmt.Errorf("get nftables rules: %w", err)
+		return nil, fmt.Errorf("获取 nftables 规则失败：%w", err)
 	}
 	if len(rules) == 0 {
 		return nil, nil
@@ -825,7 +825,7 @@ func insertLoopbackRule(
 
 	loopBackRule, err := createLoopbackRule(proto, table, chain, addr)
 	if err != nil {
-		return fmt.Errorf("create loopback rule: %w", err)
+		return fmt.Errorf("创建 loopback 规则失败：%w", err)
 	}
 
 	// If TestDial is set, we are running in test mode and we should not
@@ -834,7 +834,7 @@ func insertLoopbackRule(
 		// Check if the rule already exists.
 		rule, err := findRule(conn, loopBackRule)
 		if err != nil {
-			return fmt.Errorf("find rule: %w", err)
+			return fmt.Errorf("查找规则失败：%w", err)
 		}
 		if rule != nil {
 			// Rule already exists, no need to insert.
@@ -846,7 +846,7 @@ func insertLoopbackRule(
 	_ = conn.InsertRule(loopBackRule)
 
 	if err = conn.Flush(); err != nil {
-		return fmt.Errorf("insert rule: %w", err)
+		return fmt.Errorf("插入规则失败：%w", err)
 	}
 	return nil
 }
@@ -855,7 +855,7 @@ func insertLoopbackRule(
 // that we will be using for the given address.
 func (n *nftablesRunner) getNFTByAddr(addr netip.Addr) (*nftable, error) {
 	if addr.Is6() && !n.v6Available {
-		return nil, fmt.Errorf("nftables for IPv6 are not available on this host")
+		return nil, fmt.Errorf("此主机不支持 IPv6 的 nftables")
 	}
 	if addr.Is6() {
 		return n.nft6, nil
@@ -868,7 +868,7 @@ func (n *nftablesRunner) getNFTByAddr(addr netip.Addr) (*nftable, error) {
 func (n *nftablesRunner) AddLoopbackRule(addr netip.Addr) error {
 	nf, err := n.getNFTByAddr(addr)
 	if err != nil {
-		return fmt.Errorf("error setting up nftables for IP family of %v: %w", addr, err)
+		return fmt.Errorf("为 %v 设置对应 IP 族的 nftables 时出错：%w", addr, err)
 	}
 
 	inputChain, err := getChainFromTable(n.conn, nf.Filter, chainNameInput)
@@ -877,7 +877,7 @@ func (n *nftablesRunner) AddLoopbackRule(addr netip.Addr) error {
 	}
 
 	if err := insertLoopbackRule(n.conn, nf.Proto, nf.Filter, inputChain, addr); err != nil {
-		return fmt.Errorf("add loopback rule: %w", err)
+		return fmt.Errorf("添加 loopback 规则失败：%w", err)
 	}
 
 	return nil
@@ -888,7 +888,7 @@ func (n *nftablesRunner) AddLoopbackRule(addr netip.Addr) error {
 func (n *nftablesRunner) DelLoopbackRule(addr netip.Addr) error {
 	nf, err := n.getNFTByAddr(addr)
 	if err != nil {
-		return fmt.Errorf("error setting up nftables for IP family of %v: %w", addr, err)
+		return fmt.Errorf("为 %v 设置对应 IP 族的 nftables 时出错：%w", addr, err)
 	}
 
 	inputChain, err := getChainFromTable(n.conn, nf.Filter, chainNameInput)
@@ -898,12 +898,12 @@ func (n *nftablesRunner) DelLoopbackRule(addr netip.Addr) error {
 
 	loopBackRule, err := createLoopbackRule(nf.Proto, nf.Filter, inputChain, addr)
 	if err != nil {
-		return fmt.Errorf("create loopback rule: %w", err)
+		return fmt.Errorf("创建 loopback 规则失败：%w", err)
 	}
 
 	existingLoopBackRule, err := findRule(n.conn, loopBackRule)
 	if err != nil {
-		return fmt.Errorf("find loop back rule: %w", err)
+		return fmt.Errorf("查找 loopback 规则失败：%w", err)
 	}
 	if existingLoopBackRule == nil {
 		// Rule does not exist, no need to delete.
@@ -911,7 +911,7 @@ func (n *nftablesRunner) DelLoopbackRule(addr netip.Addr) error {
 	}
 
 	if err := n.conn.DelRule(existingLoopBackRule); err != nil {
-		return fmt.Errorf("delete rule: %w", err)
+		return fmt.Errorf("删除规则失败：%w", err)
 	}
 
 	return n.conn.Flush()
@@ -937,22 +937,22 @@ func (n *nftablesRunner) AddChains() error {
 		// chains are conclusive.
 		filter, err := createTableIfNotExist(n.conn, table.Proto, "filter")
 		if err != nil {
-			return fmt.Errorf("create table: %w", err)
+			return fmt.Errorf("创建表失败：%w", err)
 		}
 		table.Filter = filter
 		// Adding the "conventional chains" that are used by iptables-nft and ufw.
 		if err = createChainIfNotExist(n.conn, chainInfo{filter, "FORWARD", nftables.ChainTypeFilter, nftables.ChainHookForward, nftables.ChainPriorityFilter, &polAccept}); err != nil {
-			return fmt.Errorf("create forward chain: %w", err)
+			return fmt.Errorf("创建 forward 链失败：%w", err)
 		}
 		if err = createChainIfNotExist(n.conn, chainInfo{filter, "INPUT", nftables.ChainTypeFilter, nftables.ChainHookInput, nftables.ChainPriorityFilter, &polAccept}); err != nil {
-			return fmt.Errorf("create input chain: %w", err)
+			return fmt.Errorf("创建 input 链失败：%w", err)
 		}
 		// Adding the tailscale chains that contain our rules.
 		if err = createChainIfNotExist(n.conn, chainInfo{filter, chainNameForward, chainTypeRegular, nil, nil, nil}); err != nil {
-			return fmt.Errorf("create forward chain: %w", err)
+			return fmt.Errorf("创建 forward 链失败：%w", err)
 		}
 		if err = createChainIfNotExist(n.conn, chainInfo{filter, chainNameInput, chainTypeRegular, nil, nil, nil}); err != nil {
-			return fmt.Errorf("create input chain: %w", err)
+			return fmt.Errorf("创建 input 链失败：%w", err)
 		}
 
 		// Create the nat table if it doesn't exist, this table name is the same
@@ -961,16 +961,16 @@ func (n *nftablesRunner) AddChains() error {
 		// chains are conclusive.
 		nat, err := createTableIfNotExist(n.conn, table.Proto, "nat")
 		if err != nil {
-			return fmt.Errorf("create table: %w", err)
+			return fmt.Errorf("创建表失败：%w", err)
 		}
 		table.Nat = nat
 		// Adding the "conventional chains" that are used by iptables-nft and ufw.
 		if err = createChainIfNotExist(n.conn, chainInfo{nat, "POSTROUTING", nftables.ChainTypeNAT, nftables.ChainHookPostrouting, nftables.ChainPriorityNATSource, &polAccept}); err != nil {
-			return fmt.Errorf("create postrouting chain: %w", err)
+			return fmt.Errorf("创建 postrouting 链失败：%w", err)
 		}
 		// Adding the tailscale chain that contains our rules.
 		if err = createChainIfNotExist(n.conn, chainInfo{nat, chainNamePostrouting, chainTypeRegular, nil, nil, nil}); err != nil {
-			return fmt.Errorf("create postrouting chain: %w", err)
+			return fmt.Errorf("创建 postrouting 链失败：%w", err)
 		}
 	}
 
@@ -995,20 +995,20 @@ func (n *nftablesRunner) createDummyPostroutingChains() (retErr error) {
 	for _, table := range n.getTables() {
 		nat, err := createTableIfNotExist(n.conn, table.Proto, tsDummyTableName)
 		if err != nil {
-			return fmt.Errorf("create nat table: %w", err)
+			return fmt.Errorf("创建 nat 表失败：%w", err)
 		}
 		defer func(fm nftables.TableFamily) {
 			if err := deleteTableIfExists(n.conn, fm, tsDummyTableName); err != nil && retErr == nil {
-				retErr = fmt.Errorf("delete %q table: %w", tsDummyTableName, err)
+				retErr = fmt.Errorf("删除 %q 表失败：%w", tsDummyTableName, err)
 			}
 		}(table.Proto)
 
 		table.Nat = nat
 		if err = createChainIfNotExist(n.conn, chainInfo{nat, tsDummyChainName, nftables.ChainTypeNAT, nftables.ChainHookPostrouting, nftables.ChainPriorityNATSource, polAccept}); err != nil {
-			return fmt.Errorf("create %q chain: %w", tsDummyChainName, err)
+			return fmt.Errorf("创建 %q 链失败：%w", tsDummyChainName, err)
 		}
 		if err := deleteChainIfExists(n.conn, nat, tsDummyChainName); err != nil {
-			return fmt.Errorf("delete %q chain: %w", tsDummyChainName, err)
+			return fmt.Errorf("删除 %q 链失败：%w", tsDummyChainName, err)
 		}
 	}
 	return nil
@@ -1028,7 +1028,7 @@ func deleteChainIfExists(c *nftables.Conn, table *nftables.Table, name string) e
 	c.DelChain(chain)
 
 	if err := c.Flush(); err != nil {
-		return fmt.Errorf("flush and delete chain: %w", err)
+		return fmt.Errorf("刷新并删除链失败：%w", err)
 	}
 
 	return nil
@@ -1198,11 +1198,11 @@ func createRangeRule(
 	tunname string, rng netip.Prefix, decision expr.VerdictKind,
 ) (*nftables.Rule, error) {
 	if rng.Addr().Is6() {
-		return nil, errors.New("IPv6 is not supported")
+		return nil, errors.New("不支持 IPv6")
 	}
 	saddrExpr, err := newLoadSaddrExpr(nftables.TableFamilyIPv4, 1)
 	if err != nil {
-		return nil, fmt.Errorf("newLoadSaddrExpr: %w", err)
+		return nil, fmt.Errorf("构造源地址加载表达式失败：%w", err)
 	}
 	netip := rng.Addr().AsSlice()
 	mask := maskof(rng)

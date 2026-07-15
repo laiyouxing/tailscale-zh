@@ -20,24 +20,23 @@ var logoutArgs struct {
 var logoutCmd = &ffcli.Command{
 	Name:       "logout",
 	ShortUsage: "tailscale logout",
-	ShortHelp:  "Disconnect from Tailscale and expire current node key",
+	ShortHelp:  "断开与 Tailscale 的连接并吊销当前节点密钥",
 
 	LongHelp: strings.TrimSpace(`
-"tailscale logout" brings the network down and invalidates
-the current node key, forcing a future use of it to cause
-a reauthentication.
+"tailscale logout" 会断开网络并使当前节点密钥失效，
+日后再次使用时会强制重新验证身份。
 `),
 	Exec: runLogout,
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("logout")
-		fs.StringVar(&logoutArgs.reason, "reason", "", "reason for the logout, if required by a policy")
+		fs.StringVar(&logoutArgs.reason, "reason", "", "登出的原因，若策略要求则必填")
 		return fs
 	})(),
 }
 
 func runLogout(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return fmt.Errorf("too many non-flag arguments: %q", args)
+		return fmt.Errorf("过多的非 flag 参数：%q", args)
 	}
 	ctx = apitype.RequestReasonKey.WithValue(ctx, logoutArgs.reason)
 	return localClient.Logout(ctx)

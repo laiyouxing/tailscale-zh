@@ -21,59 +21,48 @@ var dnsStatusCmd = &ffcli.Command{
 	Name:       "status",
 	ShortUsage: "tailscale dns status [--all] [--json]",
 	Exec:       runDNSStatus,
-	ShortHelp:  "Print the current DNS status and configuration",
+	ShortHelp:  "打印当前 DNS 状态与配置",
 	LongHelp: strings.TrimSpace(`
-The 'tailscale dns status' subcommand prints the current DNS status and
-configuration, including:
+'tailscale dns status' 子命令打印当前的 DNS 状态与配置，包括：
 
-- Whether the built-in DNS forwarder is enabled.
+- 内置 DNS 转发器是否已启用。
 
-- The MagicDNS configuration provided by the coordination server.
+- 由协调服务器提供的 MagicDNS 配置。
 
-- Details on which resolver(s) Tailscale believes the system is using by
-  default.
+- Tailscale 认为系统默认正在使用哪些解析器的详细信息。
 
-The --all flag can be used to output advanced debugging information, including
-fallback resolvers, nameservers, certificate domains, extra records, and the
-exit node filtered set.
+--all 标志可用于输出高级调试信息，包括回退解析器、名称服务器、证书域、
+额外记录以及出口节点过滤集合。
 
-=== Contents of the MagicDNS configuration ===
+=== MagicDNS 配置的内容 ===
 
-The MagicDNS configuration is provided by the coordination server to the client
-and includes the following components:
+MagicDNS 配置由协调服务器提供给客户端，包含以下组成部分：
 
-- MagicDNS enablement status: Indicates whether MagicDNS is enabled across the
-  entire tailnet.
+- MagicDNS 启用状态：表示 MagicDNS 是否在整条 tailnet 上启用。
 
-- MagicDNS Suffix: The DNS suffix used for devices within your tailnet.
+- MagicDNS 后缀：你的 tailnet 内设备使用的 DNS 后缀。
 
-- DNS Name: The DNS name that other devices in the tailnet can use to reach this
-  device.
+- DNS 名称：tailnet 中其他设备用来访问本设备的 DNS 名称。
 
-- Resolvers: The preferred DNS resolver(s) to be used for resolving queries, in
-  order of preference. If no resolvers are listed here, the system defaults are
-  used.
+- 解析器：用于解析查询的优选 DNS 解析器，按优先级排列。若此处未列出任何
+  解析器，则使用系统默认值。
 
-- Split DNS Routes: Custom DNS resolvers may be used to resolve hostnames in
-  specific domains, this is also known as a 'Split DNS' configuration. The
-  mapping of domains to their respective resolvers is provided here.
+- 拆分 DNS 路由：可使用自定义 DNS 解析器来解析特定域中的主机名，这也被称为
+  "拆分 DNS" 配置。此处提供域到各自解析器的映射。
 
-- Certificate Domains: The DNS names for which the coordination server will
-  assist in provisioning TLS certificates.
+- 证书域：协调服务器将协助为其配置 TLS 证书的 DNS 名称。
 
-- Extra Records: Additional DNS records that the coordination server might
-  provide to the internal DNS resolver.
+- 额外记录：协调服务器可能提供给内部 DNS 解析器的额外 DNS 记录。
 
-- Exit Node Filtered Set: DNS suffixes that the node, when acting as an exit
-  node DNS proxy, will not answer.
+- 出口节点过滤集合：本节点作为出口节点 DNS 代理时不会应答的 DNS 后缀。
 
-For more information about the DNS functionality built into Tailscale, refer to
-https://tailscale.com/kb/1054/dns.
+有关 Tailscale 内置 DNS 功能的更多信息，请参阅
+https://tailscale.com/kb/1054/dns。
 `),
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("status")
-		fs.BoolVar(&dnsStatusArgs.all, "all", false, "outputs advanced debugging information")
-		fs.BoolVar(&dnsStatusArgs.json, "json", false, "output in JSON format")
+		fs.BoolVar(&dnsStatusArgs.all, "all", false, "输出高级调试信息")
+		fs.BoolVar(&dnsStatusArgs.json, "json", false, "以 JSON 格式输出")
 		return fs
 	})(),
 }
@@ -120,7 +109,7 @@ func runDNSStatus(ctx context.Context, args []string) error {
 
 		dnsConfig, err := localClient.DNSConfig(ctx)
 		if err != nil {
-			return fmt.Errorf("failed to fetch DNS config: %w", err)
+			return fmt.Errorf("获取 DNS 配置失败：%w", err)
 		}
 
 		for _, r := range dnsConfig.Resolvers {
@@ -161,7 +150,7 @@ func runDNSStatus(ctx context.Context, args []string) error {
 		osCfg, err := localClient.GetDNSOSConfig(ctx)
 		if err != nil {
 			if strings.Contains(err.Error(), "not supported") {
-				data.SystemDNSError = "not supported on this platform"
+				data.SystemDNSError = "此平台不支持"
 			} else {
 				data.SystemDNSError = err.Error()
 			}
@@ -190,54 +179,54 @@ func formatDNSStatusText(data *jsonoutput.DNSStatusResult, all bool) string {
 	var sb strings.Builder
 
 	fmt.Fprintf(&sb, "\n")
-	fmt.Fprintf(&sb, "=== 'Use Tailscale DNS' status ===\n")
+	fmt.Fprintf(&sb, "=== \"使用 Tailscale DNS\" 状态 ===\n")
 	fmt.Fprintf(&sb, "\n")
 	if data.TailscaleDNS {
-		fmt.Fprintf(&sb, "Tailscale DNS: enabled.\n\nTailscale is configured to handle DNS queries on this device.\nRun 'tailscale set --accept-dns=false' to revert to your system default DNS resolver.\n")
+		fmt.Fprintf(&sb, "Tailscale DNS：已启用。\n\nTailscale 已配置为在本设备上处理 DNS 查询。\n运行 'tailscale set --accept-dns=false' 可恢复为系统默认 DNS 解析器。\n")
 	} else {
-		fmt.Fprintf(&sb, "Tailscale DNS: disabled.\n\n(Run 'tailscale set --accept-dns=true' to start sending DNS queries to the Tailscale DNS resolver)\n")
+		fmt.Fprintf(&sb, "Tailscale DNS：已禁用。\n\n（运行 'tailscale set --accept-dns=true' 以开始将 DNS 查询发往 Tailscale DNS 解析器）\n")
 	}
 	fmt.Fprintf(&sb, "\n")
-	fmt.Fprintf(&sb, "=== MagicDNS configuration ===\n")
+	fmt.Fprintf(&sb, "=== MagicDNS 配置 ===\n")
 	fmt.Fprintf(&sb, "\n")
-	fmt.Fprintf(&sb, "This is the DNS configuration provided by the coordination server to this device.\n")
+	fmt.Fprintf(&sb, "这是由协调服务器提供给本设备的 DNS 配置。\n")
 	fmt.Fprintf(&sb, "\n")
 	if data.CurrentTailnet == nil {
-		fmt.Fprintf(&sb, "No tailnet information available; make sure you're logged in to a tailnet.\n")
+		fmt.Fprintf(&sb, "没有可用的 tailnet 信息；请确保你已登录到某条 tailnet。\n")
 		return sb.String()
 	}
 
 	if data.CurrentTailnet.MagicDNSEnabled {
-		fmt.Fprintf(&sb, "MagicDNS: enabled tailnet-wide (suffix = %s)", data.CurrentTailnet.MagicDNSSuffix)
+		fmt.Fprintf(&sb, "MagicDNS：整条 tailnet 已启用（后缀 = %s）", data.CurrentTailnet.MagicDNSSuffix)
 		fmt.Fprintf(&sb, "\n\n")
-		fmt.Fprintf(&sb, "Other devices in your tailnet can reach this device at %s\n", data.CurrentTailnet.SelfDNSName)
+		fmt.Fprintf(&sb, "你的 tailnet 中其他设备可在 %s 访问本设备\n", data.CurrentTailnet.SelfDNSName)
 	} else {
-		fmt.Fprintf(&sb, "MagicDNS: disabled tailnet-wide.\n")
+		fmt.Fprintf(&sb, "MagicDNS：整条 tailnet 已禁用。\n")
 	}
 	fmt.Fprintf(&sb, "\n")
 
-	fmt.Fprintf(&sb, "Resolvers (in preference order):\n")
+	fmt.Fprintf(&sb, "解析器（按优先级）：\n")
 	if len(data.Resolvers) == 0 {
-		fmt.Fprintf(&sb, "  (no resolvers configured, system default will be used: see 'System DNS configuration' below)\n")
+		fmt.Fprintf(&sb, "  （未配置解析器，将使用系统默认值：见下文\"系统 DNS 配置\"）\n")
 	}
 	for _, r := range data.Resolvers {
 		fmt.Fprintf(&sb, "  - %v", r.Addr)
 		if r.BootstrapResolution != nil {
-			fmt.Fprintf(&sb, " (bootstrap: %v)", r.BootstrapResolution)
+			fmt.Fprintf(&sb, "（bootstrap：%v）", r.BootstrapResolution)
 		}
 		fmt.Fprintf(&sb, "\n")
 	}
 	fmt.Fprintf(&sb, "\n")
 
-	fmt.Fprintf(&sb, "Split DNS Routes:\n")
+	fmt.Fprintf(&sb, "拆分 DNS 路由：\n")
 	if len(data.SplitDNSRoutes) == 0 {
-		fmt.Fprintf(&sb, "  (no routes configured: split DNS disabled)\n")
+		fmt.Fprintf(&sb, "  （未配置路由：拆分 DNS 已禁用）\n")
 	}
 	for _, k := range slices.Sorted(maps.Keys(data.SplitDNSRoutes)) {
 		for _, r := range data.SplitDNSRoutes[k] {
 			fmt.Fprintf(&sb, "  - %-30s -> %v", k, r.Addr)
 			if r.BootstrapResolution != nil {
-				fmt.Fprintf(&sb, " (bootstrap: %v)", r.BootstrapResolution)
+				fmt.Fprintf(&sb, "（bootstrap：%v）", r.BootstrapResolution)
 			}
 			fmt.Fprintf(&sb, "\n")
 		}
@@ -245,23 +234,23 @@ func formatDNSStatusText(data *jsonoutput.DNSStatusResult, all bool) string {
 	fmt.Fprintf(&sb, "\n")
 
 	if all {
-		fmt.Fprintf(&sb, "Fallback Resolvers:\n")
+		fmt.Fprintf(&sb, "回退解析器：\n")
 		if len(data.FallbackResolvers) == 0 {
-			fmt.Fprintf(&sb, "  (no fallback resolvers configured)\n")
+			fmt.Fprintf(&sb, "  （未配置回退解析器）\n")
 		}
 		for i, r := range data.FallbackResolvers {
 			fmt.Fprintf(&sb, "  %d: %v", i, r.Addr)
 			if r.BootstrapResolution != nil {
-				fmt.Fprintf(&sb, " (bootstrap: %v)", r.BootstrapResolution)
+				fmt.Fprintf(&sb, "（bootstrap：%v）", r.BootstrapResolution)
 			}
 			fmt.Fprintf(&sb, "\n")
 		}
 		fmt.Fprintf(&sb, "\n")
 	}
 
-	fmt.Fprintf(&sb, "Search Domains:\n")
+	fmt.Fprintf(&sb, "搜索域：\n")
 	if len(data.SearchDomains) == 0 {
-		fmt.Fprintf(&sb, "  (no search domains configured)\n")
+		fmt.Fprintf(&sb, "  （未配置搜索域）\n")
 	}
 	for _, r := range data.SearchDomains {
 		fmt.Fprintf(&sb, "  - %v\n", r)
@@ -269,27 +258,27 @@ func formatDNSStatusText(data *jsonoutput.DNSStatusResult, all bool) string {
 	fmt.Fprintf(&sb, "\n")
 
 	if all {
-		fmt.Fprintf(&sb, "Nameservers IP Addresses:\n")
+		fmt.Fprintf(&sb, "名称服务器 IP 地址：\n")
 		if len(data.Nameservers) == 0 {
-			fmt.Fprintf(&sb, "  (none were provided)\n")
+			fmt.Fprintf(&sb, "  （未提供任何地址）\n")
 		}
 		for _, r := range data.Nameservers {
 			fmt.Fprintf(&sb, "  - %v\n", r)
 		}
 		fmt.Fprintf(&sb, "\n")
 
-		fmt.Fprintf(&sb, "Certificate Domains:\n")
+		fmt.Fprintf(&sb, "证书域：\n")
 		if len(data.CertDomains) == 0 {
-			fmt.Fprintf(&sb, "  (no certificate domains are configured)\n")
+			fmt.Fprintf(&sb, "  （未配置证书域）\n")
 		}
 		for _, r := range data.CertDomains {
 			fmt.Fprintf(&sb, "  - %v\n", r)
 		}
 		fmt.Fprintf(&sb, "\n")
 
-		fmt.Fprintf(&sb, "Additional DNS Records:\n")
+		fmt.Fprintf(&sb, "额外 DNS 记录：\n")
 		if len(data.ExtraRecords) == 0 {
-			fmt.Fprintf(&sb, "  (no extra records are configured)\n")
+			fmt.Fprintf(&sb, "  （未配置额外记录）\n")
 		}
 		for _, er := range data.ExtraRecords {
 			if er.Type == "" {
@@ -300,9 +289,9 @@ func formatDNSStatusText(data *jsonoutput.DNSStatusResult, all bool) string {
 		}
 		fmt.Fprintf(&sb, "\n")
 
-		fmt.Fprintf(&sb, "Filtered suffixes when forwarding DNS queries as an exit node:\n")
+		fmt.Fprintf(&sb, "作为出口节点转发 DNS 查询时被过滤的后缀：\n")
 		if len(data.ExitNodeFilteredSet) == 0 {
-			fmt.Fprintf(&sb, "  (no suffixes are filtered)\n")
+			fmt.Fprintf(&sb, "  （未过滤任何后缀）\n")
 		}
 		for _, s := range data.ExitNodeFilteredSet {
 			fmt.Fprintf(&sb, "  - %s\n", s)
@@ -310,40 +299,40 @@ func formatDNSStatusText(data *jsonoutput.DNSStatusResult, all bool) string {
 		fmt.Fprintf(&sb, "\n")
 	}
 
-	fmt.Fprintf(&sb, "=== System DNS configuration ===\n")
+	fmt.Fprintf(&sb, "=== 系统 DNS 配置 ===\n")
 	fmt.Fprintf(&sb, "\n")
-	fmt.Fprintf(&sb, "This is the DNS configuration that Tailscale believes your operating system is using.\nTailscale may use this configuration if 'Override Local DNS' is disabled in the admin console,\nor if no resolvers are provided by the coordination server.\n")
+	fmt.Fprintf(&sb, "这是 Tailscale 认为你的操作系统正在使用的 DNS 配置。\n若管理控制台中\"覆盖本地 DNS\"被禁用，或协调服务器未提供任何解析器，\nTailscale 可能会使用此配置。\n")
 	fmt.Fprintf(&sb, "\n")
 
 	if data.SystemDNSError != "" {
 		if strings.Contains(data.SystemDNSError, "not supported") {
-			fmt.Fprintf(&sb, "  (reading the system DNS configuration is not supported on this platform)\n")
+			fmt.Fprintf(&sb, "  （此平台不支持读取系统 DNS 配置）\n")
 		} else {
-			fmt.Fprintf(&sb, "  (failed to read system DNS configuration: %s)\n", data.SystemDNSError)
+			fmt.Fprintf(&sb, "  （读取系统 DNS 配置失败：%s）\n", data.SystemDNSError)
 		}
 	} else if data.SystemDNS == nil {
-		fmt.Fprintf(&sb, "  (no OS DNS configuration available)\n")
+		fmt.Fprintf(&sb, "  （没有可用的操作系统 DNS 配置）\n")
 	} else {
-		fmt.Fprintf(&sb, "Nameservers:\n")
+		fmt.Fprintf(&sb, "名称服务器：\n")
 		if len(data.SystemDNS.Nameservers) == 0 {
-			fmt.Fprintf(&sb, "  (no nameservers found, DNS queries might fail\nunless the coordination server is providing a nameserver)\n")
+			fmt.Fprintf(&sb, "  （未找到名称服务器，DNS 查询可能失败\n除非协调服务器提供了名称服务器）\n")
 		}
 		for _, ns := range data.SystemDNS.Nameservers {
 			fmt.Fprintf(&sb, "  - %v\n", ns)
 		}
 		fmt.Fprintf(&sb, "\n")
-		fmt.Fprintf(&sb, "Search domains:\n")
+		fmt.Fprintf(&sb, "搜索域：\n")
 		if len(data.SystemDNS.SearchDomains) == 0 {
-			fmt.Fprintf(&sb, "  (no search domains found)\n")
+			fmt.Fprintf(&sb, "  （未找到搜索域）\n")
 		}
 		for _, sd := range data.SystemDNS.SearchDomains {
 			fmt.Fprintf(&sb, "  - %v\n", sd)
 		}
 		if all {
 			fmt.Fprintf(&sb, "\n")
-			fmt.Fprintf(&sb, "Match domains:\n")
+			fmt.Fprintf(&sb, "匹配域：\n")
 			if len(data.SystemDNS.MatchDomains) == 0 {
-				fmt.Fprintf(&sb, "  (no match domains found)\n")
+				fmt.Fprintf(&sb, "  （未找到匹配域）\n")
 			}
 			for _, md := range data.SystemDNS.MatchDomains {
 				fmt.Fprintf(&sb, "  - %v\n", md)
@@ -351,6 +340,6 @@ func formatDNSStatusText(data *jsonoutput.DNSStatusResult, all bool) string {
 		}
 	}
 	fmt.Fprintf(&sb, "\n")
-	fmt.Fprintf(&sb, "[this is a preliminary version of this command; the output format may change in the future]\n")
+	fmt.Fprintf(&sb, "[这是该命令的预览版本；输出格式未来可能会发生变化]\n")
 	return sb.String()
 }

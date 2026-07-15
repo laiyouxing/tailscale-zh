@@ -61,7 +61,7 @@ func (s *serviceNameFlag) Set(sv string) error {
 	}
 	v := tailcfg.ServiceName(sv)
 	if err := v.Validate(); err != nil {
-		return fmt.Errorf("invalid service name: %q", sv)
+		return fmt.Errorf("无效的服务名称：%q", sv)
 	}
 	*s.Value = v
 	return nil
@@ -118,7 +118,7 @@ func (u *acceptAppCapsFlag) Set(s string) error {
 	for appCap := range appCaps {
 		appCap = strings.TrimSpace(appCap)
 		if !validAppCap.MatchString(appCap) {
-			return fmt.Errorf("%q does not match the form {domain}/{name}, where domain must be a fully qualified domain name", appCap)
+			return fmt.Errorf("%q 不符合 {domain}/{name} 的形式，其中 domain 必须是一个完全限定域名", appCap)
 		}
 		*u.Value = append(*u.Value, tailcfg.PeerCapability(appCap))
 	}
@@ -135,25 +135,25 @@ func (u *acceptAppCapsFlag) String() string {
 }
 
 var serveHelpCommon = strings.TrimSpace(`
-<target> can be a file, directory, text, or most commonly the location to a service running on the
-local machine. The location to the location service can be expressed as a port number (e.g., 3000),
-a partial URL (e.g., localhost:3000), or a full URL including a path (e.g., http://localhost:3000/foo).
-On Unix-like systems, you can also specify a Unix domain socket (e.g., unix:/tmp/myservice.sock).
+<目标> 可以是一个文件、目录、文本，或者最常见的是本地机器上运行的
+服务的位置。该位置服务可以表示为端口号（如 3000）、
+部分 URL（如 localhost:3000），或包含路径的完整 URL（如 http://localhost:3000/foo）。
+在类 Unix 系统上，你也可以指定一个 Unix 域套接字（如 unix:/tmp/myservice.sock）。
 
-EXAMPLES
-  - Expose an HTTP server running at 127.0.0.1:3000 in the foreground:
+示例
+  - 在前台暴露运行在 127.0.0.1:3000 的 HTTP 服务器：
     $ tailscale %[1]s 3000
 
-  - Expose an HTTP server running at 127.0.0.1:3000 in the background:
+  - 在后台暴露运行在 127.0.0.1:3000 的 HTTP 服务器：
     $ tailscale %[1]s --bg 3000
 
-  - Expose an HTTPS server with invalid or self-signed certificates at https://localhost:8443
+  - 暴露使用无效或自签名证书、位于 https://localhost:8443 的 HTTPS 服务器：
     $ tailscale %[1]s https+insecure://localhost:8443
 
-  - Expose a service listening on a Unix socket (Linux/macOS/BSD only):
+  - 暴露监听在 Unix 套接字上的服务（仅限 Linux/macOS/BSD）：
     $ tailscale %[1]s unix:/var/run/myservice.sock
 
-For more examples and use cases visit our docs site https://tailscale.com/kb/1247/funnel-serve-use-cases
+更多示例和使用场景请访问我们的文档站点 https://tailscale.com/kb/1247/funnel-serve-use-cases
 `)
 
 type serveMode int
@@ -194,18 +194,18 @@ const noService tailcfg.ServiceName = ""
 var infoMap = map[serveMode]commandInfo{
 	serve: {
 		Name:      "serve",
-		ShortHelp: "Serve content and local servers on your tailnet",
+		ShortHelp: "在你的 tailnet 内提供服务内容与本地服务器",
 		LongHelp: strings.Join([]string{
-			"Tailscale Serve enables you to share a local server securely within your tailnet.\n",
-			"To share a local server on the internet, use `tailscale funnel`\n\n",
+			"Tailscale Serve 让你在你的 tailnet 内安全地共享本地服务器。\n",
+			"若要在互联网上共享本地服务器，请使用 `tailscale funnel`\n\n",
 		}, "\n"),
 	},
 	funnel: {
 		Name:      "funnel",
-		ShortHelp: "Serve content and local servers on the internet",
+		ShortHelp: "在互联网上提供服务内容与本地服务器",
 		LongHelp: strings.Join([]string{
-			"Funnel enables you to share a local server on the internet using Tailscale.\n",
-			"To share only within your tailnet, use `tailscale serve`\n\n",
+			"Funnel 让你使用 Tailscale 在互联网上共享本地服务器。\n",
+			"若仅在你的 tailnet 内共享，请使用 `tailscale serve`\n\n",
 		}, "\n"),
 	},
 }
@@ -213,7 +213,7 @@ var infoMap = map[serveMode]commandInfo{
 // errHelpFunc is standard error text that prompts users to
 // run `$subcmd --help` for information on how to use serve.
 var errHelpFunc = func(m serveMode) error {
-	return fmt.Errorf("try `tailscale %s --help` for usage info", infoMap[m].Name)
+	return fmt.Errorf("请尝试运行 `tailscale %s --help` 查看用法信息", infoMap[m].Name)
 }
 
 // newServeV2Command returns a new "serve" subcommand using e as its environment.
@@ -236,19 +236,19 @@ func newServeV2Command(e *serveEnv, subcmd serveMode) *ffcli.Command {
 		Exec:     e.runServeCombined(subcmd),
 
 		FlagSet: e.newFlags("serve-set", func(fs *flag.FlagSet) {
-			fs.Var(&e.bg, "bg", "Run the command as a background process (default false, when --service is set defaults to true).")
-			fs.StringVar(&e.setPath, "set-path", "", "Appends the specified path to the base URL for accessing the underlying service")
-			fs.UintVar(&e.https, "https", 0, "Expose an HTTPS server at the specified port (default mode)")
+			fs.Var(&e.bg, "bg", "以后台进程方式运行命令（默认为 false，当设置了 --service 时默认为 true）。")
+			fs.StringVar(&e.setPath, "set-path", "", "将指定路径追加到用于访问底层服务的基础 URL 之后")
+			fs.UintVar(&e.https, "https", 0, "在指定端口暴露一个 HTTPS 服务器（默认模式）")
 			if subcmd == serve {
-				fs.UintVar(&e.http, "http", 0, "Expose an HTTP server at the specified port")
-				fs.Var(&acceptAppCapsFlag{Value: &e.acceptAppCaps}, "accept-app-caps", "App capabilities to forward to the server (specify multiple capabilities with a comma-separated list)")
-				fs.Var(&serviceNameFlag{Value: &e.service}, "service", "Serve for a service with distinct virtual IP instead on node itself.")
-				fs.BoolVar(&e.tun, "tun", false, "Forward all traffic to the local machine (default false), only supported for services. Refer to docs for more information.")
+				fs.UintVar(&e.http, "http", 0, "在指定端口暴露一个 HTTP 服务器")
+				fs.Var(&acceptAppCapsFlag{Value: &e.acceptAppCaps}, "accept-app-caps", "要转发到服务器的应用能力（使用逗号分隔的列表指定多个能力）")
+				fs.Var(&serviceNameFlag{Value: &e.service}, "service", "为具有独立虚拟 IP 的服务提供服务，而不是节点本身。")
+				fs.BoolVar(&e.tun, "tun", false, "将所有流量转发到本地机器（默认为 false），仅支持服务于服务。详见文档了解更多信息。")
 			}
-			fs.UintVar(&e.tcp, "tcp", 0, "Expose a TCP forwarder to forward raw TCP packets at the specified port")
-			fs.UintVar(&e.tlsTerminatedTCP, "tls-terminated-tcp", 0, "Expose a TCP forwarder to forward TLS-terminated TCP packets at the specified port")
-			fs.UintVar(&e.proxyProtocol, "proxy-protocol", 0, "PROXY protocol version (1 or 2) for TCP forwarding")
-			fs.BoolVar(&e.yes, "yes", false, "Update without interactive prompts (default false)")
+			fs.UintVar(&e.tcp, "tcp", 0, "暴露一个 TCP 转发器，在指定端口转发原始 TCP 数据包")
+			fs.UintVar(&e.tlsTerminatedTCP, "tls-terminated-tcp", 0, "暴露一个 TCP 转发器，在指定端口转发已终止 TLS 的 TCP 数据包")
+			fs.UintVar(&e.proxyProtocol, "proxy-protocol", 0, "用于 TCP 转发的 PROXY 协议版本（1 或 2）")
+			fs.BoolVar(&e.yes, "yes", false, "无需交互式提示直接更新（默认 false）")
 		}),
 		UsageFunc: usageFuncNoDefaultValues,
 		Subcommands: func() []*ffcli.Command {
@@ -257,15 +257,15 @@ func newServeV2Command(e *serveEnv, subcmd serveMode) *ffcli.Command {
 					Name:       "status",
 					ShortUsage: "tailscale " + info.Name + " status [--json]",
 					Exec:       e.runServeStatus,
-					ShortHelp:  "View current " + info.Name + " configuration",
+					ShortHelp:  "查看当前 " + info.Name + " 配置",
 					FlagSet: e.newFlags("serve-status", func(fs *flag.FlagSet) {
-						fs.BoolVar(&e.json, "json", false, "output JSON")
+						fs.BoolVar(&e.json, "json", false, "输出 JSON")
 					}),
 				},
 				{
 					Name:       "reset",
 					ShortUsage: "tailscale " + info.Name + " reset",
-					ShortHelp:  "Reset current " + info.Name + " config",
+					ShortHelp:  "重置当前 " + info.Name + " 配置",
 					Exec:       e.runServeReset,
 					FlagSet:    e.newFlags("serve-reset", nil),
 				},
@@ -276,36 +276,35 @@ func newServeV2Command(e *serveEnv, subcmd serveMode) *ffcli.Command {
 						Name:       "drain",
 						ShortUsage: fmt.Sprintf("tailscale %s drain <service>", info.Name),
 						ShortHelp:  "Drain a service from the current node",
-						LongHelp: "Make the current node no longer accept new connections for the specified service.\n" +
-							"Existing connections will continue to work until they are closed, but no new connections will be accepted.\n" +
-							"Use this command to gracefully remove a service from the current node without disrupting existing connections.\n" +
-							"<service> should be a service name (e.g., svc:my-service).",
+						LongHelp: "使当前节点不再为指定服务接受新的连接。\n" +
+							"已有的连接会继续工作直到它们被关闭，但不会再接受新连接。\n" +
+							"使用此命令可在不打断现有连接的情况下优雅地从当前节点移除一个服务。\n" +
+							"<service> 应为一个服务名称（如 svc:my-service）。",
 						Exec: e.runServeDrain,
 					},
 					{
 						Name:       "clear",
 						ShortUsage: fmt.Sprintf("tailscale %s clear <service>", info.Name),
 						ShortHelp:  "Remove all config for a service",
-						LongHelp:   "Remove all handlers configured for the specified service.",
+						LongHelp:   "移除为指定服务配置的所有处理器。",
 						Exec:       e.runServeClear,
 					},
 					{
 						Name:       "advertise",
 						ShortUsage: fmt.Sprintf("tailscale %s advertise <service>", info.Name),
 						ShortHelp:  "Advertise this node as a service proxy to the tailnet",
-						LongHelp: "Advertise this node as a service proxy to the tailnet. This command is used\n" +
-							"to make the current node be considered as a service host for a service. This is\n" +
-							"useful to bring a service back after it has been drained. (i.e. after running \n" +
-							"`tailscale serve drain <service>`). This is not needed if you are using `tailscale serve` to initialize a service.",
+						LongHelp: "将当前节点作为服务代理通告给 tailnet。此命令用于\n" +
+							"使当前节点被视为某个服务的服务主机。这在服务被 drain 之后\n" +
+							"让服务重新上线时很有用（即在运行了\n" +
+							"`tailscale serve drain <service>` 之后）。如果你使用 `tailscale serve` 来初始化服务，则无需此命令。",
 						Exec: e.runServeAdvertise,
 					},
 					{
 						Name:       "get-config",
 						ShortUsage: fmt.Sprintf("tailscale %s get-config <file> [--service=<service>] [--all]", info.Name),
-						ShortHelp:  "Get service configuration to save to a file",
-						LongHelp: "Get the configuration for services that this node is currently hosting in a\n" +
-							"format that can later be provided to set-config. This can be used to declaratively set\n" +
-							"configuration for a service host.",
+						ShortHelp:  "获取服务配置以保存到文件",
+						LongHelp: "以稍后可提供给 set-config 的格式，获取当前节点托管的服务配置。\n" +
+							"这可用于声明式地设置服务主机的配置。",
 						Exec: e.runServeGetConfig,
 						FlagSet: e.newFlags("serve-get-config", func(fs *flag.FlagSet) {
 							fs.BoolVar(&e.allServices, "all", false, "read config from all services")
@@ -316,11 +315,10 @@ func newServeV2Command(e *serveEnv, subcmd serveMode) *ffcli.Command {
 						Name:       "set-config",
 						ShortUsage: fmt.Sprintf("tailscale %s set-config <file> [--service=<service>] [--all]", info.Name),
 						ShortHelp:  "Define service configuration from a file",
-						LongHelp: "Read the provided configuration file and use it to declaratively set the configuration\n" +
-							"for either a single service, or for all services that this node is hosting. If --service is specified,\n" +
-							"all endpoint handlers for that service are overwritten. If --all is specified, all endpoint handlers for\n" +
-							"all services are overwritten.\n\n" +
-							"For information on the file format, see tailscale.com/kb/1589/tailscale-services-configuration-file",
+						LongHelp: "读取提供的配置文件，并使用它声明式地设置配置，\n" +
+							"可以针对单个服务，也可以针对当前节点托管的所有服务。如果指定了 --service，\n" +
+							"该服务的所有端点处理器都会被覆盖。如果指定了 --all，所有服务的所有端点处理器都会被覆盖。\n\n" +
+							"关于文件格式的信息，请参阅 tailscale.com/kb/1589/tailscale-services-configuration-file",
 						Exec: e.runServeSetConfig,
 						FlagSet: e.newFlags("serve-set-config", func(fs *flag.FlagSet) {
 							fs.BoolVar(&e.allServices, "all", false, "apply config to all services")
@@ -336,12 +334,12 @@ func newServeV2Command(e *serveEnv, subcmd serveMode) *ffcli.Command {
 
 func (e *serveEnv) validateArgs(subcmd serveMode, args []string) error {
 	if translation, ok := isLegacyInvocation(subcmd, args); ok {
-		fmt.Fprint(e.stderr(), "Error: the CLI for serve and funnel has changed.")
+		fmt.Fprint(e.stderr(), "错误：serve 和 funnel 的命令行接口已发生变化。")
 		if translation != "" {
-			fmt.Fprint(e.stderr(), " You can run the following command instead:\n")
+			fmt.Fprint(e.stderr(), " 你可以改为运行以下命令：\n")
 			fmt.Fprintf(e.stderr(), "\t- %s\n", translation)
 		}
-		fmt.Fprint(e.stderr(), "\nPlease see https://tailscale.com/kb/1242/tailscale-serve for more information.\n")
+		fmt.Fprint(e.stderr(), "\n请访问 https://tailscale.com/kb/1242/tailscale-serve 了解更多信息。\n")
 		return errHelpFunc(subcmd)
 	}
 	if len(args) == 0 && e.tun {
@@ -351,16 +349,16 @@ func (e *serveEnv) validateArgs(subcmd serveMode, args []string) error {
 		return flag.ErrHelp
 	}
 	if e.tun && len(args) > 1 {
-		fmt.Fprintln(e.stderr(), "Error: invalid argument format")
+		fmt.Fprintln(e.stderr(), "错误：参数格式无效")
 		return errHelpFunc(subcmd)
 	}
 	if len(args) > 2 {
-		fmt.Fprintf(e.stderr(), "Error: invalid number of arguments (%d)\n", len(args))
+		fmt.Fprintf(e.stderr(), "错误：参数数量无效（%d）\n", len(args))
 		return errHelpFunc(subcmd)
 	}
 	turnOff := args[len(args)-1] == "off"
 	if len(args) == 2 && !turnOff {
-		fmt.Fprintln(e.stderr(), "Error: invalid argument format")
+		fmt.Fprintln(e.stderr(), "错误：参数格式无效")
 		return errHelpFunc(subcmd)
 	}
 
@@ -383,7 +381,7 @@ func (e *serveEnv) runServeCombined(subcmd serveMode) execFunc {
 			}
 			sc := new(ipn.ServeConfig)
 			if err := json.Unmarshal(valb, sc); err != nil {
-				return fmt.Errorf("invalid JSON: %w", err)
+				return fmt.Errorf("无效的 JSON：%w", err)
 			}
 			return e.lc.SetServeConfig(ctx, sc)
 		}
@@ -402,7 +400,7 @@ func (e *serveEnv) runServeCombined(subcmd serveMode) execFunc {
 
 		funnel := subcmd == funnel
 		if forService && funnel {
-			return errors.New("Error: --service flag is not supported with funnel")
+			return errors.New("错误：--service 标志在 funnel 下不受支持")
 		}
 
 		if funnel {
@@ -413,31 +411,31 @@ func (e *serveEnv) runServeCombined(subcmd serveMode) execFunc {
 		}
 
 		if forService && !e.bg.Value {
-			return errors.New("Error: --service flag is only compatible with background mode")
+			return errors.New("错误：--service 标志仅与后台模式兼容")
 		}
 
 		mount, err := cleanURLPath(e.setPath)
 		if err != nil {
-			return fmt.Errorf("failed to clean the mount point: %w", err)
+			return fmt.Errorf("清理挂载点失败：%w", err)
 		}
 
 		srvType, srvPort, err := srvTypeAndPortFromFlags(e)
 		if err != nil {
-			fmt.Fprintf(e.stderr(), "error: %v\n\n", err)
+			fmt.Fprintf(e.stderr(), "错误：%v\n\n", err)
 			return errHelpFunc(subcmd)
 		}
 
 		if (srvType == serveTypeHTTP || srvType == serveTypeHTTPS) && e.proxyProtocol != 0 {
-			return fmt.Errorf("PROXY protocol is only supported for TCP forwarding, not HTTP/HTTPS")
+			return fmt.Errorf("PROXY 协议仅支持用于 TCP 转发，不支持 HTTP/HTTPS")
 		}
 		// Validate PROXY protocol version
 		if e.proxyProtocol != 0 && e.proxyProtocol != 1 && e.proxyProtocol != 2 {
-			return fmt.Errorf("invalid PROXY protocol version %d; must be 1 or 2", e.proxyProtocol)
+			return fmt.Errorf("无效的 PROXY 协议版本 %d；必须为 1 或 2", e.proxyProtocol)
 		}
 
 		sc, err := e.lc.GetServeConfig(ctx)
 		if err != nil {
-			return fmt.Errorf("error getting serve config: %w", err)
+			return fmt.Errorf("获取 serve 配置出错：%w", err)
 		}
 
 		// nil if no config
@@ -446,7 +444,7 @@ func (e *serveEnv) runServeCombined(subcmd serveMode) execFunc {
 		}
 		st, err := e.getLocalClientStatusWithoutPeers(ctx)
 		if err != nil {
-			return fmt.Errorf("getting client status: %w", err)
+			return fmt.Errorf("获取客户端状态出错：%w", err)
 		}
 		dnsName := strings.TrimSuffix(st.Self.DNSName, ".")
 		magicDNSSuffix := st.CurrentTailnet.MagicDNSSuffix
@@ -469,7 +467,7 @@ func (e *serveEnv) runServeCombined(subcmd serveMode) execFunc {
 			// error and maintain the previous behavior (prior to 2023-08-15)
 			// of letting them edit the serve config before enabling certs.
 			if err := e.enableFeatureInteractive(ctx, "serve", tailcfg.CapabilityHTTPS); err != nil {
-				return fmt.Errorf("error enabling https feature: %w", err)
+				return fmt.Errorf("启用 https 功能出错：%w", err)
 			}
 		}
 
@@ -482,10 +480,10 @@ func (e *serveEnv) runServeCombined(subcmd serveMode) execFunc {
 		}
 		tagged := st.Self.Tags != nil && st.Self.Tags.Len() > 0
 		if forService && !tagged && !turnOff {
-			return errors.New("service hosts must be tagged nodes")
+			return errors.New("服务主机必须是已打标签的节点")
 		}
 		if !forService && srvType == serveTypeTUN {
-			return errors.New("tun mode is only supported for services")
+			return errors.New("tun 模式仅支持用于服务")
 		}
 		wantFg := !e.bg.Value && !turnOff
 		if wantFg {
@@ -502,7 +500,7 @@ func (e *serveEnv) runServeCombined(subcmd serveMode) execFunc {
 				return err
 			}
 			if n.SessionID == "" {
-				return errors.New("missing SessionID")
+				return errors.New("缺少 SessionID")
 			}
 			fsc := &ipn.ServeConfig{}
 			mak.Set(&sc.Foreground, n.SessionID, fsc)
@@ -528,13 +526,13 @@ func (e *serveEnv) runServeCombined(subcmd serveMode) execFunc {
 			msg = e.messageForPort(sc, st, dnsName, srvType, srvPort)
 		}
 		if err != nil {
-			fmt.Fprintf(e.stderr(), "error: %v\n\n", err)
+			fmt.Fprintf(e.stderr(), "错误：%v\n\n", err)
 			return errHelpFunc(subcmd)
 		}
 
 		if err := e.lc.SetServeConfig(ctx, parentSC); err != nil {
 			if local.IsPreconditionsFailedError(err) {
-				fmt.Fprintln(e.stderr(), "Another client is changing the serve config; please try again.")
+				fmt.Fprintln(e.stderr(), "另一个客户端正在修改 serve 配置；请重试。")
 			}
 			return err
 		}
@@ -562,7 +560,7 @@ func (e *serveEnv) runServeCombined(subcmd serveMode) execFunc {
 func (e *serveEnv) addServiceToPrefs(ctx context.Context, serviceName tailcfg.ServiceName) error {
 	prefs, err := e.lc.GetPrefs(ctx)
 	if err != nil {
-		return fmt.Errorf("error getting prefs: %w", err)
+		return fmt.Errorf("获取偏好设置出错：%w", err)
 	}
 	advertisedServices := prefs.AdvertiseServices
 	if slices.Contains(advertisedServices, serviceName.String()) {
@@ -581,7 +579,7 @@ func (e *serveEnv) addServiceToPrefs(ctx context.Context, serviceName tailcfg.Se
 func (e *serveEnv) removeServiceFromPrefs(ctx context.Context, serviceName tailcfg.ServiceName) error {
 	prefs, err := e.lc.GetPrefs(ctx)
 	if err != nil {
-		return fmt.Errorf("error getting prefs: %w", err)
+		return fmt.Errorf("获取偏好设置出错：%w", err)
 	}
 	if len(prefs.AdvertiseServices) == 0 {
 		return nil // nothing to remove
@@ -605,13 +603,13 @@ func (e *serveEnv) runServeDrain(ctx context.Context, args []string) error {
 		return errHelp
 	}
 	if len(args) != 1 {
-		fmt.Fprintf(Stderr, "error: invalid number of arguments\n\n")
+		fmt.Fprintf(Stderr, "错误：参数数量无效\n\n")
 		return errHelp
 	}
 	svc := args[0]
 	svcName := tailcfg.ServiceName(svc)
 	if err := svcName.Validate(); err != nil {
-		return fmt.Errorf("invalid service name: %w", err)
+		return fmt.Errorf("无效的服务名称：%w", err)
 	}
 	return e.removeServiceFromPrefs(ctx, svcName)
 }
@@ -621,39 +619,39 @@ func (e *serveEnv) runServeClear(ctx context.Context, args []string) error {
 		return errHelp
 	}
 	if len(args) != 1 {
-		fmt.Fprintf(Stderr, "error: invalid number of arguments\n\n")
+		fmt.Fprintf(Stderr, "错误：参数数量无效\n\n")
 		return errHelp
 	}
 	svc := tailcfg.ServiceName(args[0])
 	if err := svc.Validate(); err != nil {
-		return fmt.Errorf("invalid service name: %w", err)
+		return fmt.Errorf("无效的服务名称：%w", err)
 	}
 	sc, err := e.lc.GetServeConfig(ctx)
 	if err != nil {
-		return fmt.Errorf("error getting serve config: %w", err)
+		return fmt.Errorf("获取 serve 配置出错：%w", err)
 	}
 	if _, ok := sc.Services[svc]; !ok {
-		log.Printf("service %s not found in serve config, nothing to clear", svc)
+		log.Printf("serve 配置中未找到服务 %s，无需清理", svc)
 		return nil
 	}
 	delete(sc.Services, svc)
 	if err := e.removeServiceFromPrefs(ctx, svc); err != nil {
-		return fmt.Errorf("error removing service %s from prefs: %w", svc, err)
+		return fmt.Errorf("从偏好设置中移除服务 %s 出错：%w", svc, err)
 	}
 	return e.lc.SetServeConfig(ctx, sc)
 }
 
 func (e *serveEnv) runServeAdvertise(ctx context.Context, args []string) error {
 	if len(args) == 0 {
-		return errors.New("error: missing service name argument")
+		return errors.New("错误：缺少服务名称参数")
 	}
 	if len(args) != 1 {
-		fmt.Fprintf(Stderr, "error: invalid number of arguments\n\n")
+		fmt.Fprintf(Stderr, "错误：参数数量无效\n\n")
 		return errHelp
 	}
 	svc := tailcfg.ServiceName(args[0])
 	if err := svc.Validate(); err != nil {
-		return fmt.Errorf("invalid service name: %w", err)
+		return fmt.Errorf("无效的服务名称：%w", err)
 	}
 	return e.addServiceToPrefs(ctx, svc)
 }
@@ -704,11 +702,11 @@ func (e *serveEnv) runServeGetConfig(ctx context.Context, args []string) (err er
 				}
 				destHost, destPortStr, err := net.SplitHostPort(config.TCPForward)
 				if err != nil {
-					return nil, fmt.Errorf("parse TCPForward=%q: %w", config.TCPForward, err)
+					return nil, fmt.Errorf("解析 TCPForward=%q 出错：%w", config.TCPForward, err)
 				}
 				destPort, err := strconv.ParseUint(destPortStr, 10, 16)
 				if err != nil {
-					return nil, fmt.Errorf("parse port %q: %w", destPortStr, err)
+					return nil, fmt.Errorf("解析端口 %q 出错：%w", destPortStr, err)
 				}
 				mak.Set(&sdf.Endpoints, &ppr, &conffile.Target{
 					Protocol:         proto,
@@ -719,11 +717,11 @@ func (e *serveEnv) runServeGetConfig(ctx context.Context, args []string) (err er
 				webKey := ipn.HostPort(net.JoinHostPort(sniName, strconv.FormatUint(uint64(port), 10)))
 				handlers, ok := serviceConfig.Web[webKey]
 				if !ok {
-					return nil, fmt.Errorf("service %q: HTTP/HTTPS is set but no handlers in config", svcName)
+					return nil, fmt.Errorf("服务 %q：已设置 HTTP/HTTPS，但配置中没有处理器", svcName)
 				}
 				defaultHandler, ok := handlers.Handlers["/"]
 				if !ok {
-					return nil, fmt.Errorf("service %q: root handler not set", svcName)
+					return nil, fmt.Errorf("服务 %q：未设置根处理器", svcName)
 				}
 				if defaultHandler.Path != "" {
 					mak.Set(&sdf.Endpoints, &ppr, &conffile.Target{
@@ -734,16 +732,16 @@ func (e *serveEnv) runServeGetConfig(ctx context.Context, args []string) (err er
 				} else if defaultHandler.Proxy != "" {
 					proto, rest, ok := strings.Cut(defaultHandler.Proxy, "://")
 					if !ok {
-						return nil, fmt.Errorf("service %q: invalid proxy handler %q", svcName, defaultHandler.Proxy)
+						return nil, fmt.Errorf("服务 %q：无效的代理处理器 %q", svcName, defaultHandler.Proxy)
 					}
 					host, portStr, err := net.SplitHostPort(rest)
 					if err != nil {
-						return nil, fmt.Errorf("service %q: invalid proxy handler %q: %w", svcName, defaultHandler.Proxy, err)
+						return nil, fmt.Errorf("服务 %q：无效的代理处理器 %q：%w", svcName, defaultHandler.Proxy, err)
 					}
 
 					port, err := strconv.ParseUint(portStr, 10, 16)
 					if err != nil {
-						return nil, fmt.Errorf("service %q: parse port %q: %w", svcName, portStr, err)
+						return nil, fmt.Errorf("服务 %q：解析端口 %q 出错：%w", svcName, portStr, err)
 					}
 
 					mak.Set(&sdf.Endpoints, &ppr, &conffile.Target{
@@ -761,7 +759,7 @@ func (e *serveEnv) runServeGetConfig(ctx context.Context, args []string) (err er
 	var j []byte
 
 	if e.allServices && forSingleService {
-		return errors.New("cannot specify both --all and --service")
+		return errors.New("不能同时指定 --all 和 --service")
 	} else if e.allServices {
 		var scf conffile.ServicesConfigFile
 		scf.Version = "0.0.1"
@@ -792,7 +790,7 @@ func (e *serveEnv) runServeGetConfig(ctx context.Context, args []string) (err er
 			}
 		}
 	} else {
-		return errors.New("must specify either --service=svc:<service-name> or --all")
+		return errors.New("必须指定 --service=svc:<服务名> 或 --all 其中之一")
 	}
 
 	j = append(j, '\n')
@@ -803,12 +801,12 @@ func (e *serveEnv) runServeGetConfig(ctx context.Context, args []string) (err er
 // serveConfigDocsURL documents the Services configuration file format that set-config prefers
 const serveConfigDocsURL = "https://tailscale.com/kb/1589/tailscale-services-configuration-file"
 
-const serveLegacyFormatWarning = "Warning: %q is in the legacy raw serve config format " +
-	"(as emitted by `tailscale serve status --json`), which is deprecated for set-config. " +
-	"Applying its services only. To migrate, run `tailscale serve get-config` to save your " +
-	"configuration in the supported format; see %s\n"
+const serveLegacyFormatWarning = "警告：%q 是旧版原始 serve 配置格式 " +
+	"（由 `tailscale serve status --json` 输出），set-config 已弃用该格式。" +
+	"仅应用其中的服务部分。如需迁移，请运行 `tailscale serve get-config` 以受支持的格式" +
+	"保存你的配置；详见 %s\n"
 
-const serveLegacyDroppedWarning = "Warning: ignoring node-level fields not supported by set-config: %s\n"
+const serveLegacyDroppedWarning = "警告：忽略 set-config 不支持的节点级字段：%s\n"
 
 // legacyNodeLevelFields returns the names of the populated top-level fields in
 // sc, other than Services, that set-config does not apply (it is services-only).
@@ -833,15 +831,15 @@ func legacyNodeLevelFields(sc *ipn.ServeConfig) []string {
 
 func (e *serveEnv) runServeSetConfig(ctx context.Context, args []string) (err error) {
 	if len(args) != 1 {
-		return errors.New("must specify filename")
+		return errors.New("必须指定文件名")
 	}
 	filename := args[0]
 	forSingleService := e.service.Validate() == nil
 	if e.allServices && forSingleService {
-		return errors.New("cannot specify both --all and --service")
+		return errors.New("不能同时指定 --all 和 --service")
 	}
 	if !e.allServices && !forSingleService {
-		return errors.New("must specify either --service=svc:<service-name> or --all")
+		return errors.New("必须指定 --service=svc:<服务名> 或 --all 其中之一")
 	}
 
 	forService := ""
@@ -850,17 +848,17 @@ func (e *serveEnv) runServeSetConfig(ctx context.Context, args []string) (err er
 	}
 	scf, err := conffile.LoadServicesConfig(filename, forService)
 	if err != nil {
-		return fmt.Errorf("could not read config from file %q: %w", filename, err)
+		return fmt.Errorf("无法从文件 %q 读取配置：%w", filename, err)
 	}
 
 	st, err := e.getLocalClientStatusWithoutPeers(ctx)
 	if err != nil {
-		return fmt.Errorf("getting client status: %w", err)
+		return fmt.Errorf("获取客户端状态出错：%w", err)
 	}
 	magicDNSSuffix := st.CurrentTailnet.MagicDNSSuffix
 	sc, err := e.lc.GetServeConfig(ctx)
 	if err != nil {
-		return fmt.Errorf("getting current serve config: %w", err)
+		return fmt.Errorf("获取当前 serve 配置出错：%w", err)
 	}
 
 	// Clear all existing config.
@@ -893,7 +891,7 @@ func (e *serveEnv) runServeSetConfig(ctx context.Context, args []string) (err er
 			advertisedServices.Add(name.String())
 		}
 		if forSingleService && sc.Services[e.service] == nil {
-			return fmt.Errorf("service %q not found in %q", e.service, filename)
+			return fmt.Errorf("在 %q 中未找到服务 %q", filename, e.service)
 		}
 	}
 
@@ -910,7 +908,7 @@ func (e *serveEnv) runServeSetConfig(ctx context.Context, args []string) (err er
 			}
 
 			if ppr.Proto != int(ipproto.TCP) {
-				return fmt.Errorf("service %q: source ports must be TCP", name)
+				return fmt.Errorf("服务 %q：源端口必须是 TCP", name)
 			}
 			serveType, _ := serveTypeFromConfString(ep.Protocol)
 			for port := ppr.Ports.First; port <= ppr.Ports.Last; port++ {
@@ -925,7 +923,7 @@ func (e *serveEnv) runServeSetConfig(ctx context.Context, args []string) (err er
 				}
 				err := e.setServe(sc, name.String(), serveType, port, "/", target, false, magicDNSSuffix, nil, 0 /* proxy protocol */)
 				if err != nil {
-					return fmt.Errorf("service %q: %w", name, err)
+					return fmt.Errorf("服务 %q：%w", name, err)
 				}
 			}
 		}
@@ -977,11 +975,11 @@ func (e *serveEnv) setServe(sc *ipn.ServeConfig, dnsName string, srvType serveTy
 		}
 	case serveTypeTCP, serveTypeTLSTerminatedTCP:
 		if e.setPath != "" {
-			return fmt.Errorf("cannot mount a path for TCP serve")
+			return fmt.Errorf("TCP serve 无法挂载路径")
 		}
 		err := e.applyTCPServe(sc, dnsName, srvType, srvPort, target, mds, proxyProtocol)
 		if err != nil {
-			return fmt.Errorf("failed to apply TCP serve: %w", err)
+			return fmt.Errorf("应用 TCP serve 失败：%w", err)
 		}
 	case serveTypeTUN:
 		// Caller checks that TUN mode is only supported for services.
@@ -991,7 +989,7 @@ func (e *serveEnv) setServe(sc *ipn.ServeConfig, dnsName string, srvType serveTy
 		}
 		sc.Services[svcName].Tun = true
 	default:
-		return fmt.Errorf("invalid type %q", srvType)
+		return fmt.Errorf("无效的类型 %q", srvType)
 	}
 
 	// update the serve config based on if funnel is enabled
@@ -1003,17 +1001,17 @@ func (e *serveEnv) setServe(sc *ipn.ServeConfig, dnsName string, srvType serveTy
 }
 
 var (
-	msgFunnelAvailable             = "Available on the internet:"
-	msgServeAvailable              = "Available within your tailnet:"
-	msgServiceWaitingApproval      = "This machine is configured as a service proxy for %s, but approval from an admin is required. Once approved, it will be available in your Tailnet as:"
-	msgRunningInBackground         = "%s started and running in the background."
-	msgRunningTunService           = "IPv4 and IPv6 traffic to %s is being routed to your operating system."
-	msgDisableProxy                = "To disable the proxy, run: tailscale %s --%s=%d off"
-	msgDisableServiceProxy         = "To disable the proxy, run: tailscale serve --service=%s --%s=%d off"
-	msgDisableServiceTun           = "To disable the service in TUN mode, run: tailscale serve --service=%s --tun off"
-	msgDisableService              = "To remove config for the service, run: tailscale serve clear %s"
-	msgWarnRemoteDestCompatibility = "Warning: %s doesn't support connecting to remote destinations from non-default route, see tailscale.com/kb/1552/tailscale-services for detail."
-	msgToExit                      = "Press Ctrl+C to exit."
+	msgFunnelAvailable             = "可在互联网上访问："
+	msgServeAvailable              = "可在你的 tailnet 内访问："
+	msgServiceWaitingApproval      = "本机已配置为 %s 的服务代理，但需要管理员批准。一旦获批，它将在你的 Tailnet 中以如下地址可用："
+	msgRunningInBackground         = "%s 已启动并在后台运行。"
+	msgRunningTunService           = "到 %s 的 IPv4 和 IPv6 流量正被路由到你的操作系统。"
+	msgDisableProxy                = "要禁用代理，运行：tailscale %s --%s=%d off"
+	msgDisableServiceProxy         = "要禁用代理，运行：tailscale serve --service=%s --%s=%d off"
+	msgDisableServiceTun           = "要禁用 TUN 模式下的服务，运行：tailscale serve --service=%s --tun off"
+	msgDisableService              = "要移除该服务的配置，运行：tailscale serve clear %s"
+	msgWarnRemoteDestCompatibility = "警告：%s 不支持通过非默认路由连接到远程目标，详见 tailscale.com/kb/1552/tailscale-services。"
+	msgToExit                      = "按 Ctrl+C 退出。"
 )
 
 // messageForPort returns a message for the given port based on the
@@ -1216,19 +1214,19 @@ func (e *serveEnv) applyWebServe(sc *ipn.ServeConfig, dnsName string, srvPort ui
 	case strings.HasPrefix(target, "text:"):
 		text := strings.TrimPrefix(target, "text:")
 		if text == "" {
-			return errors.New("unable to serve; text cannot be an empty string")
+			return errors.New("无法提供内容；文本不能为空字符串")
 		}
 		h.Text = text
 	case filepath.IsAbs(target):
 		if version.IsMacAppStore() || version.IsMacSys() {
 			// The Tailscale network extension cannot serve arbitrary paths on macOS due to sandbox restrictions (2024-03-26)
-			return errors.New("Path serving is not supported on macOS due to sandbox restrictions. To use Tailscale Serve on macOS, switch to the open-source tailscaled distribution. See https://tailscale.com/kb/1065/macos-variants for more information.")
+			return errors.New("由于沙盒限制，macOS 上不支持路径服务。若要在 macOS 上使用 Tailscale Serve，请切换到开源的 tailscaled 发行版。详见 https://tailscale.com/kb/1065/macos-variants。")
 		}
 
 		target = filepath.Clean(target)
 		fi, err := os.Stat(target)
 		if err != nil {
-			return errors.New("invalid path")
+			return errors.New("无效路径")
 		}
 
 		// TODO: need to understand this further
@@ -1251,7 +1249,7 @@ func (e *serveEnv) applyWebServe(sc *ipn.ServeConfig, dnsName string, srvPort ui
 	// TODO: validation needs to check nested foreground configs
 	svcName := tailcfg.AsServiceName(dnsName)
 	if sc.IsTCPForwardingOnPort(srvPort, svcName) {
-		return errors.New("cannot serve web; already serving TCP")
+		return errors.New("无法提供 Web 服务；已经在提供 TCP 服务")
 	}
 
 	sc.SetWebHandler(h, dnsName, srvPort, mount, useTLS, mds)
@@ -1267,23 +1265,23 @@ func (e *serveEnv) applyTCPServe(sc *ipn.ServeConfig, dnsName string, srcType se
 	case serveTypeTLSTerminatedTCP:
 		terminateTLS = true
 	default:
-		return fmt.Errorf("invalid TCP target %q", target)
+		return fmt.Errorf("无效的 TCP 目标 %q", target)
 	}
 
 	svcName := tailcfg.AsServiceName(dnsName)
 
 	targetURL, err := ipn.ExpandProxyTargetValue(target, []string{"tcp"}, "tcp")
 	if err != nil {
-		return fmt.Errorf("unable to expand target: %v", err)
+		return fmt.Errorf("无法展开目标：%v", err)
 	}
 
 	dstURL, err := url.Parse(targetURL)
 	if err != nil {
-		return fmt.Errorf("invalid TCP target %q: %v", target, err)
+		return fmt.Errorf("无效的 TCP 目标 %q：%v", target, err)
 	}
 
 	if sc.IsServingWeb(srcPort, svcName) {
-		return fmt.Errorf("cannot serve TCP; already serving web on %d for %s", srcPort, dnsName)
+		return fmt.Errorf("无法提供 TCP 服务；已在为 %s 的端口 %d 提供 Web 服务", dnsName, srcPort)
 	}
 
 	// TODO: needs to account for multiple configs from foreground mode
@@ -1312,7 +1310,7 @@ func (e *serveEnv) applyFunnel(sc *ipn.ServeConfig, dnsName string, srvPort uint
 	}
 
 	if _, exists := sc.AllowFunnel[hp]; exists && !allowFunnel {
-		fmt.Fprintf(e.stderr(), "Removing Funnel for %s:%s\n", dnsName, hp)
+		fmt.Fprintf(e.stderr(), "正在为 %s:%s 移除 Funnel\n", dnsName, hp)
 	}
 	sc.SetFunnel(dnsName, srvPort, allowFunnel)
 }
@@ -1325,20 +1323,20 @@ func (e *serveEnv) unsetServe(sc *ipn.ServeConfig, dnsName string, srvType serve
 	case serveTypeHTTPS, serveTypeHTTP:
 		err := e.removeWebServe(sc, dnsName, srvPort, mount, mds)
 		if err != nil {
-			return fmt.Errorf("failed to remove web serve: %w", err)
+			return fmt.Errorf("移除 Web serve 失败：%w", err)
 		}
 	case serveTypeTCP, serveTypeTLSTerminatedTCP:
 		err := e.removeTCPServe(sc, dnsName, srvPort)
 		if err != nil {
-			return fmt.Errorf("failed to remove TCP serve: %w", err)
+			return fmt.Errorf("移除 TCP serve 失败：%w", err)
 		}
 	case serveTypeTUN:
 		err := e.removeTunServe(sc, dnsName)
 		if err != nil {
-			return fmt.Errorf("failed to remove TUN serve: %w", err)
+			return fmt.Errorf("移除 TUN serve 失败：%w", err)
 		}
 	default:
-		return fmt.Errorf("invalid type %q", srvType)
+		return fmt.Errorf("无效的类型 %q", srvType)
 	}
 
 	// TODO(tylersmalley): remove funnel
@@ -1359,7 +1357,7 @@ func srvTypeAndPortFromFlags(e *serveEnv) (srvType serveType, srvPort uint16, er
 	for k, v := range sourceMap {
 		if v != 0 {
 			if v > math.MaxUint16 {
-				return 0, 0, fmt.Errorf("port number %d is too high for %s flag", v, srvType)
+				return 0, 0, fmt.Errorf("端口号 %d 对于 %s 标志来说过大", v, srvType)
 			}
 			srcTypeCount++
 			srvType = k
@@ -1373,7 +1371,7 @@ func srvTypeAndPortFromFlags(e *serveEnv) (srvType serveType, srvPort uint16, er
 	}
 
 	if srcTypeCount > 1 {
-		return 0, 0, fmt.Errorf("cannot serve multiple types for a single mount point")
+		return 0, 0, fmt.Errorf("无法为单个挂载点提供多种类型")
 	}
 	if srcTypeCount == 0 {
 		return serveTypeHTTPS, 443, nil
@@ -1494,7 +1492,7 @@ func (e *serveEnv) removeWebServe(sc *ipn.ServeConfig, dnsName string, srvPort u
 	if forService {
 		svc := sc.Services[svcName]
 		if svc == nil {
-			return errors.New("service does not exist")
+			return errors.New("服务不存在")
 		}
 		hostName = strings.Join([]string{svcName.WithoutPrefix(), mds}, ".")
 		webServeMap = svc.Web
@@ -1503,7 +1501,7 @@ func (e *serveEnv) removeWebServe(sc *ipn.ServeConfig, dnsName string, srvPort u
 	hp := ipn.HostPort(net.JoinHostPort(hostName, portStr))
 
 	if sc.IsTCPForwardingOnPort(srvPort, svcName) {
-		return errors.New("cannot remove web handler; currently serving TCP")
+		return errors.New("无法移除 Web 处理器；当前正在提供 TCP 服务")
 	}
 	var targetExists bool
 	var mounts []string
@@ -1522,11 +1520,11 @@ func (e *serveEnv) removeWebServe(sc *ipn.ServeConfig, dnsName string, srvPort u
 	}
 
 	if !targetExists {
-		return errors.New("handler does not exist")
+		return errors.New("处理器不存在")
 	}
 
 	if len(mounts) > 1 {
-		msg := fmt.Sprintf("Are you sure you want to delete %d handlers under port %s?", len(mounts), portStr)
+		msg := fmt.Sprintf("确定要删除端口 %s 下的 %d 个处理器吗？", portStr, len(mounts))
 		if !e.yes && !prompt.YesNo(msg, true) {
 			return nil
 		}
@@ -1548,10 +1546,10 @@ func (e *serveEnv) removeTCPServe(sc *ipn.ServeConfig, dnsName string, src uint1
 	}
 	svcName := tailcfg.AsServiceName(dnsName)
 	if sc.GetTCPPortHandler(src, svcName) == nil {
-		return errors.New("serve config does not exist")
+		return errors.New("serve 配置不存在")
 	}
 	if sc.IsServingWeb(src, svcName) {
-		return fmt.Errorf("unable to remove; serving web, not TCP forwarding on serve port %d", src)
+		return fmt.Errorf("无法移除；正在提供 Web 服务，而非端口 %d 上的 TCP 转发", src)
 	}
 	sc.RemoveTCPForwarding(svcName, src)
 	return nil
@@ -1564,10 +1562,10 @@ func (e *serveEnv) removeTunServe(sc *ipn.ServeConfig, dnsName string) error {
 	svcName := tailcfg.ServiceName(dnsName)
 	svc, ok := sc.Services[svcName]
 	if !ok || svc == nil {
-		return errors.New("service does not exist")
+		return errors.New("服务不存在")
 	}
 	if !svc.Tun {
-		return errors.New("service is not being served in TUN mode")
+		return errors.New("该服务未在 TUN 模式下提供服务")
 	}
 	delete(sc.Services, svcName)
 	if len(sc.Services) == 0 {
@@ -1592,7 +1590,7 @@ func cleanURLPath(urlPath string) (string, error) {
 	if urlPath == c || urlPath == c+"/" {
 		return urlPath, nil
 	}
-	return "", fmt.Errorf("invalid mount point %q", urlPath)
+	return "", fmt.Errorf("无效的挂载点 %q", urlPath)
 }
 
 func (s serveType) String() string {

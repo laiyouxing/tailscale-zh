@@ -47,22 +47,19 @@ import (
 var upCmd = &ffcli.Command{
 	Name:       "up",
 	ShortUsage: "tailscale up [flags]",
-	ShortHelp:  "Connect to Tailscale, logging in if needed",
+	ShortHelp:  "连接到 Tailscale，必要时进行登录验证",
 
 	LongHelp: strings.TrimSpace(`
-"tailscale up" connects this machine to your Tailscale network,
-triggering authentication if necessary.
+"tailscale up" 将此主机连接到你的 Tailscale 网络，
+必要时会触发身份验证。
 
-With no flags, "tailscale up" brings the network online without
-changing any settings. (That is, it's the opposite of "tailscale
-down").
+不带任何 flag 时，"tailscale up" 会在不改变任何设置的情况下
+让网络上线（即与 "tailscale down" 相反）。
 
-If flags are specified, the flags must be the complete set of desired
-settings. An error is returned if any setting would be changed as a
-result of an unspecified flag's default value, unless the --reset flag
-is also used. (The flags --auth-key, --force-reauth, and --qr are not
-considered settings that need to be re-specified when modifying
-settings.)
+如果指定了 flag，则这些 flag 必须是所需设置的完整集合。如果因
+某个未指定 flag 的默认值而导致某项设置发生变化，命令将返回错误，
+除非同时使用了 --reset flag。（--auth-key、--force-reauth 和 --qr
+这三个 flag 在修改设置时不被视为需要重新指定的设置。）
 `),
 	FlagSet: upFlagSet,
 	Exec: func(ctx context.Context, args []string) error {
@@ -96,55 +93,55 @@ func newUpFlagSet(goos string, upArgs *upArgsT, cmd string) *flag.FlagSet {
 	// When adding new flags, prefer to put them under "tailscale set" instead
 	// of here. Setting preferences via "tailscale up" is deprecated.
 	if buildfeatures.HasQRCodes {
-		upf.BoolVar(&upArgs.qr, "qr", false, "show QR code for login URLs")
+		upf.BoolVar(&upArgs.qr, "qr", false, "显示登录 URL 的二维码")
 		upf.StringVar(&upArgs.qrFormat, "qr-format", string(qrcodes.FormatAuto), fmt.Sprintf("QR code formatting (%s, %s, %s, %s)", qrcodes.FormatAuto, qrcodes.FormatASCII, qrcodes.FormatLarge, qrcodes.FormatSmall))
 	}
-	upf.StringVar(&upArgs.authKeyOrFile, "auth-key", "", `node authorization key; if it begins with "file:", then it's a path to a file containing the authkey`)
-	upf.StringVar(&upArgs.audience, "audience", "", "Audience used when requesting an ID token from an identity provider for auth keys via workload identity federation")
-	upf.StringVar(&upArgs.clientID, "client-id", "", "Client ID used to generate authkeys via workload identity federation")
-	upf.StringVar(&upArgs.clientSecretOrFile, "client-secret", "", `Client Secret used to generate authkeys via OAuth; if it begins with "file:", then it's a path to a file containing the secret`)
-	upf.StringVar(&upArgs.idTokenOrFile, "id-token", "", `ID token from the identity provider to exchange with the control server for workload identity federation; if it begins with "file:", then it's a path to a file containing the token`)
+	upf.StringVar(&upArgs.authKeyOrFile, "auth-key", "", `节点授权密钥；若以 "file:" 开头，则表示包含该密钥的文件路径`)
+	upf.StringVar(&upArgs.audience, "audience", "", "通过工作负载身份联合（workload identity federation）为授权密钥向身份提供商请求 ID 令牌时使用的 Audience")
+	upf.StringVar(&upArgs.clientID, "client-id", "", "通过工作负载身份联合生成授权密钥时使用的 Client ID")
+	upf.StringVar(&upArgs.clientSecretOrFile, "client-secret", "", `通过 OAuth 生成授权密钥时使用的 Client Secret；若以 "file:" 开头，则表示包含该密钥的文件路径`)
+	upf.StringVar(&upArgs.idTokenOrFile, "id-token", "", `来自身份提供商的 ID 令牌，用于与控制服务器交换以进行工作负载身份联合；若以 "file:" 开头，则表示包含该令牌的文件路径`)
 
-	upf.StringVar(&upArgs.server, "login-server", ipn.DefaultControlURL, "base URL of control server")
-	upf.BoolVar(&upArgs.acceptRoutes, "accept-routes", acceptRouteDefault(goos), "accept routes advertised by other Tailscale nodes")
-	upf.BoolVar(&upArgs.acceptDNS, "accept-dns", true, "accept DNS configuration from the admin panel")
-	upf.Var(notFalseVar{}, "host-routes", hidden+"install host routes to other Tailscale nodes (must be true as of Tailscale 1.67+)")
-	upf.StringVar(&upArgs.exitNodeIP, "exit-node", "", "Tailscale exit node (IP, base name, or auto:any) for internet traffic, or empty string to not use an exit node")
-	upf.BoolVar(&upArgs.exitNodeAllowLANAccess, "exit-node-allow-lan-access", false, "allow direct access to the local network when routing traffic via an exit node")
-	upf.BoolVar(&upArgs.shieldsUp, "shields-up", false, "don't allow incoming connections")
-	upf.BoolVar(&upArgs.runSSH, "ssh", false, "run an SSH server, permitting access per tailnet admin's declared policy")
-	upf.StringVar(&upArgs.advertiseTags, "advertise-tags", "", "comma-separated ACL tags to request (e.g. \"tag:eng,tag:montreal,tag:ssh\"); the \"tag:\" prefix is optional and added automatically when omitted (e.g. \"eng,montreal,ssh\")")
-	upf.StringVar(&upArgs.hostname, "hostname", "", "hostname to use instead of the one provided by the OS")
-	upf.StringVar(&upArgs.advertiseRoutes, "advertise-routes", "", "routes to advertise to other nodes (comma-separated, e.g. \"10.0.0.0/8,192.168.0.0/24\") or empty string to not advertise routes")
-	upf.BoolVar(&upArgs.advertiseConnector, "advertise-connector", false, "advertise this node as an app connector")
-	upf.BoolVar(&upArgs.advertiseDefaultRoute, "advertise-exit-node", false, "offer to be an exit node for internet traffic for the tailnet")
-	upf.BoolVar(&upArgs.postureChecking, "report-posture", false, "allow management plane to gather device posture information")
+	upf.StringVar(&upArgs.server, "login-server", ipn.DefaultControlURL, "控制服务器的基础 URL")
+	upf.BoolVar(&upArgs.acceptRoutes, "accept-routes", acceptRouteDefault(goos), "接受其他 Tailscale 节点通告的路由")
+	upf.BoolVar(&upArgs.acceptDNS, "accept-dns", true, "接受来自管理后台的 DNS 配置")
+	upf.Var(notFalseVar{}, "host-routes", hidden+"安装到其他 Tailscale 节点的主机路由（自 Tailscale 1.67+ 起必须为 true）")
+	upf.StringVar(&upArgs.exitNodeIP, "exit-node", "", "用于互联网流量的 Tailscale 出口节点（IP、基础名称或 auto:any），留空表示不使用退出节点")
+	upf.BoolVar(&upArgs.exitNodeAllowLANAccess, "exit-node-allow-lan-access", false, "经出口节点路由流量时，允许直接访问本地网络")
+	upf.BoolVar(&upArgs.shieldsUp, "shields-up", false, "不允许入站连接")
+	upf.BoolVar(&upArgs.runSSH, "ssh", false, "运行一个 SSH 服务器，按 Tailnet 管理员声明的策略允许访问")
+	upf.StringVar(&upArgs.advertiseTags, "advertise-tags", "", "要请求的以逗号分隔的 ACL 标签（如 \"tag:eng,tag:montreal,tag:ssh\"）；\"tag:\" 前缀可省略，省略时会自动添加（如 \"eng,montreal,ssh\"）")
+	upf.StringVar(&upArgs.hostname, "hostname", "", "要使用的主机名，取代操作系统提供的名称")
+	upf.StringVar(&upArgs.advertiseRoutes, "advertise-routes", "", "要通告给其他节点的路由（以逗号分隔，如 \"10.0.0.0/8,192.168.0.0/24\"），留空表示不通告路由")
+	upf.BoolVar(&upArgs.advertiseConnector, "advertise-connector", false, "将此节点通告为应用连接器")
+	upf.BoolVar(&upArgs.advertiseDefaultRoute, "advertise-exit-node", false, "作为 Tailnet 的互联网流量出口节点")
+	upf.BoolVar(&upArgs.postureChecking, "report-posture", false, "允许管理层收集设备态势信息")
 
 	if safesocket.GOOSUsesPeerCreds(goos) {
-		upf.StringVar(&upArgs.opUser, "operator", "", "Unix username to allow to operate on tailscaled without sudo")
+		upf.StringVar(&upArgs.opUser, "operator", "", "允许在不使用 sudo 的情况下操作 tailscaled 的 Unix 用户名")
 	}
 	switch goos {
 	case "linux":
-		upf.BoolVar(&upArgs.snat, "snat-subnet-routes", true, "source NAT traffic to local routes advertised with --advertise-routes")
-		upf.BoolVar(&upArgs.statefulFiltering, "stateful-filtering", false, "apply stateful filtering to forwarded packets (subnet routers, exit nodes, and so on)")
-		upf.StringVar(&upArgs.netfilterMode, "netfilter-mode", defaultNetfilterMode(), "netfilter mode (one of on, nodivert, off)")
+		upf.BoolVar(&upArgs.snat, "snat-subnet-routes", true, "对通过 --advertise-routes 通告的本地路由做源地址 NAT")
+		upf.BoolVar(&upArgs.statefulFiltering, "stateful-filtering", false, "对转发的报文（子网路由器、出口节点等）应用有状态过滤")
+		upf.StringVar(&upArgs.netfilterMode, "netfilter-mode", defaultNetfilterMode(), "netfilter 模式（可选值之一：on、nodivert、off）")
 	case "windows":
-		upf.BoolVar(&upArgs.forceDaemon, "unattended", false, "run in \"Unattended Mode\" where Tailscale keeps running even after the current GUI user logs out (Windows-only)")
+		upf.BoolVar(&upArgs.forceDaemon, "unattended", false, "以“无人值守模式”运行，即使当前 GUI 用户登出，Tailscale 仍保持运行（仅 Windows）")
 	}
-	upf.DurationVar(&upArgs.timeout, "timeout", 0, "maximum amount of time to wait for tailscaled to enter a Running state; default (0s) blocks forever")
+	upf.DurationVar(&upArgs.timeout, "timeout", 0, "等待 tailscaled 进入 Running 状态的最长时间；默认值（0s）表示一直阻塞等待")
 
 	if cmd == "login" {
-		upf.StringVar(&upArgs.profileName, "nickname", "", "short name for the account")
+		upf.StringVar(&upArgs.profileName, "nickname", "", "账户的简称")
 	}
 
 	if cmd == "up" {
 		// Some flags are only for "up", not "login".
-		upf.BoolVar(&upArgs.json, "json", false, "output in JSON format (WARNING: format subject to change)")
-		upf.BoolVar(&upArgs.reset, "reset", false, "reset unspecified settings to their default values")
+		upf.BoolVar(&upArgs.json, "json", false, "以 JSON 格式输出（警告：输出格式可能发生变化）")
+		upf.BoolVar(&upArgs.reset, "reset", false, "将未指定的设置重置为默认值")
 
 		// There's no --force-reauth flag on "login" because all login commands
 		// trigger a reauth.
-		upf.BoolVar(&upArgs.forceReauth, "force-reauth", false, "force reauthentication (WARNING: this may bring down the Tailscale connection and thus should not be done remotely over SSH or RDP)")
+		upf.BoolVar(&upArgs.forceReauth, "force-reauth", false, "强制重新验证（警告：这可能会断开 Tailscale 连接，因此不应通过 SSH 或 RDP 远程执行此操作）")
 		registerAcceptRiskFlag(upf, &upArgs.acceptedRisks)
 	}
 
@@ -157,7 +154,7 @@ type notFalseVar struct{}
 func (notFalseVar) IsBoolFlag() bool { return true }
 func (notFalseVar) Set(v string) error {
 	if v != "true" {
-		return fmt.Errorf("unsupported value; only 'true' is allowed")
+		return fmt.Errorf("不支持的值；只允许 'true'")
 	}
 	return nil
 }
@@ -303,7 +300,7 @@ func prefsFromUpArgs(upArgs upArgsT, warnf logger.Logf, st *ipnstate.Status, goo
 	}
 
 	if upArgs.exitNodeIP == "" && upArgs.exitNodeAllowLANAccess {
-		return nil, fmt.Errorf("--exit-node-allow-lan-access can only be used with --exit-node")
+		return nil, fmt.Errorf("--exit-node-allow-lan-access 只能与 --exit-node 一起使用")
 	}
 
 	var tags []string
@@ -318,7 +315,7 @@ func prefsFromUpArgs(upArgs upArgsT, warnf logger.Logf, st *ipnstate.Status, goo
 				tags[i] = tag
 			}
 			if err := tailcfg.CheckTag(tag); err != nil {
-				return nil, fmt.Errorf("tag: %q: %s", tag, err)
+				return nil, fmt.Errorf("标签 %q：%s", tag, err)
 			}
 		}
 	}
@@ -341,7 +338,7 @@ func prefsFromUpArgs(upArgs upArgsT, warnf logger.Logf, st *ipnstate.Status, goo
 			prefs.AutoExitNode = expr
 		} else if err := prefs.SetExitNodeIP(upArgs.exitNodeIP, st); err != nil {
 			if _, ok := errors.AsType[ipn.ExitNodeLocalIPError](err); ok {
-				return nil, fmt.Errorf("%w; did you mean --advertise-exit-node?", err)
+				return nil, fmt.Errorf("%w；你是不是想用 --advertise-exit-node？", err)
 			}
 			return nil, err
 		}
@@ -366,7 +363,7 @@ func prefsFromUpArgs(upArgs upArgsT, warnf logger.Logf, st *ipnstate.Status, goo
 		// We want to make sure user is aware setting --snat-subnet-routes=false with --advertise-exit-node would break exitnode,
 		// but we won't prevent them from doing it since there are current dependencies on that combination. (as of 2026-03-25)
 		if prefs.NoSNAT && prefs.AdvertisesExitNode() {
-			warnf("--snat-subnet-routes=false is set with --advertise-exit-node; internet traffic through this exit node may not work as expected")
+			warnf("--snat-subnet-routes=false 与 --advertise-exit-node 同时设置；经此出口节点的互联网流量可能无法按预期工作")
 		}
 
 		// Backfills for NoStatefulFiltering occur when loading a profile; just set it explicitly here.
@@ -390,7 +387,7 @@ func netfilterModeFromFlag(v string) (_ preftype.NetfilterMode, warning string, 
 	switch v {
 	case "on", "nodivert", "off":
 	default:
-		return preftype.NetfilterOn, "", fmt.Errorf("invalid value --netfilter-mode=%q", v)
+		return preftype.NetfilterOn, "", fmt.Errorf("无效值 --netfilter-mode=%q", v)
 	}
 	m, err := preftype.ParseNetfilterMode(v)
 	if err != nil {
@@ -398,10 +395,10 @@ func netfilterModeFromFlag(v string) (_ preftype.NetfilterMode, warning string, 
 	}
 	switch m {
 	case preftype.NetfilterNoDivert:
-		warning = "netfilter=nodivert; add iptables calls to ts-* chains manually."
+		warning = "netfilter=nodivert；请手动将 iptables 调用加入 ts-* 链。"
 	case preftype.NetfilterOff:
 		if defaultNetfilterMode() != "off" {
-			warning = "netfilter=off; configure iptables yourself."
+			warning = "netfilter=off；请自行配置 iptables。"
 		}
 	}
 	return m, warning, nil
@@ -437,8 +434,8 @@ func updatePrefs(prefs, curPrefs *ipn.Prefs, env upCheckEnv) (simpleUp bool, jus
 
 	controlURLChanged := curPrefs.ControlURL != prefs.ControlURL &&
 		!(ipn.IsLoginServerSynonym(curPrefs.ControlURL) && ipn.IsLoginServerSynonym(prefs.ControlURL))
-	if controlURLChanged && env.backendState == ipn.Running.String() && !env.upArgs.forceReauth {
-		return false, nil, fmt.Errorf("can't change --login-server without --force-reauth")
+	if 	controlURLChanged && env.backendState == ipn.Running.String() && !env.upArgs.forceReauth {
+		return false, nil, fmt.Errorf("无法在未使用 --force-reauth 的情况下更改 --login-server")
 	}
 
 	// Do this after validations to avoid the 5s delay if we're going to error
@@ -455,7 +452,7 @@ func updatePrefs(prefs, curPrefs *ipn.Prefs, env upCheckEnv) (simpleUp bool, jus
 	}
 
 	if env.upArgs.forceReauth && isSSHOverTailscale() {
-		if err := presentRiskToUser(riskLoseSSH, `You are connected over Tailscale; this action may result in your SSH session disconnecting.`, env.upArgs.acceptedRisks); err != nil {
+		if err := presentRiskToUser(riskLoseSSH, `你正通过 Tailscale 连接；此操作可能导致你的 SSH 会话断开。`, env.upArgs.acceptedRisks); err != nil {
 			return false, nil, err
 		}
 	}
@@ -492,9 +489,9 @@ func presentSSHToggleRisk(wantSSH, haveSSH bool, acceptedRisks string) error {
 		return nil
 	}
 	if wantSSH {
-		return presentRiskToUser(riskLoseSSH, `You are connected over Tailscale; this action will reroute SSH traffic to Tailscale SSH and will result in your session disconnecting.`, acceptedRisks)
+		return presentRiskToUser(riskLoseSSH, `你正通过 Tailscale 连接；此操作会将 SSH 流量重新路由到 Tailscale SSH，并导致你的会话断开。`, acceptedRisks)
 	}
-	return presentRiskToUser(riskLoseSSH, `You are connected using Tailscale SSH; this action will result in your session disconnecting.`, acceptedRisks)
+	return presentRiskToUser(riskLoseSSH, `你正使用 Tailscale SSH 连接；此操作将导致你的会话断开。`, acceptedRisks)
 }
 
 func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retErr error) {
@@ -502,7 +499,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 	if len(args) > 0 {
 		egg = fmt.Sprint(args) == "[up down down left right left right b a]"
 		if !egg {
-			fatalf("too many non-flag arguments: %q", args)
+			fatalf("过多的非 flag 参数：%q", args)
 		}
 	}
 
@@ -535,7 +532,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 	}
 
 	if distro.Get() == distro.Synology {
-		notSupported := "not supported on Synology; see https://github.com/tailscale/tailscale/issues/1995"
+		notSupported := "Synology 上不支持；详见 https://github.com/tailscale/tailscale/issues/1995"
 		if upArgs.acceptRoutes {
 			return errors.New("--accept-routes is " + notSupported)
 		}
@@ -606,7 +603,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 	}()
 
 	if !buildfeatures.HasIPNBus {
-		fmt.Fprintln(Stderr, "binary built with ts_omit_ipnbus; not waiting for completion")
+		fmt.Fprintln(Stderr, "该二进制以 ts_omit_ipnbus 构建；不等待完成")
 		return nil
 	}
 
@@ -723,7 +720,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 			}
 			if n.ErrMessage != nil {
 				msg := *n.ErrMessage
-				fatalf("backend error: %v\n", msg)
+				fatalf("后端错误：%v\n", msg)
 			}
 			if s := n.State; s != nil && *s == ipn.NeedsMachineAuth {
 				printed = true
@@ -741,7 +738,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 					printUpDoneJSON(ipn.Running, "")
 				} else if printed {
 					// Only need to print an update if we printed the "please click" message earlier.
-					fmt.Fprintf(Stderr, "Success.\n")
+					fmt.Fprintf(Stderr, "成功。\n")
 				}
 				select {
 				case upComplete <- true:
@@ -769,12 +766,12 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 
 					data, err := json.MarshalIndent(js, "", "\t")
 					if err != nil {
-						printf("upOutputJSON marshalling error: %v", err)
+						printf("upOutputJSON 序列化错误：%v", err)
 					} else {
 						outln(string(data))
 					}
 				} else {
-					fmt.Fprintf(Stderr, "\nTo authenticate, visit:\n\n\t%s\n\n", authURL)
+					fmt.Fprintf(Stderr, "\n要进行身份验证，请访问：\n\n\t%s\n\n", authURL)
 					if upArgs.qr && buildfeatures.HasQRCodes {
 						_, err := qrcodes.Fprintln(Stderr, qrcodes.Format(upArgs.qrFormat), authURL)
 						if err != nil {
@@ -817,7 +814,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 		}
 		return err
 	case <-timeoutCh:
-		return errors.New(`timeout waiting for Tailscale service to enter a Running state; check health with "tailscale status"`)
+		return errors.New(`等待 Tailscale 服务进入 Running 状态超时；请使用 "tailscale status" 检查健康状态`)
 	}
 }
 
@@ -832,7 +829,7 @@ func printDeviceApprovalInfo(printJson bool, prefs *ipn.Prefs, lastURLPrinted *s
 		}
 
 		*lastURLPrinted = deviceApprovalURL
-		errf("\nTo approve your machine, visit (as admin):\n\n\t%s\n\n", deviceApprovalURL)
+		errf("\n要以管理员身份批准你的主机，请访问：\n\n\t%s\n\n", deviceApprovalURL)
 	}
 }
 
@@ -869,7 +866,7 @@ func checkUpWarnings(ctx context.Context) {
 		printf("%s\n", warn[0])
 		return
 	}
-	printf("# Health check warnings:\n")
+	printf("# 健康检查警告：\n")
 	for _, m := range warn {
 		printf("#     - %s\n", m)
 	}
@@ -879,7 +876,7 @@ func printUpDoneJSON(state ipn.State, errorString string) {
 	js := &upOutputJSON{BackendState: state.String(), Error: errorString}
 	data, err := json.MarshalIndent(js, "", "  ")
 	if err != nil {
-		log.Printf("printUpDoneJSON marshalling error: %v", err)
+		log.Printf("printUpDoneJSON 序列化错误：%v", err)
 	} else {
 		outln(string(data))
 	}
@@ -966,10 +963,10 @@ func updateMaskedPrefsFromUpOrSetFlag(mp *ipn.MaskedPrefs, flagName string) {
 	panic(fmt.Sprintf("internal error: unhandled flag %q", flagName))
 }
 
-const accidentalUpPrefix = "Error: changing settings via 'tailscale up' requires mentioning all\n" +
-	"non-default flags. To proceed, either re-run your command with --reset or\n" +
-	"use the command below to explicitly mention the current value of\n" +
-	"all non-default settings:\n\n" +
+const accidentalUpPrefix = "错误：通过 'tailscale up' 修改设置时，需要提及所有\n" +
+	"非默认值 flag。要继续，请使用 --reset 重新运行你的命令，或\n" +
+	"使用下面的命令显式列出所有非默认设置的\n" +
+	"当前值：\n\n" +
 	"\ttailscale up"
 
 // upCheckEnv are extra parameters describing the environment as

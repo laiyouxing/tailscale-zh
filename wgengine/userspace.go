@@ -290,7 +290,7 @@ func NewFakeUserspaceEngine(logf logger.Logf, opts ...any) (Engine, error) {
 			conf.ListenPort = v
 		case int:
 			if v < 0 || v > math.MaxUint16 {
-				return nil, fmt.Errorf("invalid ListenPort: %d", v)
+				return nil, fmt.Errorf("无效的 ListenPort：%d", v)
 			}
 			conf.ListenPort = uint16(v)
 		case func(any):
@@ -322,7 +322,7 @@ func NewUserspaceEngine(logf logger.Logf, conf Config) (_ Engine, reterr error) 
 	}
 
 	if conf.Metrics == nil {
-		return nil, errors.New("NewUserspaceEngine: opts.Metrics is required, please pass a *usermetric.Registry")
+		return nil, errors.New("NewUserspaceEngine: 必须提供 opts.Metrics，请传入一个 *usermetric.Registry")
 	}
 
 	if conf.Tun == nil {

@@ -35,23 +35,22 @@ func webCmd() *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "web",
 		ShortUsage: "tailscale web [flags]",
-		ShortHelp:  "Run a web server for controlling Tailscale",
+		ShortHelp:  "运行一个用于控制 Tailscale 的 Web 服务器",
 
 		LongHelp: strings.TrimSpace(`
-"tailscale web" runs a webserver for controlling the Tailscale daemon.
+"tailscale web" 运行一个用于控制 Tailscale 守护进程的 Web 服务器。
 
-It's primarily intended for use on Synology, QNAP, and other
-NAS devices where a web interface is the natural place to control
-Tailscale, as opposed to a CLI or a native app.
+它主要面向 Synology、QNAP 及其他 NAS 设备，这类设备上 Web 界面
+是控制 Tailscale 的自然入口，而非 CLI 或原生应用。
 `),
 
 		FlagSet: (func() *flag.FlagSet {
 			webf := newFlagSet("web")
-			webf.StringVar(&webArgs.listen, "listen", "localhost:8088", "listen address; use port 0 for automatic")
-			webf.BoolVar(&webArgs.cgi, "cgi", false, "run as CGI script")
-			webf.StringVar(&webArgs.prefix, "prefix", "", "URL prefix added to requests (for cgi or reverse proxies)")
-			webf.BoolVar(&webArgs.readonly, "readonly", false, "run web UI in read-only mode")
-			webf.StringVar(&webArgs.origin, "origin", "", "origin at which the web UI is served (if behind a reverse proxy or used with cgi)")
+			webf.StringVar(&webArgs.listen, "listen", "localhost:8088", "监听地址；使用端口 0 表示自动分配")
+			webf.BoolVar(&webArgs.cgi, "cgi", false, "作为 CGI 脚本运行")
+			webf.StringVar(&webArgs.prefix, "prefix", "", "添加到请求的 URL 前缀（用于 cgi 或反向代理）")
+			webf.BoolVar(&webArgs.readonly, "readonly", false, "以只读模式运行 Web 界面")
+			webf.StringVar(&webArgs.origin, "origin", "", "提供 Web 界面的来源（origin）（若位于反向代理之后或与 cgi 配合使用时）")
 			return webf
 		})(),
 		Exec: runWeb,
@@ -94,7 +93,7 @@ func runWeb(ctx context.Context, args []string) error {
 	defer cancel()
 
 	if len(args) > 0 {
-		return fmt.Errorf("too many non-flag arguments: %q", args)
+		return fmt.Errorf("过多的非标志参数：%q", args)
 	}
 
 	var selfIP netip.Addr

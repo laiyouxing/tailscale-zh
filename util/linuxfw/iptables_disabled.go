@@ -16,5 +16,5 @@ func detectIptables() (int, error) {
 }
 
 func newIPTablesRunner(logf logger.Logf) (*iptablesRunner, error) {
-	return nil, errors.New("iptables disabled in build")
+	return nil, errors.New("当前构建中已禁用 iptables")
 }

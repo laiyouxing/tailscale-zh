@@ -33,12 +33,12 @@ export default function AddressCard({
 }) {
   const children = (
     <ul className="flex flex-col divide-y rounded-md overflow-hidden">
-      {shortDomain && <AddressRow label="short domain" value={shortDomain} />}
-      {fullDomain && <AddressRow label="full domain" value={fullDomain} />}
+      {shortDomain && <AddressRow label="短域名" value={shortDomain} />}
+      {fullDomain && <AddressRow label="完整域名" value={fullDomain} />}
       {v4Address && (
         <AddressRow
           key={v4Address}
-          label="IPv4 address"
+          label="IPv4 地址"
           ip={true}
           value={v4Address}
         />
@@ -46,7 +46,7 @@ export default function AddressCard({
       {v6Address && (
         <AddressRow
           key={v6Address}
-          label="IPv6 address"
+          label="IPv6 地址"
           ip={true}
           value={v6Address}
         />
@@ -63,7 +63,7 @@ export default function AddressCard({
           suffixIcon={
             <ChevronDown className="w-5 h-5" stroke="#232222" /* gray-800 */ />
           }
-          aria-label="See all addresses for this device."
+          aria-label="查看此设备的所有地址。"
         >
           <NiceIP className={triggerClassName} ip={v4Address ?? v6Address} />
         </Button>
@@ -91,10 +91,10 @@ function AddressRow({
   const toaster = useToaster()
   const onCopyClick = useCallback(() => {
     copyText(value)
-      .then(() => toaster.show({ message: `Copied ${label} to clipboard` }))
+      .then(() => toaster.show({ message: `已复制 ${label} 到剪贴板` }))
       .catch(() =>
         toaster.show({
-          message: `Failed to copy ${label} to clipboard`,
+          message: `复制 ${label} 到剪贴板失败`,
           variant: "danger",
         })
       )
@@ -110,7 +110,7 @@ function AddressRow({
           "w-60 text-sm flex-1"
         )}
         onClick={onCopyClick}
-        aria-label={`Copy ${value} to your clip board.`}
+        aria-label={`复制 ${value} 到剪贴板。`}
       >
         <div className="overflow-hidden pl-3 pr-10 py-2 tabular-nums">
           {ip ? (

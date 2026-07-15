@@ -8,9 +8,9 @@ import (
 )
 
 func findSSH() (string, error) {
-	return "", errors.New("Not implemented")
+	return "", errors.New("未实现")
 }
 
 func execSSH(ssh string, argv []string) error {
-	return errors.New("Not implemented")
+	return errors.New("未实现")
 }

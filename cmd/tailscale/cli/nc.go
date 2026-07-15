@@ -19,7 +19,7 @@ import (
 var ncCmd = &ffcli.Command{
 	Name:       "nc",
 	ShortUsage: "tailscale nc <hostname-or-IP> <port>",
-	ShortHelp:  "Connect to a port on a host, connected to stdin/stdout",
+	ShortHelp:  "连接到某台主机上的一个端口，并与 stdin/stdout 连通",
 	Exec:       runNC,
 }
 
@@ -56,13 +56,13 @@ func runNC(ctx context.Context, args []string) error {
 	}
 
 	if len(args) != 2 {
-		return errors.New("usage: tailscale nc <hostname-or-IP> <port>")
+		return errors.New("用法: tailscale nc <主机名或 IP> <端口>")
 	}
 
 	hostOrIP, portStr := args[0], args[1]
 	port, err := strconv.ParseUint(portStr, 10, 16)
 	if err != nil {
-		return fmt.Errorf("invalid port number %q", portStr)
+		return fmt.Errorf("无效端口号 %q", portStr)
 	}
 
 	// TODO(bradfitz): also add UDP too, via flag?

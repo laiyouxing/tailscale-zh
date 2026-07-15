@@ -27,14 +27,14 @@ func mkDebugPortmapCmd() *ffcli.Command {
 		Name:       "portmap",
 		ShortUsage: "tailscale debug portmap",
 		Exec:       debugPortmap,
-		ShortHelp:  "Run portmap debugging",
+		ShortHelp:  "运行端口映射调试",
 		FlagSet: (func() *flag.FlagSet {
 			fs := newFlagSet("portmap")
-			fs.DurationVar(&debugPortmapArgs.duration, "duration", 5*time.Second, "timeout for port mapping")
-			fs.StringVar(&debugPortmapArgs.ty, "type", "", `portmap debug type (one of "", "pmp", "pcp", or "upnp")`)
-			fs.StringVar(&debugPortmapArgs.gatewayAddr, "gateway-addr", "", `override gateway IP (must also pass --self-addr)`)
-			fs.StringVar(&debugPortmapArgs.selfAddr, "self-addr", "", `override self IP (must also pass --gateway-addr)`)
-			fs.BoolVar(&debugPortmapArgs.logHTTP, "log-http", false, `print all HTTP requests and responses to the log`)
+			fs.DurationVar(&debugPortmapArgs.duration, "duration", 5*time.Second, "端口映射超时时间")
+			fs.StringVar(&debugPortmapArgs.ty, "type", "", `端口映射调试类型（可选 ""、"pmp"、"pcp" 或 "upnp"）`)
+			fs.StringVar(&debugPortmapArgs.gatewayAddr, "gateway-addr", "", `覆盖网关 IP（必须同时传入 --self-addr）`)
+			fs.StringVar(&debugPortmapArgs.selfAddr, "self-addr", "", `覆盖本机 IP（必须同时传入 --gateway-addr）`)
+			fs.BoolVar(&debugPortmapArgs.logHTTP, "log-http", false, `将所有 HTTP 请求和响应打印到日志`)
 			return fs
 		})(),
 	}
@@ -55,17 +55,17 @@ func debugPortmap(ctx context.Context, args []string) error {
 		LogHTTP:  debugPortmapArgs.logHTTP,
 	}
 	if (debugPortmapArgs.gatewayAddr != "") != (debugPortmapArgs.selfAddr != "") {
-		return fmt.Errorf("if one of --gateway-addr and --self-addr is provided, the other must be as well")
+		return fmt.Errorf("若提供了 --gateway-addr 或 --self-addr 中的任意一个，则另一个也必须提供")
 	}
 	if debugPortmapArgs.gatewayAddr != "" {
 		var err error
 		opts.GatewayAddr, err = netip.ParseAddr(debugPortmapArgs.gatewayAddr)
 		if err != nil {
-			return fmt.Errorf("invalid --gateway-addr: %w", err)
+			return fmt.Errorf("无效的 --gateway-addr：%w", err)
 		}
 		opts.SelfAddr, err = netip.ParseAddr(debugPortmapArgs.selfAddr)
 		if err != nil {
-			return fmt.Errorf("invalid --self-addr: %w", err)
+			return fmt.Errorf("无效的 --self-addr：%w", err)
 		}
 	}
 	rc, err := localClient.DebugPortmap(ctx, opts)

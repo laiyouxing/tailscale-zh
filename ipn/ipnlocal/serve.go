@@ -328,10 +328,10 @@ func (b *LocalBackend) SetServeConfig(config *ipn.ServeConfig, etag string) erro
 func (b *LocalBackend) setServeConfigLocked(config *ipn.ServeConfig, etag string) error {
 	prefs := b.pm.CurrentPrefs()
 	if config.IsFunnelOn() && prefs.ShieldsUp() {
-		return errors.New("Unable to turn on Funnel while shields-up is enabled")
+		return errors.New("在已启用 shields-up 的情况下无法开启 Funnel")
 	}
 	if b.isConfigLocked_Locked() {
-		return errors.New("can't reconfigure tailscaled when using a config file; config file is locked")
+		return errors.New("使用配置文件时无法重新配置 tailscaled；配置文件已被锁定")
 	}
 
 	nm := b.NetMapNoPeers()

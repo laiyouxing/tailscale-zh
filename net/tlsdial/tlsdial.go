@@ -258,7 +258,7 @@ func SetConfigExpectedCert(c *tls.Config, certDNSName string) {
 	c.VerifyConnection = nil
 	c.VerifyPeerCertificate = func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
 		if len(rawCerts) == 0 {
-			return errors.New("no certs presented")
+			return errors.New("未提供证书")
 		}
 		certs := make([]*x509.Certificate, len(rawCerts))
 		for i, asn1Data := range rawCerts {
@@ -332,7 +332,7 @@ func SetConfigExpectedCertHash(c *tls.Config, wantFullCertSHA256Hex string) {
 				continue
 			}
 			if sawGoodCert {
-				return errors.New("unexpected multiple certs presented")
+				return errors.New("意外地提供了多个证书")
 			}
 			if fmt.Sprintf("%02x", sha256.Sum256(cert.Raw)) != wantFullCertSHA256Hex {
 				return fmt.Errorf("cert hash does not match expected cert hash")
@@ -352,7 +352,7 @@ func SetConfigExpectedCertHash(c *tls.Config, wantFullCertSHA256Hex string) {
 			sawGoodCert = true
 		}
 		if !sawGoodCert {
-			return errors.New("expected cert not presented")
+			return errors.New("未提供预期的证书")
 		}
 		return nil
 	}

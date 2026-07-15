@@ -58,7 +58,7 @@ func DefaultInterfacePortable() (string, netip.Addr, error) {
 		}
 	}
 	if iface == nil {
-		return "", netip.Addr{}, errors.New("no default interface")
+		return "", netip.Addr{}, errors.New("无默认网络接口")
 	}
 	return iface.Name, laddr.AddrPort().Addr(), nil
 }

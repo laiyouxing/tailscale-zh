@@ -74,7 +74,7 @@ func printServiceStatusTree(sc *ipn.ServeConfig, st *ipnstate.Status, name tailc
 	}
 
 	if svc.Tun {
-		printf("tun (L3 forwarding) (%s)\n\n", name)
+		printf("tun (L3 转发) (%s)\n\n", name)
 		return nil
 	}
 
@@ -95,9 +95,9 @@ func printServiceStatusTree(sc *ipn.ServeConfig, st *ipnstate.Status, name tailc
 		}
 		hp := ipn.HostPort(net.JoinHostPort(host, strconv.Itoa(int(p))))
 		if h.TerminateTLS != "" {
-			printf("tcp://%s (TLS-terminated TCP, tailnet only) (%s)\n", hp, name)
+			printf("tcp://%s (TLS 终结的 TCP, 仅 tailnet) (%s)\n", hp, name)
 		} else {
-			printf("tcp://%s (tailnet only) (%s)\n", hp, name)
+			printf("tcp://%s (仅 tailnet) (%s)\n", hp, name)
 		}
 		printf("|--> tcp://%s\n\n", h.TCPForward)
 	}

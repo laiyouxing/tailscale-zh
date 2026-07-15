@@ -44,45 +44,42 @@ func pveApplianceCmd() *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "pve-appliance",
 		ShortUsage: "tailscale configure pve-appliance --storage=<name> [flags]",
-		ShortHelp:  "Create a Proxmox VE VM running the Tailscale appliance image [experimental]",
+		ShortHelp:  "创建一个运行 Tailscale 设备镜像的 Proxmox VE 虚拟机 [实验性]",
 		LongHelp: hidden + strings.TrimSpace(`
-This experimental command downloads a signed Tailscale appliance GAF from
-pkgs.tailscale.com, builds a raw disk image in /var/tmp, then invokes
-'qm create' / 'qm disk import' / 'qm set' on the local Proxmox VE host to
-create a new VM backed by that image. It must be run on the PVE host
-itself (where the 'qm' CLI is available).
+此实验性命令从 pkgs.tailscale.com 下载一个已签名的 Tailscale 设备 GAF，
+在 /var/tmp 中构建一个原始磁盘镜像，然后在本地 Proxmox VE 主机上调用
+'qm create' / 'qm disk import' / 'qm set' 来创建一个由该镜像支撑的新虚拟机。
+它必须在 PVE 主机本身上运行（即 'qm' 命令行可用的地方）。
 
-The imported disk is attached as scsi0 on a virtio-scsi-single controller
-with iothread, the network attaches to the given bridge (default vmbr0),
-and the guest agent is enabled — pair with the appliance's built-in
-qemu-guest-kragent so PVE can see the guest's IPs.
+导入的磁盘以 scsi0 形式挂载在 virtio-scsi-single 控制器上并启用 iothread，
+网络连接到指定的网桥（默认为 vmbr0），并启用了客户机代理——配合设备内置的
+qemu-guest-kragent，PVE 即可看到客户机的 IP。
 
-The VM is created with a virtio-serial console (--serial0 socket). Once
-the VM is running, 'qm terminal <vmid>' on the PVE host — then press
-Enter — drops you into a busybox shell inside the appliance without
-needing an SSH key.
+该虚拟机会创建一个 virtio-serial 控制台（--serial0 socket）。一旦
+虚拟机运行，在 PVE 主机上执行 'qm terminal <vmid>'，然后按
+Enter，即可无需 SSH 密钥进入设备内部的 busybox shell。
 
-Defaults are chosen so a bare invocation like:
+已预先选取默认值，因此像下面这样不带参数的调用：
 
     tailscale configure pve-appliance --storage=local-lvm
 
-is enough to produce a bootable Tailscale appliance VM.
+就足以生成一个可启动的 Tailscale 设备虚拟机。
 `),
 		FlagSet: (func() *flag.FlagSet {
 			fs := newFlagSet("pve-appliance")
-			fs.IntVar(&pveApplianceArgs.vmid, "vmid", 0, "target VM ID; 0 asks Proxmox for the next available ID")
-			fs.StringVar(&pveApplianceArgs.name, "name", "", `VM name; defaults to "tsapp-<vmid>"`)
-			fs.StringVar(&pveApplianceArgs.storage, "storage", "", "PVE storage to import the disk into (e.g. local-lvm, ssd2); required")
-			fs.StringVar(&pveApplianceArgs.diskSize, "disk-size", "4G", "raw image size (accepts K/M/G suffixes, e.g. 4G, 8192M)")
-			fs.IntVar(&pveApplianceArgs.cores, "cores", 2, "vCPU cores")
-			fs.IntVar(&pveApplianceArgs.memory, "memory", 1024, "memory in MiB")
-			fs.StringVar(&pveApplianceArgs.bridge, "bridge", "vmbr0", "network bridge to attach virtio net0 to")
-			fs.StringVar(&pveApplianceArgs.variant, "variant", "vm-amd64", `appliance variant: "vm-amd64" or "vm-arm64"`)
-			fs.StringVar(&pveApplianceArgs.track, "track", "", `which track to download from; defaults to "`+clientupdate.CurrentTrack+`"`)
-			fs.StringVar(&pveApplianceArgs.gaf, "gaf", "", "use a local GAF file instead of downloading (skips signature verification)")
-			fs.StringVar(&pveApplianceArgs.addSSHAuthorizedKeys, "add-ssh-authorized-keys", "", "path to an authorized_keys file to include on the appliance for breakglass SSH access")
-			fs.BoolVar(&pveApplianceArgs.start, "start", true, "start the VM after import")
-			fs.BoolVar(&pveApplianceArgs.yes, "yes", false, "skip the confirmation prompt")
+			fs.IntVar(&pveApplianceArgs.vmid, "vmid", 0, "目标虚拟机 ID；为 0 时向 Proxmox 申请下一个可用 ID")
+			fs.StringVar(&pveApplianceArgs.name, "name", "", "虚拟机名称；默认为 \"tsapp-<vmid>\"")
+			fs.StringVar(&pveApplianceArgs.storage, "storage", "", "要导入磁盘的 PVE 存储（如 local-lvm、ssd2）；必填")
+			fs.StringVar(&pveApplianceArgs.diskSize, "disk-size", "4G", "原始镜像大小（接受 K/M/G 后缀，如 4G、8192M）")
+			fs.IntVar(&pveApplianceArgs.cores, "cores", 2, "vCPU 核心数")
+			fs.IntVar(&pveApplianceArgs.memory, "memory", 1024, "内存大小（单位 MiB）")
+			fs.StringVar(&pveApplianceArgs.bridge, "bridge", "vmbr0", "virtio net0 要接入的网络网桥")
+			fs.StringVar(&pveApplianceArgs.variant, "variant", "vm-amd64", "设备变体：\"vm-amd64\" 或 \"vm-arm64\"")
+			fs.StringVar(&pveApplianceArgs.track, "track", "", "要下载的发布通道；默认为 \""+clientupdate.CurrentTrack+"\"")
+			fs.StringVar(&pveApplianceArgs.gaf, "gaf", "", "使用本地 GAF 文件而非下载（跳过签名校验）")
+			fs.StringVar(&pveApplianceArgs.addSSHAuthorizedKeys, "add-ssh-authorized-keys", "", "包含到设备中以用于应急 SSH 访问的 authorized_keys 文件路径")
+			fs.BoolVar(&pveApplianceArgs.start, "start", true, "导入后启动虚拟机")
+			fs.BoolVar(&pveApplianceArgs.yes, "yes", false, "跳过确认提示")
 			return fs
 		})(),
 		Exec: runPVEAppliance,
@@ -91,31 +88,31 @@ is enough to produce a bootable Tailscale appliance VM.
 
 func runPVEAppliance(ctx context.Context, args []string) error {
 	if len(args) > 0 {
-		return errors.New("unknown arguments")
+		return errors.New("未知参数")
 	}
 	if runtime.GOOS != "linux" {
-		return errors.New("the pve-appliance subcommand is only available on Linux; for use on Proxmox PVE hosts")
+		return errors.New("pve-appliance 子命令仅在 Linux 上可用；请用于 Proxmox PVE 主机")
 	}
 	if fi, err := os.Stat("/etc/pve"); err != nil || !fi.IsDir() {
-		return errors.New("/etc/pve is not a directory: run this on a Proxmox VE host")
+		return errors.New("/etc/pve 不是目录：请在 Proxmox VE 主机上运行此命令")
 	}
 	if _, err := exec.LookPath("qm"); err != nil {
-		return errors.New("`qm` not found in $PATH: run this on the Proxmox VE host")
+		return errors.New("在 $PATH 中未找到 `qm`：请在 Proxmox VE 主机上运行此命令")
 	}
 	if pveApplianceArgs.storage == "" {
-		return errors.New("--storage is required (e.g. --storage=local-lvm)")
+		return errors.New("--storage 为必填项（例如 --storage=local-lvm）")
 	}
 
 	diskBytes, err := parseSizeBytes(pveApplianceArgs.diskSize)
 	if err != nil {
-		return fmt.Errorf("parsing --disk-size: %w", err)
+		return fmt.Errorf("解析 --disk-size：%w", err)
 	}
 
 	vmid := pveApplianceArgs.vmid
 	if vmid == 0 {
 		vmid, err = pveNextID(ctx)
 		if err != nil {
-			return fmt.Errorf("fetching next VMID: %w", err)
+			return fmt.Errorf("获取下一个 VMID：%w", err)
 		}
 	}
 	name := pveApplianceArgs.name
@@ -134,13 +131,13 @@ func runPVEAppliance(ctx context.Context, args []string) error {
 	defer cleanup()
 
 	if !pveApplianceArgs.yes {
-		printf("About to create Proxmox VM %d (%q) on storage %q from %s\n",
+		printf("即将在存储 %q 上基于 %s 创建 Proxmox 虚拟机 %d（%q）\n",
 			vmid, name, pveApplianceArgs.storage, gafLabel)
 		printf("  cores=%d memory=%dMiB bridge=%s disk=%s start=%v\n",
 			pveApplianceArgs.cores, pveApplianceArgs.memory,
 			pveApplianceArgs.bridge, pveApplianceArgs.diskSize, pveApplianceArgs.start)
-		if !prompt.YesNo("Proceed?", false) {
-			return errors.New("aborted")
+		if !prompt.YesNo("是否继续？", false) {
+			return errors.New("已中止")
 		}
 	}
 
@@ -151,23 +148,23 @@ func runPVEAppliance(ctx context.Context, args []string) error {
 	defer os.Remove(imgPath)
 
 	if err := createPVEVM(ctx, vmid, name); err != nil {
-		return fmt.Errorf("qm create: %w", err)
+		return fmt.Errorf("qm create：%w", err)
 	}
 	diskRef, err := importPVEDisk(ctx, vmid, pveApplianceArgs.storage, imgPath)
 	if err != nil {
-		return fmt.Errorf("qm disk import: %w", err)
+		return fmt.Errorf("qm disk import：%w", err)
 	}
 	if err := attachPVEDisk(ctx, vmid, diskRef); err != nil {
-		return fmt.Errorf("qm set: %w", err)
+		return fmt.Errorf("qm set：%w", err)
 	}
 
 	if pveApplianceArgs.start {
 		if err := runQM(ctx, "start", strconv.Itoa(vmid)); err != nil {
-			return fmt.Errorf("qm start: %w", err)
+			return fmt.Errorf("qm start：%w", err)
 		}
-		printf("VM %d started.\n", vmid)
+		printf("虚拟机 %d 已启动。\n", vmid)
 	} else {
-		printf("VM %d created; not started (pass --start to auto-start).\n", vmid)
+		printf("虚拟机 %d 已创建；未启动（传入 --start 可自动启动）。\n", vmid)
 	}
 	return nil
 }
@@ -178,7 +175,7 @@ func runPVEAppliance(ctx context.Context, args []string) error {
 func buildPVERawImage(gafPath string, devsize int64, variant string) (string, error) {
 	zr, err := zip.OpenReader(gafPath)
 	if err != nil {
-		return "", fmt.Errorf("open GAF: %w", err)
+		return "", fmt.Errorf("打开 GAF：%w", err)
 	}
 	defer zr.Close()
 
@@ -195,7 +192,7 @@ func buildPVERawImage(gafPath string, devsize int64, variant string) (string, er
 	if err := tmp.Truncate(devsize); err != nil {
 		tmp.Close()
 		os.Remove(imgPath)
-		return "", fmt.Errorf("truncate: %w", err)
+		return "", fmt.Errorf("truncate：%w", err)
 	}
 
 	if err := writeApplianceImage(tmp, devsize, zr.File, bootCode, variant); err != nil {
@@ -210,18 +207,18 @@ func buildPVERawImage(gafPath string, devsize int64, variant string) (string, er
 		if err != nil {
 			tmp.Close()
 			os.Remove(imgPath)
-			return "", fmt.Errorf("reading --add-ssh-authorized-keys: %w", err)
+			return "", fmt.Errorf("读取 --add-ssh-authorized-keys：%w", err)
 		}
 		permFiles = append(permFiles, mkfs.PermFile{
 			Path:    "breakglass.authorized_keys",
 			Content: keys,
 		})
-		printf("Including SSH authorized_keys for breakglass access.\n")
+		printf("正在加入用于应急访问的 SSH authorized_keys。\n")
 	}
 	if err := mkfs.Perm(tmp, devsize, permFiles...); err != nil {
 		tmp.Close()
 		os.Remove(imgPath)
-		return "", fmt.Errorf("formatting perm: %w", err)
+		return "", fmt.Errorf("格式化 perm：%w", err)
 	}
 
 	if err := tmp.Sync(); err != nil {
@@ -245,7 +242,7 @@ func pveNextID(ctx context.Context) (int, error) {
 	s := strings.TrimSpace(string(out))
 	n, err := strconv.Atoi(s)
 	if err != nil {
-		return 0, fmt.Errorf("parsing pvesh output %q: %w", s, err)
+		return 0, fmt.Errorf("解析 pvesh 输出 %q：%w", s, err)
 	}
 	return n, nil
 }
@@ -271,23 +268,23 @@ func createPVEVM(ctx context.Context, vmid int, name string) error {
 // appliance without needing an SSH key: the framebuffer console (press
 // Esc for a shell) and the serial console (qm terminal).
 func vmNotes(vmid int) string {
-	return fmt.Sprintf(`# Tailscale appliance [experimental]
+	return fmt.Sprintf(`# Tailscale 设备 [实验性]
 
-Admin access to this VM (no SSH key required):
+此虚拟机的管理访问方式（无需 SSH 密钥）：
 
-- **Framebuffer / NoVNC console**: press **Esc** on the enrollment screen
-  to drop into a busybox shell. Type `+"`exit`"+` to return to the
-  Tailscale status display.
+- **帧缓冲 / NoVNC 控制台**：在注册界面按 **Esc**
+  即可进入 busybox shell。输入 `+"`exit`"+` 可返回
+  Tailscale 状态显示。
 
-- **Serial console**: on this Proxmox host, run
+- **串口控制台**：在此 Proxmox 主机上运行
 
       qm terminal %d
 
-  then press **Enter** to get a busybox shell. Press **Ctrl+O** to
-  detach from `+"`qm terminal`"+` (leaves the guest shell alive).
+  然后按 **Enter** 进入 busybox shell。按 **Ctrl+O** 可
+  脱离 `+"`qm terminal`"+`（保留客户机 shell 运行）。
 
-Inside either shell, run `+"`tailscale`"+` commands as usual
-(`+"`tailscale up`"+`, `+"`tailscale status`"+`, etc.).
+在任一 shell 中，照常运行 `+"`tailscale`"+` 命令
+（`+"`tailscale up`"+`, `+"`tailscale status`"+` 等）。
 `, vmid)
 }
 
@@ -306,14 +303,14 @@ Inside either shell, run `+"`tailscale`"+` commands as usual
 func importPVEDisk(ctx context.Context, vmid int, storage, src string) (volume string, err error) {
 	before, err := pveVMConfig(ctx, vmid)
 	if err != nil {
-		return "", fmt.Errorf("reading VM %d config: %w", vmid, err)
+		return "", fmt.Errorf("读取虚拟机 %d 配置：%w", vmid, err)
 	}
 	if err := runQM(ctx, "disk", "import", strconv.Itoa(vmid), src, storage, "--format", "raw"); err != nil {
 		return "", err
 	}
 	after, err := pveVMConfig(ctx, vmid)
 	if err != nil {
-		return "", fmt.Errorf("reading VM %d config after import: %w", vmid, err)
+		return "", fmt.Errorf("导入后读取虚拟机 %d 配置：%w", vmid, err)
 	}
 	for k, v := range after {
 		if !strings.HasPrefix(k, "unused") {
@@ -324,7 +321,7 @@ func importPVEDisk(ctx context.Context, vmid int, storage, src string) (volume s
 		}
 		return v, nil
 	}
-	return "", fmt.Errorf("qm disk import didn't add an unusedN entry to VM %d config", vmid)
+	return "", fmt.Errorf("qm disk import 未向虚拟机 %d 的配置中添加未使用的 unusedN 条目", vmid)
 }
 
 // pveVMConfig returns the current runtime config for vmid on the local
@@ -343,7 +340,7 @@ func pveVMConfig(ctx context.Context, vmid int) (map[string]string, error) {
 	}
 	var raw map[string]any
 	if err := json.Unmarshal(out, &raw); err != nil {
-		return nil, fmt.Errorf("parsing pvesh JSON: %w", err)
+		return nil, fmt.Errorf("解析 pvesh JSON：%w", err)
 	}
 	m := make(map[string]string, len(raw))
 	for k, v := range raw {
@@ -381,7 +378,7 @@ func runQM(ctx context.Context, args ...string) error {
 func parseSizeBytes(s string) (int64, error) {
 	s = strings.TrimSpace(s)
 	if s == "" {
-		return 0, errors.New("empty size")
+		return 0, errors.New("大小为空")
 	}
 	mult := int64(1)
 	switch last := s[len(s)-1]; {
@@ -398,7 +395,7 @@ func parseSizeBytes(s string) (int64, error) {
 		case 'T', 't':
 			mult = 1 << 40
 		default:
-			return 0, fmt.Errorf("unknown size suffix %q", string(last))
+			return 0, fmt.Errorf("未知的大小后缀 %q", string(last))
 		}
 		s = s[:len(s)-1]
 	}
@@ -407,7 +404,7 @@ func parseSizeBytes(s string) (int64, error) {
 		return 0, err
 	}
 	if n <= 0 {
-		return 0, fmt.Errorf("size %d must be positive", n)
+		return 0, fmt.Errorf("大小 %d 必须为正数", n)
 	}
 	return n * mult, nil
 }
