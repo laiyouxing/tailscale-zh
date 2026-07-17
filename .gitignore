@@ -60,3 +60,7 @@ client/web/build/assets
 /.stfolder
 fbstatus
 gafpush
+
+# Generated MSI installer and cabinet (keep build_msi.py as source)
+packaging/msi/*.msi
+packaging/msi/*.cab
