@@ -5,7 +5,7 @@
 # 桌面/开始菜单/启动快捷方式（均带 tailscale 图标），
 # 并以用户态（--tun=userspace-networking）启动守护进程。
 # 不写 Program Files、不注册系统服务、不需要管理员 —— 绕开本机 Windows Installer / 服务策略限制。
-import os, sys, shutil, subprocess, ctypes, struct
+import os, sys, shutil, subprocess, ctypes, struct, winreg
 
 LOGIN_SERVER = "https://laiyouxing.top:50011/"
 EXES = ["tailscale.exe", "tailscaled.exe", "systray.exe"]
@@ -117,6 +117,29 @@ def make_lnk(lnk_path, target, args="", workdir="", icon="", show_cmd=1):
         f.write(data)
 
 
+def add_to_path(install_dir):
+    # 把安装目录加入用户级 PATH（HKCU\Environment\Path），无需管理员；
+    # 之后命令行即可直接运行 tailscale / tailscaled，无需 cd 进目录。
+    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment",
+                          0, winreg.KEY_READ | winreg.KEY_WRITE)
+    try:
+        cur, val_type = winreg.QueryValueEx(key, "Path")
+    except FileNotFoundError:
+        cur, val_type = "", winreg.REG_SZ
+    parts = [p for p in cur.split(";") if p.strip()]
+    if install_dir not in parts:
+        parts.append(install_dir)
+        winreg.SetValueEx(key, "Path", 0, val_type, ";".join(parts))
+        # 广播 WM_SETTINGCHANGE，让系统/新进程刷新环境变量（当前进程不立即生效）
+        HWND_BROADCAST = 0xFFFF
+        WM_SETTINGCHANGE = 0x1A
+        SMTO_ABORTIFHUNG = 0x2
+        ctypes.windll.user32.SendMessageTimeoutW(
+            HWND_BROADCAST, WM_SETTINGCHANGE, 0,
+            "Environment", SMTO_ABORTIFHUNG, 1000, None)
+    winreg.CloseKey(key)
+
+
 def main():
     install_dir = choose_dir(os.path.join(
         os.environ.get("LOCALAPPDATA", os.path.expanduser("~\\AppData\\Local")), "Tailscale"))
@@ -160,6 +183,8 @@ def main():
             stdout=logf, stderr=subprocess.STDOUT,
             creationflags=subprocess.CREATE_NO_WINDOW,
         )
+
+    add_to_path(install_dir)
 
     mbox("已安装到：\n" + install_dir + "\n\n"
           "• 双击桌面「Tailscale 连接」即可连 " + LOGIN_SERVER + "\n"
