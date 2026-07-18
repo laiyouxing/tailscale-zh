@@ -64,3 +64,9 @@ gafpush
 # Generated MSI installer and cabinet (keep build_msi.py as source)
 packaging/msi/*.msi
 packaging/msi/*.cab
+
+# PyInstaller build artifacts for the single-file exe installer
+# (keep make_installer.py and tailscale.ico as source)
+TailscaleSetup.spec
+build/
+__pycache__/
