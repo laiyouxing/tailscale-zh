@@ -11,6 +11,7 @@
 package main // import "tailscale.com/cmd/tailscaled"
 
 import (
+	"crypto/x509"
 	"context"
 	"errors"
 	"flag"
@@ -427,6 +428,18 @@ func run() (err error) {
 	// available universally when setting up everything else.
 	sys := tsd.NewSystem()
 	sys.SocketPath = args.socketpath
+
+	// 加载安装目录下自签名 CA（ca.crt，与 exe 同目录），显式信任 headscale 的自签名证书。
+	// 由 make_installer 释放到安装目录；文件不存在则跳过（仍走默认的证书错误降级）。
+	if exePath, err := os.Executable(); err == nil {
+		caPath := filepath.Join(filepath.Dir(exePath), "ca.crt")
+		if caPEM, err := os.ReadFile(caPath); err == nil {
+			caPool := x509.NewCertPool()
+			if caPool.AppendCertsFromPEM(caPEM) {
+				sys.ExtraRootCAs = caPool
+			}
+		}
+	}
 
 	// Parse config, if specified, to fail early if it's invalid.
 	var conf *conffile.Config
