@@ -11,7 +11,7 @@ EXES = ["tailscale.exe", "tailscaled.exe", "systray.exe"]
 # 固定 GUID（升级用；换包时保持 UpgradeCode 不变）
 # 注意：曾因安装失败在 C:\Windows\Installer 留下同 ProductCode 的 1033 缓存，
 # msiexec 会复用旧缓存导致模板语言修正不生效，故此处换用新 ProductCode 以强制刷新。
-PRODUCT_CODE = "{D4E5F6A7-1234-5678-1234-5678123456CD}"
+PRODUCT_CODE = "{F7A8B9C-1234-5678-1234-5678123456FE}"
 UPGRADE_CODE = "{B2C3D4E5-1234-5678-1234-567812345679}"
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
